@@ -9,6 +9,7 @@ Created on Mon Oct 30 14:25:24 2017
 import numpy as np
 from numpy.linalg import norm
 
+""" function I have no class for """
 def rotation(angle):
     return np.array(
             [[np.cos(angle),  -np.sin(angle)],
@@ -25,6 +26,7 @@ def rotate(point, angle):
     p = np.array(point)
     return np.dot(R, p)
 
+""" classes """
 class Rectangle:
     def __init__(self, x, y, dx, dy, angle):
         self.x = x

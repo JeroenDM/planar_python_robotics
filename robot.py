@@ -6,7 +6,7 @@ Created on Thu Nov  2 14:56:47 2017
 @author: jeroen
 """
 
-import geometry_2D as geo
+import geometry as geo
 
 class Robot:
     """ serial links robot in 2D
@@ -48,7 +48,8 @@ class Robot:
         return pos
 
 if __name__ == "__main__":
-    
+    import matplotlib.pyplot as plt
+    import numpy as np
     rob = Robot([1, 1, 0.5], [0.1, 0.05, 0.05])
     
     fig = plt.figure()
