@@ -11,11 +11,42 @@ from numpy.linalg import norm
 
 """ function I have no class for """
 def rotation(angle):
-    return np.array(
-            [[np.cos(angle),  -np.sin(angle)],
-              [np.sin(angle),  np.cos(angle)]]
-            )
+    return np.array( [[np.cos(angle),  -np.sin(angle)],
+                     [np.sin(angle),  np.cos(angle)]]
+                   )
+
+def transform(angle, distance):
+    R = rotation(angle)
+    T = np.zeros((3, 3))
+    T[:2, :2] = R
+    T[0, 2] = distance * np.cos(angle)
+    T[1, 2] = distance * np.sin(angle)
+    return T
+
+def fixAngle(x):
+    """ for an input or input vector rescale an angle
+        to fit in the interval (0 to pi or) -p/2 to pi/2
+    """
+    # define constants
+    PI = np.pi
+    LO = -PI
+    UP = PI
     
+    # make sure it works for scalar and vectors
+    if np.isscalar(x):
+        x = np.array([x])
+        
+    # create new scaled vector
+    y = x.copy()
+    for i in range(len(x)):
+        while y[i] > UP:
+            y[i] -= 2 * PI
+        while y[i] < LO:
+            y[i] += 2 * PI
+        else:
+            print("bump " + str(i))
+    return y
+
 def rotate(point, angle):
     """ Rotate a point around the origin
     
@@ -28,6 +59,8 @@ def rotate(point, angle):
 
 """ classes """
 class Rectangle:
+    """ rectangles to represent robot link    
+    """
     def __init__(self, x, y, dx, dy, angle):
         self.x = x
         self.y = y
@@ -104,6 +137,18 @@ class Rectangle:
 
 if __name__ == "__main__":
     import  matplotlib.pyplot as plt
+    
+    # test fix angle
+    x_test = np.random.rand(20)*16 - 8
+    x_fix = fixAngle(x_test)
+    px = [np.cos(x_test), np.cos(x_fix)]
+    py = [np.sin(x_test), np.sin(x_fix)]
+    print(x_test)
+    print(x_fix)
+    
+    plt.figure()
+    plt.axis('equal')
+    plt.plot(px[0], py[0], '*', px[1], py[1], '.')
     
     rect1 = Rectangle(1, 2, 2, 2, np.pi/4)
     rect2 = Rectangle(1, 1, 3, 2, -np.pi/6)
