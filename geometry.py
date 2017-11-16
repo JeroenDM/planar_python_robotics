@@ -43,8 +43,6 @@ def fixAngle(x):
             y[i] -= 2 * PI
         while y[i] < LO:
             y[i] += 2 * PI
-        else:
-            print("bump " + str(i))
     return y
 
 def rotate(point, angle):

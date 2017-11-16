@@ -6,6 +6,7 @@ Created on Thu Nov  2 14:56:47 2017
 @author: jeroen
 """
 
+import numpy as np
 import geometry as geom
 from scipy.optimize import root
 
@@ -78,9 +79,10 @@ class Robot:
         if sol['success']:
             #print(sol)
             #return sol.x
-            return geom.fixAngle(sol.x)
+            return {'success': True, 'q': geom.fixAngle(sol.x)}
         else:
-            raise RuntimeError("Inverse kinematics did not converge")
+            return {'success': False}
+            #raise RuntimeError("Inverse kinematics did not converge")
         
     def ik_all(self, pee, N=4):
         """ try to calculate all different ik solutions by using
@@ -94,12 +96,66 @@ class Robot:
 #        print(grid.shape)
         
         q_list = []
+        success = False
         for i in range(len(grid)):
-            qi = self.ik(pee, grid[i])
-            if not inList(qi, q_list):
-                q_list.append(qi)
-#            print(qi)
-        return q_list
+            sol = self.ik(pee, grid[i])
+            if sol['success']:
+                if not inList(sol['q'], q_list):
+                    q_list.append(sol['q'])
+                    success = True
+        if success:
+            return {'success': True, 'q': q_list}
+        else:
+            return {'success': False}
+    
+    def ik_all_3R(self, p):
+        l1 = self.l[0]; l2 = self.l[1]; l3 = self.l[2];
+        # define variables for readability
+        x, y, phi = (p[0], p[1], p[2])
+        q_up = [0, 0, 0]
+        q_do = [0, 0, 0]
+        
+        reachable = False
+        
+        if (l1 + l2 + l3) >= np.sqrt(x**2 + y**2):
+            # coordinates of end point second link
+            pwx = x - l3 * np.cos(phi)
+            pwy = y - l3 * np.sin(phi)
+            R2 = pwx**2 + pwy**2
+            if (l1 + l2) >= np.sqrt(R2):
+                reachable = True
+                # calculate q2
+                c2 = (R2 - l1**2 - l2**2) / (2*l1*l2)
+                s2 = np.sqrt(1 - c2**2)
+                q_up[1] = np.arctan2(s2, c2) # elbow up
+                q_do[1] = np.arctan2(-s2, c2) # elbow down
+                
+                # calculate q1
+                temp = (l1 + l2 * c2)
+                s1_up = (temp * pwy - l2 * s2 * pwx) / R2
+                c1_up = (temp * pwx + l2 * s2 * pwy) / R2
+                s1_do = (temp * pwy + l2 * s2 * pwx) / R2
+                c1_do = (temp * pwx - l2 * s2 * pwy) / R2
+                q_up[0] = np.arctan2(s1_up, c1_up)
+                q_do[0] = np.arctan2(s1_do, c1_do)
+                
+                # finally q3
+                q_up[2] = phi - q_up[0] - q_up[1]
+                q_do[2] = phi - q_do[0] - q_do[1]
+        if reachable:
+#            check_up = self.checkJointLimits(q_up)
+#            check_do = self.checkJointLimits(q_do)
+#            if check_up & check_do:
+#                return {'success': True, 'q': [q_up, q_do]}
+#            elif check_up:
+#                return {'success': True, 'q': [q_up]}
+#            elif check_do:
+#                return {'success': True, 'q': [q_do]}
+#            else:
+#                return {'success': False, 'info': "joint limits"}
+            return {'success': True, 'q': [q_up, q_do]}
+        else:
+            return {'success': False, 'info': "unreachable"}
     
     def transform(self, i, qi):
         """ Get the homogeneous transformation matrix for joint i
@@ -122,7 +178,6 @@ class Robot:
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    import numpy as np
     rob = Robot([1, 1, 0.5], [0.1, 0.05, 0.05])
     
     print("test vector q1")
@@ -145,18 +200,38 @@ if __name__ == "__main__":
     print("-------------")
     q_init = [-0.2, 0.1, 0.1]
     p = [1.02359743,  2.09419032,  0.88539816]
-    q_sol = rob.ik(p, q_init)
-    print(q_sol)
-    rob.plot(ax, q_sol, 'g')
+    sol = rob.ik(p, q_init)
+    if sol['success']:
+        print(sol['q'])
+        rob.plot(ax, sol['q'], 'g')
+    else:
+        print("ik failed")
     
     print("test ik all")
     sol2 = rob.ik_all(p)
-    
-    fig = plt.figure()
-    ax2 = fig.gca()
-    plt.axis('equal')
-    plt.axis([-1, 3, -1, 3])
-    for qi in sol2:
-        print(qi)
-        rob.plot(ax2, qi, 'b')
+    if sol2['success']:
+        sol2 = sol2['q']
+        fig = plt.figure()
+        ax2 = fig.gca()
+        plt.axis('equal')
+        plt.axis([-1, 3, -1, 3])
+        for qi in sol2:
+            print(qi)
+            rob.plot(ax2, qi, 'b')
+    else:
+        print("ik_all failed")
+        
+    print("test ik all 3R")
+    sol2 = rob.ik_all_3R(p)
+    if sol2['success']:
+        sol2 = sol2['q']
+        fig = plt.figure()
+        ax2 = fig.gca()
+        plt.axis('equal')
+        plt.axis([-1, 3, -1, 3])
+        for qi in sol2:
+            print(qi)
+            rob.plot(ax2, qi, 'b')
+    else:
+        print("ik_all failed")
     

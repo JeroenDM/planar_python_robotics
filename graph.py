@@ -1,98 +1,97 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov  3 15:58:00 2017
+Created on Thu Nov 16 10:23:28 2017
 
 @author: jeroen
 """
 
+import networkx as nx
 import numpy as np
 
-class Edge:
-    def __init__(self, id_int, from_id, to_id, properties = {}):
-        """ create new edge
-        
-        Parameters
-        ----------
-        properties: dict
-            A dictionary with edge properties that can be freely choosen
-        
-        Returns
-        -------
-        int
-            the unique id of this edge
-        """
-        self.id = id_int
-        self.fid = from_id
-        self.tid = to_id
-        self.prop = properties
 
-class Node:
-    def __init__(self, parent):
-        self.id = id(self)
-        if parent:
-            self.pid = parent.id
-        else:
-            self.pid = None # has no parent
-        self.childs = []
-    
-    def add_child(self, child):
-        self.childs.append(child)
-    
-    def __str__(self):
-        num_c = len(self.childs)
-        msg = "A node with " + str( num_c ) + " childs.\n"
-#        if num_c > 0:
-#            msg += "In turn having:\n--------------------\n"
-#            for c in self.childs:
-#                msg += str(c) + "\n"
-        return msg
+""" graph functions """
 
-#class Graph:
-#    """ Implementation of a directed graph """
-#    def __init__(self):
-#        self.vertice_counter = 0
-#        self.path_id_counter = 0
-#        self.vertices = [] # ordered by path id in 2d list ?
-#        self.edge_counter = 0
-#        self.edges = []
-#        self.ll = [] # link list for fast lookup
-#
-#    def add_vertice(self, path_id):
-#        new_vert = Vertice(self.vertice_counter, path_id)
-#        
-#        if 
-#        self.vertices.append(new_vert)
-#        self.vertice_counter += 1
-#        self.ll.append([])
-#        return new_vert
-#    
-#    def add_edge(self, vert_from, vert_to, **arg):
-#        new_edge = Edge(self.edge_counter, vert_from.id, vert_to.id, **arg)
-#        self.edges.append(new_edge)
-#        self.edge_counter += 1
-#        self.ll[vert_from.id].append(vert_to.id)
-#        return new_edge
+def create_graph(Q, CM):
+    N = len(Q)
+    Q_size = [len(q) for q in Q]
+    G = nx.DiGraph()
+    source_nodes = []
+    target_nodes = []
+    for i in range(N):
+        for j in range(Q_size[i]):
+            # add nodes
+            node = str(i) + "|" + str(j)
+            G.add_node(node)
+            
+            # remeber source nodes
+            if i == 0:
+                source_nodes.append(node)
+            # remember target nodes
+            if i == N-1:
+                target_nodes.append(node)
+            
+            # add edges
+            if i > 0:
+                for k in range(Q_size[i-1]):
+                    prev_node = str(i-1) + "|" + str(k)
+                    G.add_edge(prev_node, node, weight = CM[i-1][k, j])
+    return G, source_nodes, target_nodes
 
+def shortest_path(G, source_nodes, target_nodes):
+    f_opt = np.inf
+    for n in source_nodes:
+        f_vec = nx.single_source_dijkstra_path_length(G, source=n)
+        f_vec = [f_vec[key] for key in target_nodes]
+        f_min = min(f_vec)
+        if f_min < f_opt:
+            f_opt = f_min
+            n_opt = target_nodes[f_vec.index(f_opt)]
+            path = nx.dijkstra_path(G, source = n, target=n_opt)
+    return f_opt, path
+
+def get_shortest_path(Q):
+    cost = create_cost_matrices(Q)
+    graph, sn, tg = create_graph(Q, cost)
+    del cost
+    f_opt, path = shortest_path(graph, sn, tg)
+    path = [int(s.split("|")[1]) for s in path]
+    return f_opt, path
+
+""" util functions """
+
+def create_cost_matrices(Q):
+    CM = []
+    N = len(Q)
+    Q_size = [len(q) for q in Q]
+    for i in range(N-1):
+        n1 = Q_size[i]
+        n2 = Q_size[i+1]
+        Mi = np.zeros((n1, n2))
+        for j in range(n1):
+            for k in range(n2):
+                Mi[j, k] = np.sum(np.abs(Q[i][j] - Q[i+1][k]))
+        CM.append(Mi)
+    return CM
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    from numpy.random import rand
+    # create random testdata
+    #np.random.seed(42)
+    N_test = 8
+    Q_size_test = [15]*N_test # change this if change N
+    Q_test = [rand(Q_size_test[i], 3) for i in range(N_test)]
     
-    main_node = Node(None) # -1 meaning no parent
+    cost = create_cost_matrices(Q_test)
+    graph, sn, tg = create_graph(Q_test, cost)
     
-    # add child for every traj point
-    for i in range(4):
-        c = Node(main_node)
-        main_node.add_child(c)
-        
-        # add random joint points
-        nj = np.random.randint(1, 3)
-        for j in range(nj):
-            cc = Node(c)
-            c.add_child(cc)
+    plt.figure()
+    nx.draw_spectral(graph, with_labels=True)
     
-    print(main_node)
-    
-    
-    
-    
-    
+    fs, path = shortest_path(graph, sn, tg)
+    path = [int(s.split("|")[1]) for s in path]
+    print(fs, path)
+
+
+
