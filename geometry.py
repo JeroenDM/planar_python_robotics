@@ -127,10 +127,10 @@ class Rectangle:
                 
         return col
     
-    def plot(self, ax, *arg):
+    def plot(self, ax, *arg, **karg):
         p = self.p
         p = np.vstack((p, p[0]))
-        ax.plot(p[:, 0], p[:, 1], *arg)
+        ax.plot(p[:, 0], p[:, 1], *arg, **karg)
 
 
 if __name__ == "__main__":
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     plt.axis('equal')
     plt.axis([-10, 10, -10, 10])
     rect1.plot(ax, 'g.-')
-    rect2.plot(ax, 'b.-')
+    rect2.plot(ax, '.-', color=(0.1, 0.1, 0.1, 0.5))
     
     px = rect1.project([1, 0])
     py = np.zeros(4)

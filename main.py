@@ -35,11 +35,12 @@ plt.axis([-1, 3, -1, 3])
 xt = [tp.p_nominal[0] for tp in traj]
 yt = [tp.p_nominal[1] for tp in traj]
 ax.plot(xt, yt, '*')
-robot1.plot(ax, [0.1, 0.1, 0.1])
+robot1.plot(ax, [0.1, 0.1, 0.1], 'k')
 
 # create collision objects
 sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
       Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
+#sc1.append(Rectangle(1.09, 0.5, 0.2, 1.0, 0.0))
 sc2 = [Rectangle(0.5, 1.1, 0.1, 0.2, -0.3),
       Rectangle(0.2, 1.0, 0.1, 0.5, 0.2)]
 plot_scene(ax, sc1, 'g')
@@ -50,5 +51,4 @@ f, p = get_shortest_path(jt)
 print(f, p)
 q_path = [jt[i][p[i]] for i in range(len(jt))]
 
-for qi in q_path:
-    robot1.plot(ax, qi)
+robot1.plot_path(ax, q_path)

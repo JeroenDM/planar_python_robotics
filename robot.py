@@ -43,6 +43,12 @@ class Robot:
         for recti in self.getRectangles(q):
             recti.plot(axes_handle, *arg)
     
+    def plot_path(self, axes_handle, qp):
+        alpha = np.linspace(1, 0, len(qp))
+        for i, qi in enumerate(qp):
+            for rect in self.getRectangles(qi):
+                rect.plot(axes_handle, color=(0.1, 0.2, 0.5, alpha[i]))
+    
     def check_collision(self, q, col_rect):
         for recti in self.getRectangles(q):
             for rectj in col_rect:
