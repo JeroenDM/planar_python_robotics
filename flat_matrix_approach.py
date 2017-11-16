@@ -107,6 +107,7 @@ def to_joint_space(cart_points, robot):
 if __name__ == "__main__":
     from robot import Robot
     import matplotlib.pyplot as plt
+    from graph import get_shortest_path
     print("some testing")
     
     fig = plt.figure()
@@ -140,12 +141,22 @@ if __name__ == "__main__":
     rob = Robot([1, 1, 0.5], [0.02, 0.02, 0.02])
     joint_traj = []
     for cart_vec in cart_traj:
+        qi = []
         for cart_pt in cart_vec:
             sol = rob.ik_all_3R(cart_pt)
             if sol['success']:
-                joint_traj.append(sol)
+                for qsol in sol['q']:
+                    qi.append(qsol)
             else:
                 print("no solution found for " + str(cart_pt))
+        joint_traj.append(np.array(qi))
+    
+    f, p = get_shortest_path(joint_traj)
+    print(f, p)
+    q_path = [joint_traj[i][p[i]] for i in range(len(joint_traj))]
+    
+    for qi in q_path:
+        rob.plot(ax, qi)
 #    
 #    gg = discretize(pt)
 #    print(gg)

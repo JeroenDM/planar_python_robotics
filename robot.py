@@ -32,11 +32,23 @@ class Robot:
     def getLinkShape(self, i, xi, yi, phii):
         return geom.Rectangle(xi, yi, self.l[i], self.w[i], phii)
     
-    def plot(self, axes_handle, q, *arg):
+    def getRectangles(self, q):
         p = self.fk(q)
+        rect = []
         for i in range(self.ndof):
-            recti = self.getLinkShape(i, p[i, 0], p[i, 1], p[i+1, 2])
+            rect.append(self.getLinkShape(i, p[i, 0], p[i, 1], p[i+1, 2]))
+        return rect
+    
+    def plot(self, axes_handle, q, *arg):
+        for recti in self.getRectangles(q):
             recti.plot(axes_handle, *arg)
+    
+    def check_collision(self, q, col_rect):
+        for recti in self.getRectangles(q):
+            for rectj in col_rect:
+                if recti.inCollision(rectj):
+                    return True
+        return False
     
     def fk(self, q):
         """ return array with all links and end effector position
