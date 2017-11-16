@@ -7,7 +7,6 @@ Created on Thu Nov 16 12:41:14 2017
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from graph import get_shortest_path
 from path import tolValue, TrajectoryPt, cart_to_joint
