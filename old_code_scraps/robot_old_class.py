@@ -11,80 +11,84 @@ import geometry as geom
 from scipy.optimize import root
 
 # https://stackoverflow.com/questions/23979146/check-if-numpy-array-is-in-list-of-numpy-arrays
-#test for approximate equality (for floating point types)
+# test for approximate equality (for floating point types)
+
+
 def inList(myarr, list_arrays):
     return next((True for elem in list_arrays if elem.size == myarr.size and np.allclose(elem, myarr)), False)
+
 
 class Robot:
     """ serial links robot in 2D
     
     assume base at (0, 0)
-    assume joint limits -pi -> pi
-    """
-    
+    assume joint limits -2*pi -> 2*pi
+    """ 
     def __init__(self, link_length, link_width):
+        """ Robot with a rectangle for every link """
+        
         if len(link_length) != len(link_width):
             raise ValueError("l and d must have the same length.")
+
         self.ndof = len(link_length)
         self.l = link_length
         self.w = link_width
-    
-    def getLinkShape(self, i, xi, yi, phii):
+
+    def plot(self, axes_handle, q, *arg, **karg):
+        """ Plot the robot with joint position q """
+        for recti in self.get_rectangles(q):
+            recti.plot(axes_handle, *arg, **karg)
+
+    def plot_path(self, axes_handle, qp):
+        """ Plot a list of joint positions """
+        
+        # draw robot more transparant to the end of the path
+        alpha = np.linspace(1, 0, len(qp))
+        
+        for i, qi in enumerate(qp):
+            for rect in self.get_rectangles(qi):
+                rect.plot(axes_handle, color=(0.1, 0.2, 0.5, alpha[i]))
+
+    def check_collision(self, q, other_rectangles):
+        """ Check for collision between the robot other_rectangles """
+        
+        for recti in self.get_rectangles(q):
+            for rectj in other_rectangles:
+                if recti.in_collision(rectj):
+                    return True # exit if a collision is found
+        return False
+
+    def get_link_shape(self, i, xi, yi, phii):
+        """ Get a rectangle of a specific robot with pose [xi, yi, phii] """
         return geom.Rectangle(xi, yi, self.l[i], self.w[i], phii)
-    
-    def getRectangles(self, q):
-        p = self.fk(q)
+
+    def get_rectangles(self, q):
+        """ Get a list with rectangles for all robot links in position q """
+        p = self.fk_all_links(q)
         rect = []
         for i in range(self.ndof):
-            rect.append(self.getLinkShape(i, p[i, 0], p[i, 1], p[i+1, 2]))
+            rect.append(self.get_link_shape(i, p[i, 0], p[i, 1], p[i+1, 2]))
         return rect
-    
-    def plot(self, axes_handle, q, *arg):
-        for recti in self.getRectangles(q):
-            recti.plot(axes_handle, *arg)
-    
-    def plot_path(self, axes_handle, qp):
-        alpha = np.linspace(1, 0, len(qp))
-        for i, qi in enumerate(qp):
-            for rect in self.getRectangles(qi):
-                rect.plot(axes_handle, color=(0.1, 0.2, 0.5, alpha[i]))
-    
-    def check_collision(self, q, col_rect):
-        for recti in self.getRectangles(q):
-            for rectj in col_rect:
-                if recti.inCollision(rectj):
-                    return True
-        return False
-    
-    def fk(self, q):
-        """ return array with all links and end effector position
-        and orientation
+
+    def fk_all_links(self, q):
+        """ Calculate position of all links, and the end effector """
         
-        Base frame 0
-        Link frame 1 -> ndof
-        """
         pos = np.zeros((self.ndof+1, 3))
         pos[0, 2] = 0
         for i in range(self.ndof):
-            pos[i+1, 2] = pos[i, 2] + q[i] # absolute orientation link i
+            pos[i+1, 2] = pos[i, 2] + q[i]  # absolute orientation link i
             pos[i+1, 0] = pos[i, 0] + self.l[i] * np.cos(pos[i+1, 2])
             pos[i+1, 1] = pos[i, 1] + self.l[i] * np.sin(pos[i+1, 2])
         return pos
-    
-    def fk_short(self, q):
-        """ only return end effector position and orientation
-        """
-        return self.fk(q)[-1]
-#        Tee = np.eye(3)
-#        for i in range(self.ndof):
-#            Ti = self.transform(i, q[i])
-#            Tee = np.dot(Tee, Ti)
-#        return Tee[:2, 2]
+
+    def fk(self, q):
+        """ Calculate end effector position and orientation """
         
+        return self.fk_all_links(q)[-1]
+
     def ik(self, pee, q0):
-        """ solve inverse kinematic equations
+        """ Solve inverse kinematic equation pee = fk(q)
         
-        pee = fk(q)
         Parameters
         ----------
         pee : ndarray
@@ -93,26 +97,25 @@ class Robot:
             array or list containing an initial guess for the joint solution
         """
         
-        sol = root(lambda x: self.fk_short(x) - pee, q0)
+        sol = root(lambda x: self.fk(x) - pee, q0)
+
         if sol['success']:
-            #print(sol)
-            #return sol.x
-            return {'success': True, 'q': geom.fixAngle(sol.x)}
+            return {'success': True, 'q': geom.normalize_angle(sol.x)}
         else:
             return {'success': False}
             #raise RuntimeError("Inverse kinematics did not converge")
         
     def ik_all(self, pee, N=4):
-        """ try to calculate all different ik solutions by using
-        different random q0 ndof^N times ik calculations !!
-        """
+        """ Get many ik solutions by using many different initial q's """
+        
+        # create random joint angles
         q_range = np.random.rand(N) * 2 * np.pi - np.pi
-        qq = [q_range] * self.ndof
+        qq = [q_range] * self.ndof # TODO: use different random q's
         grid = np.meshgrid(*qq)
         grid = [ grid[i].flatten() for i in range(self.ndof) ]
         grid = np.array(grid).T
-#        print(grid.shape)
         
+        # run numeric ik with different initial conditions
         q_list = []
         success = False
         for i in range(len(grid)):
@@ -121,20 +124,25 @@ class Robot:
                 if not inList(sol['q'], q_list):
                     q_list.append(sol['q'])
                     success = True
+
         if success:
             return {'success': True, 'q': q_list}
         else:
             return {'success': False}
     
-    def ik_all_3R(self, p):
-        l1 = self.l[0]; l2 = self.l[1]; l3 = self.l[2];
+    def ik_analytic_3R(self, p):
+        """ Analytic inverse kinematics for 3 link robot """
+        
         # define variables for readability
+        l1, l2, l3 = (self.l[0], self.l[1], self.l[2])
         x, y, phi = (p[0], p[1], p[2])
+        
+        # initialize output
         q_up = [0, 0, 0]
         q_do = [0, 0, 0]
-        
         reachable = False
         
+        # start calculations
         if (l1 + l2 + l3) >= np.sqrt(x**2 + y**2):
             # coordinates of end point second link
             pwx = x - l3 * np.cos(phi)
@@ -147,7 +155,6 @@ class Robot:
                 s2 = np.sqrt(1 - c2**2)
                 q_up[1] = np.arctan2(s2, c2) # elbow up
                 q_do[1] = np.arctan2(-s2, c2) # elbow down
-                
                 # calculate q1
                 temp = (l1 + l2 * c2)
                 s1_up = (temp * pwy - l2 * s2 * pwx) / R2
@@ -156,43 +163,14 @@ class Robot:
                 c1_do = (temp * pwx - l2 * s2 * pwy) / R2
                 q_up[0] = np.arctan2(s1_up, c1_up)
                 q_do[0] = np.arctan2(s1_do, c1_do)
-                
                 # finally q3
                 q_up[2] = phi - q_up[0] - q_up[1]
                 q_do[2] = phi - q_do[0] - q_do[1]
+
         if reachable:
-#            check_up = self.checkJointLimits(q_up)
-#            check_do = self.checkJointLimits(q_do)
-#            if check_up & check_do:
-#                return {'success': True, 'q': [q_up, q_do]}
-#            elif check_up:
-#                return {'success': True, 'q': [q_up]}
-#            elif check_do:
-#                return {'success': True, 'q': [q_do]}
-#            else:
-#                return {'success': False, 'info': "joint limits"}
             return {'success': True, 'q': [q_up, q_do]}
         else:
             return {'success': False, 'info': "unreachable"}
-    
-    def transform(self, i, qi):
-        """ Get the homogeneous transformation matrix for joint i
-        
-        The transformation matrix in function of joint movement i expresses
-        frame i relative to i-1
-        
-        Parameters
-        ----------
-        i : int
-            joint number from 0 to ndof-1
-        
-        Returns
-        -------
-        numpy.ndarray
-            Homogenous transformation matrix for joint i
-            expressing frame i relative to i-1
-        """
-        return geom.transform(qi, self.l[i])
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -201,8 +179,8 @@ if __name__ == "__main__":
     print("test vector q1")
     q1 = [np.pi/2, -np.pi/4, 0.1]
     print(q1)
-    pos1 = rob.fk(q1)
-    pos1b = rob.fk_short(q1)
+    pos1 = rob.fk_all_links(q1)
+    pos1b = rob.fk(q1)
     print("caluclate all fk")
     print(pos1)
     print("short fk")
@@ -240,7 +218,7 @@ if __name__ == "__main__":
         print("ik_all failed")
         
     print("test ik all 3R")
-    sol2 = rob.ik_all_3R(p)
+    sol2 = rob.ik_analytic_3R(p)
     if sol2['success']:
         sol2 = sol2['q']
         fig = plt.figure()

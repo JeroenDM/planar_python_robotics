@@ -8,14 +8,14 @@ Created on Thu Nov 16 12:41:14 2017
 
 import matplotlib.pyplot as plt
 
-from graph import get_shortest_path
-from path import tolValue, TrajectoryPt, cart_to_joint
-from robot import Robot
-from geometry import Rectangle
-from scene import plot_scene
+from ppr.graph import get_shortest_path
+from ppr.path import TolerancedNumber, TrajectoryPt, cart_to_joint
+from ppr.geometry import Rectangle
+from example_robots import Robot_3R as Robot
+from ppr.scene import plot_scene
 # create trajectory
-dx    = tolValue(1, 0.9, 1.1, samples=3)
-angle = tolValue(0.0, -0.5, 0.5, samples=5)
+dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
+angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
 
 traj = []
 N_traj = 10

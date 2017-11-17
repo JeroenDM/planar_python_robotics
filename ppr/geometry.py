@@ -23,7 +23,7 @@ def transform(angle, distance):
     T[1, 2] = distance * np.sin(angle)
     return T
 
-def fixAngle(x):
+def normalize_angle(x):
     """ for an input or input vector rescale an angle
         to fit in the interval (0 to pi or) -p/2 to pi/2
     """
@@ -57,7 +57,7 @@ def rotate(point, angle):
 
 """ classes """
 class Rectangle:
-    """ rectangles to represent robot link    
+    """ Rectangle plotting, handling and collision detection   
     """
     def __init__(self, x, y, dx, dy, angle):
         self.x = x
@@ -112,7 +112,7 @@ class Rectangle:
             px[i] = rotate(p[i], angle)[0]
         return px
     
-    def inCollision(self, rect2, tol=1e-9):
+    def in_collision(self, rect2, tol=1e-9):
         n1 = self.getNormals()
         n2 = rect2.getNormals()
         n_all = np.vstack((n1, n2))
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     
     # test fix angle
     x_test = np.random.rand(20)*16 - 8
-    x_fix = fixAngle(x_test)
+    x_fix = normalize_angle(x_test)
     px = [np.cos(x_test), np.cos(x_fix)]
     py = [np.sin(x_test), np.sin(x_fix)]
     print(x_test)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     py = np.zeros(4)
     ax.plot(px, py, 'r*')
     
-    res = rect1.inCollision(rect2)
+    res = rect1.in_collision(rect2)
     print("Do they collide: " + str(res))
     
     # test random set of rectangles
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         rect_a_collides = False
         for rect_b in rectangles:
             if rect_a != rect_b:
-                if rect_a.inCollision(rect_b):
+                if rect_a.in_collision(rect_b):
                     rect_a_collides = True
                     break
         if rect_a_collides:

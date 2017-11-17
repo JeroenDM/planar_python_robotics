@@ -8,10 +8,12 @@ Created on Thu Nov 16 12:29:32 2017
 
 import numpy as np
 
-class tolValue:
+class TolerancedNumber:
     def __init__(self, nominal, lower_bound, upper_bound, samples=10):
-        """ nominal does not have to be in the middle,
-        it is the preffered value when we ever calculate some kind of cost
+        """ Create a range of possible numbers
+        
+        Nominal does not have to be in the middle,
+        it is the preffered value when we ever calculate some kind of cost.
         """
         if nominal < lower_bound or nominal > upper_bound:
             raise ValueError("nominal value must respect the bounds")
@@ -28,14 +30,13 @@ class tolValue:
 
 class TrajectoryPt:
     def __init__(self, pee):
-        """
-        self.x = p[0]
-        self.y = p[1]
-        self.phi = p[2]
+        """ Create a trajectory point expressed in cartesian space
+        
+        pee = [x_position, y_position, angle last joint with x axis]
         """
         self.dim = len(pee)
         self.p = pee
-        self.hasTolerance = [isinstance(pee[i], tolValue) for i in range(self.dim)]
+        self.hasTolerance = [isinstance(pee[i], TolerancedNumber) for i in range(self.dim)]
         self.p_nominal = []
         for i in range(self.dim):
             if self.hasTolerance[i]:
@@ -71,7 +72,7 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     for cart_vec in cart_traj:
         qi = []
         for cart_pt in cart_vec:
-            sol = robot.ik_all_3R(cart_pt)
+            sol = robot.ik(cart_pt)
             if sol['success']:
                 for qsol in sol['q']:
                     if check_collision:
@@ -88,8 +89,8 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from robot import Robot
     # create trajectory
-    dx    = tolValue(1, 0.9, 1.1, samples=3)
-    angle = tolValue(0.0, -0.5, 0.5, samples=5)
+    dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
+    angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
     
     traj = []
     N_traj = 10
