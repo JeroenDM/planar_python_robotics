@@ -11,6 +11,7 @@ def plot_scene(axes_handle, scene, *arg):
 
 """ testing """
 if __name__ == "__main__":
+    print("-----test scene.py-----")
     import numpy as np
     import matplotlib.pyplot as plt
     from geometry import Rectangle

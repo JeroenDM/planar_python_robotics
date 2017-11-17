@@ -8,9 +8,13 @@ Created on Thu Nov  2 14:56:47 2017
 
 import numpy as np
 
+print(__name__)
+
 # should find a better fix, but it finally works !
-if __name__ == "__main__":
-    from geometry import Rectangle
+# the name == robot occurs when importing this file
+# from the name == main section of another module in this package
+if __name__ == "__main__" or __name__ == "robot":
+    from geometry import Rectangle 
 else:
     from .geometry import Rectangle
 
@@ -110,7 +114,7 @@ class Robot:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
-    print("run some tests")
+    print("-----test robot.py-----")
     print("--------------")
     fig = plt.figure()
     ax = fig.gca()

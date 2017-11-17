@@ -85,9 +85,10 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
         joint_traj.append(np.array(qi))
     return joint_traj
     
-if __name__ == "__main__":   
+if __name__ == "__main__":
+    print("-----test path.py-----")
     import matplotlib.pyplot as plt
-    from robot import Robot
+#    from robot import Robot
     # create trajectory
     dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
     angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
@@ -107,11 +108,13 @@ if __name__ == "__main__":
     yt = [tp.p_nominal[1] for tp in traj]
     ax.plot(xt, yt, '*')
 
+    # TODO implement ik for general robot
+    # or add example robots to package
     # test robot
-    robot1 = Robot([1, 1, 0.5], [0.02, 0.02, 0.02])
+#    r1 = Robot(['r', 'r', 'r'], [1, 1, 0.5], [0, 0, 0])
     
-    jt = cart_to_joint(robot1, traj)
-    
-    print(len(traj), len(jt))
-    for i in range(len(jt)):
-        print(jt[i].shape)
+#    jt = cart_to_joint(r1, traj)
+#    
+#    print(len(traj), len(jt))
+#    for i in range(len(jt)):
+#        print(jt[i].shape)

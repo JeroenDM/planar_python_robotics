@@ -75,6 +75,7 @@ def create_cost_matrices(Q):
     return CM
 
 if __name__ == "__main__":
+    print("-----test graph.py-----")
     import matplotlib.pyplot as plt
     from numpy.random import rand
     # create random testdata

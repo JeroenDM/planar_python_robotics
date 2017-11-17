@@ -134,6 +134,7 @@ class Rectangle:
 
 
 if __name__ == "__main__":
+    print("-----test geometry.py-----")
     import  matplotlib.pyplot as plt
     
     # test fix angle
