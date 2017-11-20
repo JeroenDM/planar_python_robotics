@@ -63,7 +63,7 @@ class Robot:
     
     def plot_kinematics(self, axes_handle, q, *arg, **karg):
         p = self.fk_all_links(q)
-        axes_handle.plot(p[:, 0], p[:, 1], '.-', *arg, **karg)
+        axes_handle.plot(p[:, 0], p[:, 1], *arg, **karg)
     
     def plot_path_kinematics(self, axes_handle, qp):
         alpha = np.linspace(1, 0.2, len(qp))

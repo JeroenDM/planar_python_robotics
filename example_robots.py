@@ -13,6 +13,7 @@ from ppr.geometry import rotation
 
 # TODO use contructures of base class
 # TODO all in and output numpy arrays ??
+# TODO handle edge case where some of the joint angles are pi or -pi
 
 class Robot_3R(Robot):
     def __init__(self, link_length, link_width=None):
@@ -32,17 +33,18 @@ class Robot_3R(Robot):
         else:
             self.lw = link_width
         self.ll = link_length
-        self.adapt_ll = True
+        self.adapt_ll = False
         self.base = [0, 0, 0]
     
-    def ik(self, p):
+    def ik(self, p, tol=1e-15):
         """ Analytic inverse kinematics for 3 link robot """
+        # tol = tolerance needed for boundary cases
         # base transform only translation for now TODO
         p = np.array(p)
         p[:2] = p[:2] - self.base[:2]
         
         # define variables for readability
-        l1, l2, l3 = (self.ll[0], self.ll[1], self.ll[2])
+        l1, l2, l3 = (self.d[0], self.d[1], self.d[2])
         x, y, phi = (p[0], p[1], p[2])
         
         # initialize output
@@ -52,26 +54,27 @@ class Robot_3R(Robot):
         
         # start calculations
         if (l1 + l2 + l3) >= np.sqrt(x**2 + y**2):
-            # coordinates of end point second link
+            # coordinates of end point second link (w)
             pwx = x - l3 * np.cos(phi)
             pwy = y - l3 * np.sin(phi)
-            R2 = pwx**2 + pwy**2
-            if (l1 + l2) >= np.sqrt(R2):
+            rws = pwx**2 + pwy**2
+            if (l1 + l2) >= np.sqrt(rws):
                 reachable = True
                 # calculate q2
-                c2 = (R2 - l1**2 - l2**2) / (2*l1*l2)
-#                if (1 - c2**2) < 0:
-#                    print("=============")
-#                    print("negative sqrt " + str(p))
+                c2 = (rws - l1**2 - l2**2) / (2*l1*l2)
+                # if c2 exactly 1, it can be a little bit bigger at this point
+                # because of numerical error, then rescale
+                if abs(c2 - 1) < tol:
+                    c2 = np.sign(c2) * 1.0
                 s2 = np.sqrt(1 - c2**2)
                 q_up[1] = np.arctan2(s2, c2) # elbow up
                 q_do[1] = np.arctan2(-s2, c2) # elbow down
                 # calculate q1
                 temp = (l1 + l2 * c2)
-                s1_up = (temp * pwy - l2 * s2 * pwx) / R2
-                c1_up = (temp * pwx + l2 * s2 * pwy) / R2
-                s1_do = (temp * pwy + l2 * s2 * pwx) / R2
-                c1_do = (temp * pwx - l2 * s2 * pwy) / R2
+                s1_up = (temp * pwy - l2 * s2 * pwx) / rws
+                c1_up = (temp * pwx + l2 * s2 * pwy) / rws
+                s1_do = (temp * pwy + l2 * s2 * pwx) / rws
+                c1_do = (temp * pwx - l2 * s2 * pwy) / rws
                 q_up[0] = np.arctan2(s1_up, c1_up)
                 q_do[0] = np.arctan2(s1_do, c1_do)
                 # finally q3
@@ -133,42 +136,55 @@ class Robot_2P3R(Robot):
                     q_sol.append(qi)
         return q_sol
 
+def create_axes_handle():
+    fig = plt.figure()
+    ah = fig.gca()
+    plt.axis('equal')
+    #plt.axis([-1, 3, -1, 3])
+    return ah
+
 def test_ik_3R():
-    N = 3
     r = Robot_3R([0.5, 0.6, 0.3])
+    r.set_base_pose([-1.1, 0.6, 0])
+    N = 4
     qr = np.linspace(-np.pi, np.pi, N)
     grid = np.meshgrid(qr, qr, qr)
-    grid = [ grid[i].flatten() for i in range(N) ]
+    grid = [ grid[i].flatten() for i in range(3) ]
     grid = np.array(grid).T
-    pee = []
-    for qi in grid:
-        pee.append(r.fk(qi))
-    pee = np.array(pee)
     
-    q_sol = []
-    for pi in pee:
-        s = r.ik(pi)
-        if s['success']:
-            q_sol.append(s['q'])
+    q_test = grid
+    #q_test = [[0, 0, 0], [0.5, 1.8, -1.3]]
+    
+    ax = create_axes_handle()
+    for qi in q_test:
+        pi = r.fk(qi)
+        si = r.ik(pi)
+        qs = []
+        if si['success']:
+            qs.append(si['q'])
+            ax.plot(pi[0], pi[1], 'r*')
+            for qj in si['q']:
+                r.plot_kinematics(ax, qj, 'g')
+            if np.allclose(qi, si['q'][0]) or np.allclose(qi, si['q'][1]):
+                pass
+            else:
+                qpi = np.array([np.pi, np.pi, np.pi])
+                if np.any(np.isclose(np.abs(qi), qpi)):
+                    #edge case
+                    pass
+                else:
+                    raise RuntimeError("Ik failed while comparing solutions " +
+                                       str(qi) + "\nto\n" +
+                                       str(si['q']))
         else:
-            raise RuntimeError("ik failed for " + str(pi))
-    return r, pee, q_sol
-    
-        
+            r.plot_kinematics(ax, qi, 'r')
+            raise RuntimeError("Inverse kinematics failed to find solution")
+    print("Test ik succeeded")
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
-    r1, p1, q1 = test_ik_3R()
-    fig = plt.figure()
-    ax1 = fig.gca()
-    plt.axis('equal')
-    plt.axis([-1, 3, -1, 3])
-    plt.title("3R robot")
-    for qq in q1:
-        for q in qq:
-            r1.plot_kinematics(ax1, q)
-    
+    test_ik_3R()
     
     print("test ik 2P3R robot")
     print("--------------")
