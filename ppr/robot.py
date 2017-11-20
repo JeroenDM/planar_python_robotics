@@ -14,9 +14,9 @@ print(__name__)
 # the name == robot occurs when importing this file
 # from the name == main section of another module in this package
 if __name__ == "__main__" or __name__ == "robot":
-    from geometry import Rectangle 
+    from geometry import Rectangle, rotation
 else:
-    from .geometry import Rectangle
+    from .geometry import Rectangle, rotation
 
 
 class Robot:
@@ -41,10 +41,16 @@ class Robot:
         self.lw = [0.05] * self.ndof
         self.ll = j_offset
         self.adapt_ll = True
+        
+        # default base pose
+        self.base = [0, 0, 0]
 
     def set_link_collision_shape(self, lx, ly, lw, ll):
         """ set collision origin and width and length for all links """
         pass
+    
+    def set_base_pose(self, pose):
+        self.base = pose
     
     def check_collision(self, q, other_rectangles):
         """ Check for collision between the robot other_rectangles """
@@ -60,7 +66,7 @@ class Robot:
         axes_handle.plot(p[:, 0], p[:, 1], '.-', *arg, **karg)
     
     def plot_path_kinematics(self, axes_handle, qp):
-        alpha = np.linspace(1, 0, len(qp))
+        alpha = np.linspace(1, 0.2, len(qp))
         for i, qi in enumerate(qp):
             self.plot_kinematics(axes_handle, qi, color=(0.06, 0.59, 0.13, alpha[i]))
 
@@ -109,7 +115,20 @@ class Robot:
                 pos[i+1, 1] = pos[i, 1] + q[i] * np.sin(pos[i+1, 2])
             else:
                 raise ValueError("wrong joint type: " + self.jt[i])
+        
+        # transform from base to world
+        if self.base[2] == 0:
+            # only translation
+            pos[:, :2] = pos[:, :2] + np.array(self.base)[:2]
+        else:
+            pos[:, 2] += self.base[2]
+            R = rotation(self.base[2])
+            pos[:, :2] = np.dot(R, pos[:, :2].T).T + self.base[:2]
         return pos
+    
+    def fk(self, q):
+        """ Forward kinematics """
+        return self.fk_all_links(q)[-1]
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -125,10 +144,14 @@ if __name__ == "__main__":
     qt = np.array([qr, qr, qr]).T
     
     r1 = Robot(['r', 'r', 'r'], [1, 1, 0.5], [0, 0, 0])
+    r1.set_base_pose([0.3, 0.6, 0])
     r1.plot_path_kinematics(ax, qt)
     
-    dr = np.linspace(0.5, 1, 10)
-    qt = np.array([dr, dr, qr, qr]).T
-    r2 = Robot(['p', 'p', 'r', 'r'], [1, 1, 0.5, 0.5], [1.5, -1.0, 0, 0])
-    r2.plot_path_kinematics(ax, qt)
-    r2.plot_path(ax, qt)
+    r1.set_base_pose([0.3, 0.3, -0.5])
+    r1.plot_path_kinematics(ax, qt)
+    
+#    dr = np.linspace(0.5, 1, 10)
+#    qt = np.array([dr, dr, qr, qr]).T
+#    r2 = Robot(['p', 'p', 'r', 'r'], [1, 1, 0.5, 0.5], [1.5, -1.0, 0, 0])
+#    r2.plot_path_kinematics(ax, qt)
+#    r2.plot_path(ax, qt)
