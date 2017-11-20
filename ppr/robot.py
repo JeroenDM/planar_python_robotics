@@ -8,8 +8,6 @@ Created on Thu Nov  2 14:56:47 2017
 
 import numpy as np
 
-print(__name__)
-
 # should find a better fix, but it finally works !
 # the name == robot occurs when importing this file
 # from the name == main section of another module in this package

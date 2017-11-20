@@ -36,7 +36,7 @@ class Robot_3R(Robot):
         self.adapt_ll = False
         self.base = [0, 0, 0]
     
-    def ik(self, p, tol=1e-15):
+    def ik(self, p, tol=1e-12):
         """ Analytic inverse kinematics for 3 link robot """
         # tol = tolerance needed for boundary cases
         # base transform only translation for now TODO
@@ -64,11 +64,16 @@ class Robot_3R(Robot):
                 c2 = (rws - l1**2 - l2**2) / (2*l1*l2)
                 # if c2 exactly 1, it can be a little bit bigger at this point
                 # because of numerical error, then rescale
+                # TODO far from all edge cases are catched
                 if abs(c2 - 1) < tol:
                     c2 = np.sign(c2) * 1.0
-                s2 = np.sqrt(1 - c2**2)
-                q_up[1] = np.arctan2(s2, c2) # elbow up
-                q_do[1] = np.arctan2(-s2, c2) # elbow down
+                    s2 = 0.0
+                    q_up[1] = np.arctan2(0, c2) # elbow up
+                    q_do[1] = -np.arctan2(0, c2) # elbow down
+                else:
+                    s2 = np.sqrt(1 - c2**2)
+                    q_up[1] = np.arctan2(s2, c2) # elbow up
+                    q_do[1] = np.arctan2(-s2, c2) # elbow down
                 # calculate q1
                 temp = (l1 + l2 * c2)
                 s1_up = (temp * pwy - l2 * s2 * pwx) / rws
@@ -110,8 +115,10 @@ class Robot_2P3R(Robot):
     def ik(self, p, q_fixed = [0, 0]):
         """ Because ndof > len(p), two joints are fixed for ik """
         
-        q_fixed = np.append(np.array(q_fixed), 0)
-        self.sub_robot.set_base_pose(q_fixed)
+        q_base = [0, 0, 0]
+        q_base[0] = q_fixed[1]
+        q_base[1] = q_fixed[0]
+        self.sub_robot.set_base_pose(q_base)
         sub_sol = self.sub_robot.ik(p)
         if sub_sol['success']:
             # add fixed joints to solution
@@ -121,7 +128,7 @@ class Robot_2P3R(Robot):
             sub_sol['q'] = q_sol
         return sub_sol
 
-    def ik_discrete(self, p, n_sample = 10):
+    def ik_discrete(self, p, n_sample = 5):
         q1 = TolerancedNumber(0.5, 0, 1, samples=n_sample)
         q2 = TolerancedNumber(0.5, 0, 1.5, samples=n_sample)
         grid = np.meshgrid(q1.range, q2.range)
@@ -134,57 +141,14 @@ class Robot_2P3R(Robot):
             if s['success']:
                 for qi in s['q']:
                     q_sol.append(qi)
-        return q_sol
-
-def create_axes_handle():
-    fig = plt.figure()
-    ah = fig.gca()
-    plt.axis('equal')
-    #plt.axis([-1, 3, -1, 3])
-    return ah
-
-def test_ik_3R():
-    r = Robot_3R([0.5, 0.6, 0.3])
-    r.set_base_pose([-1.1, 0.6, 0])
-    N = 4
-    qr = np.linspace(-np.pi, np.pi, N)
-    grid = np.meshgrid(qr, qr, qr)
-    grid = [ grid[i].flatten() for i in range(3) ]
-    grid = np.array(grid).T
-    
-    q_test = grid
-    #q_test = [[0, 0, 0], [0.5, 1.8, -1.3]]
-    
-    ax = create_axes_handle()
-    for qi in q_test:
-        pi = r.fk(qi)
-        si = r.ik(pi)
-        qs = []
-        if si['success']:
-            qs.append(si['q'])
-            ax.plot(pi[0], pi[1], 'r*')
-            for qj in si['q']:
-                r.plot_kinematics(ax, qj, 'g')
-            if np.allclose(qi, si['q'][0]) or np.allclose(qi, si['q'][1]):
-                pass
-            else:
-                qpi = np.array([np.pi, np.pi, np.pi])
-                if np.any(np.isclose(np.abs(qi), qpi)):
-                    #edge case
-                    pass
-                else:
-                    raise RuntimeError("Ik failed while comparing solutions " +
-                                       str(qi) + "\nto\n" +
-                                       str(si['q']))
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
         else:
-            r.plot_kinematics(ax, qi, 'r')
-            raise RuntimeError("Inverse kinematics failed to find solution")
-    print("Test ik succeeded")
+            return {'success' : False, 'info': "unreachable"}
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     
-    test_ik_3R()
     
     print("test ik 2P3R robot")
     print("--------------")
@@ -201,8 +165,8 @@ if __name__ == "__main__":
 #    qt = np.array([dr, dr, qr, qr, qr]).T
 #    r3.plot_path_kinematics(ax, qt)
     
-#    q_test = [0.5, 0.3, 0.2, -0.1, 1.1]
-#    pee = r3.fk_all_links(q_test)[-1]
+    q_test = [0.5, 0.3, 0.2, -0.1, 1.1]
+    pee = r3.fk_all_links(q_test)[-1]
 #    print("test fk 2p3r:")
 #    print(q_test)
 #    print(pee)
@@ -226,15 +190,17 @@ if __name__ == "__main__":
 #    else:
 #        print("ik 3R robot failed")
     
-#    print("test discrete ik")
-#    sol = r3.ik_discrete(pee)
-#    
-#    fig = plt.figure()
-#    ax3 = fig.gca()
-#    plt.axis('equal')
-#    plt.axis([-1, 3, -1, 3])
-#    plt.title("ik discrete 2P3R Robot")
-#    r3.plot_path_kinematics(ax3, sol[1:20])
+    print("test discrete ik")
+    sol = r3.ik_discrete(pee)
+    
+    if sol['success']:
+        q_sol = sol['q']
+        fig = plt.figure()
+        ax3 = fig.gca()
+        plt.axis('equal')
+    #    plt.axis([-1, 3, -1, 3])
+        plt.title("ik discrete 2P3R Robot")
+        r3.plot_path_kinematics(ax3, q_sol)
     
 #    print("test ik 3R robot")
 #    print("--------------")

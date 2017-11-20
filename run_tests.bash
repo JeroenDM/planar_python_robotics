@@ -1,9 +1,9 @@
 # run all .py scripts in this folder, and pytest
-#echo "========================================="
-#rm -rf __pycache
-#echo "Running pytest"
-#echo "========================================="
-#pytest
+rm -rf __pycache
+echo "========================================="
+echo "Running pytest"
+echo "========================================="
+pytest
 echo "========================================="
 echo "Running python scripts in this folder"
 echo "========================================="

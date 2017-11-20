@@ -84,6 +84,35 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
                 print("no solution found for " + str(cart_pt))
         joint_traj.append(np.array(qi))
     return joint_traj
+
+def cart_to_joint_d(robot, traj_points, check_collision = False, scene=None):
+    # get sampled version of trajectory points
+    cart_traj = []
+    for pt in traj_points:
+        cart_traj.append(discretize(pt))
+    
+    if check_collision:
+        if scene == None:
+            raise ValueError("scene is needed for collision checking")
+    # solve inverse kinematics for every samples traj point
+    joint_traj = []
+    for cart_vec in cart_traj:
+        qi = []
+        for cart_pt in cart_vec:
+            sol = robot.ik_discrete(cart_pt)
+#            print("Ik solution found for traj point " + str(cart_pt))
+#            print(len(sol))
+            if sol['success']:
+                for qsol in sol['q']:
+                    if check_collision:
+                        if not robot.check_collision(qsol, scene):
+                            qi.append(qsol)
+                    else:
+                        qi.append(qsol)
+            else:
+                print("no solution found for " + str(cart_pt))
+        joint_traj.append(np.array(qi))
+    return joint_traj
     
 if __name__ == "__main__":
     print("-----test path.py-----")
