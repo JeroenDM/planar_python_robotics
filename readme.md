@@ -20,3 +20,6 @@ The inverse kinematics is where it get's interesting. The basic assumtion is to 
 
 ### The planner
 The planner should give an esimate of the required calculation time, to warn the user if the required planning problem is sampled to fine. A planning graph is construced and the shorted path is found.
+
+### The optimizer
+After a course path plan is formulated, the trajectory should be furter optimized. An optimization problem if formulated including a dynamic model of the robot and while respecting torque limits.
