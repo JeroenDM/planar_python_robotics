@@ -128,6 +128,81 @@ class Robot:
     def fk(self, q):
         """ Forward kinematics """
         return self.fk_all_links(q)[-1]
+    
+    def euler_newton(self, q, dq, ddq):
+        """ Euler-Netwon recursive algorithm from book Sicilliano """
+        ndof = self.ndof
+        
+        # initialize vectors for solution (base at index 0)
+        # i = 0 -> base
+        # i = ndof+1 - > last link
+        # assume base is not moving TODO
+        W  = np.zeros(ndof + 1) # link angular velocity
+        dW = np.zeros(ndof + 1) # link angular acceleration
+        A  = np.zeros((ndof + 1, 2)) # frame acceleration
+        Ac = np.zeros((ndof + 1, 2)) # link cg acceleration
+        
+        # forward recursion for speed and acceleration
+        for k in range(1, ndof+1):
+            i = k-1 # link index in robot parameters
+            W[k], dW[k], A[k], Ac[k] = self._fwr(i, q[i], dq[i], ddq[i],
+                                                 W[k-1], dW[k-1], A[k-1])
+        
+        # initialize some more vectors (OTHER INDEX DEFINITION than W, dW, ...)
+        # i = ndof+1 -> end effector
+        # i = 0 - > first link
+        # assume no end effector force or torque
+        F = np.zeros((ndof + 1, 2))
+        M = np.zeros(ndof + 1)
+        t = np.zeros(ndof) # joint force or torque
+        
+        # backward recursion for forces and torques
+        print("backward")
+        for k in np.flip(np.arange(ndof), 0):
+            print(k)
+            i = k # link index in robot parameters
+            F[k], M[k], t[k] = self._bwr(q[i], dq[i], ddq[i],
+                                         F[k+1], M[k+1],
+                                         W[k+1], dW[k+1],
+                                         A[k+1], Ac[k+1])
+        return t
+    
+    def _fwr(self, i, q, dq, ddq, w, dw, a):
+        """ speed of next frame based on speed previous frame """
+        from numpy import sin as s
+        from numpy import cos as c
+        # first angular velocity and frame i acceleration
+        if self.jt[i] == 'p':
+            ai = self.a[i]
+            rx = q * c(ai)
+            ry = q * s(ai)
+            
+            wi = w
+            aix = ddq * c(ai) + 2 * dq * w * s(ai) + dw * ry - w**2 * rx 
+            aiy = ddq * s(ai) - 2 * dq * w * c(ai) - dw * rx - w**2 * ry
+            
+        elif self.jt[i] == 'r':
+            rx = self.d[i] * c(q)
+            ry = self.d[i] * s(q)
+            
+            wi = w + dq
+            aix =  dw * ry - w**2 * rx 
+            aiy = -dw * rx - w**2 * ry
+            
+        else:
+            raise ValueError("wrong joint type: " + self.jt[i])
+        ai  = np.array([aix, aiy])
+        
+        # cg acceleration ang angular acceleration
+        dwi = 0
+        aci = np.zeros(2)
+        return wi, dwi, ai, aci
+    
+    def _bwr(self, q, dq, ddq, f, m, w, dw, a, ac):
+        fi = np.zeros(2)
+        mi = 0
+        ti = 0
+        return fi, mi, ti
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -148,6 +223,11 @@ if __name__ == "__main__":
     
     r1.set_base_pose([0.3, 0.3, -0.5])
     r1.plot_path_kinematics(ax, qt)
+    
+    qt = [0, 0.1, 0.2]
+    dqt = [0, 0.1, 0.2]
+    ddqt = [0, 0.1, 0.2]
+    print(r1.euler_newton(qt, dqt, ddqt))
     
 #    dr = np.linspace(0.5, 1, 10)
 #    qt = np.array([dr, dr, qr, qr]).T

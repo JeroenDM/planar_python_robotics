@@ -55,9 +55,8 @@ jt = cart_to_joint(robot1, traj, check_collision = True, scene = sc1)
 
 f, p = get_shortest_path(jt)
 print(f, p)
-q_path = [jt[i][p[i]] for i in range(len(jt))]
 
-robot1.plot_path(ax, q_path)
+robot1.plot_path(ax, p)
 
 """ 5 dof robot """
 #traj = []
