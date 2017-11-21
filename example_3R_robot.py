@@ -42,3 +42,23 @@ plt.title("The Robot")
 ax2.axis('equal')
 robot1.plot(ax2, [1.3, -0.8, 1.4], 'k')
 plt.savefig("image/example_robot.png")
+
+""" code block 3 """
+from ppr.path import cart_to_joint
+from ppr.geometry import Rectangle
+from ppr.scene import plot_scene
+
+# create list collision objects (Rectangles)
+sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
+       Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
+
+# calculate all possible (collision free) joint configurations
+# for each path point
+path_js = cart_to_joint(robot1, path, check_collision = True, scene = sc1)
+
+fig3, ax3 = plt.subplots()
+plt.title("The joint solutions")
+ax3.axis('equal')
+robot1.plot_path_kinematics(ax3, path_js[0])
+plot_scene(ax3, sc1, 'r')
+plt.savefig("image/example_joint_solutions.png")

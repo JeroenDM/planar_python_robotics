@@ -66,7 +66,8 @@ class Robot:
     def plot_path_kinematics(self, axes_handle, qp):
         alpha = np.linspace(1, 0.2, len(qp))
         for i, qi in enumerate(qp):
-            self.plot_kinematics(axes_handle, qi, color=(0.06, 0.59, 0.13, alpha[i]))
+            # color = (0.06, 0.59, 0.13) (green)
+            self.plot_kinematics(axes_handle, qi, color=(0.1, 0.2, 0.5, alpha[i]))
 
     def plot(self, axes_handle, q, *arg, **karg):
         """ Plot the robot with joint position q """
