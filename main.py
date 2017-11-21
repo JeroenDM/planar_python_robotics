@@ -26,8 +26,8 @@ for i in range(N_traj):
 
 fig, ax = plt.subplots()
 ax.axis('equal')
-#ax.axis([0, 2, 0, 2])
 plot_path(ax, traj)
+#plt.savefig("example_path.png")
 
 """ 3 dof robot """
 # test robot
