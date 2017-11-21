@@ -60,7 +60,6 @@ class TrajectoryPt:
             radius = 0.1
             do = self.p[2].l * 180 / np.pi
             du = self.p[2].u * 180 / np.pi
-            print(do, du)
             arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
             axes_handle.add_patch(arc)
     
