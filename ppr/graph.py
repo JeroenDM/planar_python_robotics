@@ -68,6 +68,7 @@ def get_shortest_path(Q):
     del cost
     f_opt, path = shortest_path(graph, sn, tg)
     path = [int(s.split("|")[1]) for s in path]
+    path = [Q[i][path[i]] for i in range(len(Q))]
     return f_opt, path
 
 """ util functions """

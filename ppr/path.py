@@ -45,28 +45,29 @@ class TrajectoryPt:
             else:
                 self.p_nominal.append(self.p[i])
     
-    def plot(self, axes_handle):
+    def plot(self, axes_handle, show_tolerance):
         pn = self.p_nominal
         axes_handle.plot(pn[0], pn[1], 'k*')
-        if self.hasTolerance[0]:
-            do = -self.p[0].l + pn[0]
-            du =  self.p[0].u - pn[0]
-            axes_handle.errorbar(pn[0], pn[1], xerr=[[do], [du]], color=(0.5, 0.5, 0.5))
-        if self.hasTolerance[1]:
-            do = -self.p[1].l + pn[1]
-            du =  self.p[1].u - pn[1]
-            axes_handle.errorbar(pn[0], pn[1], yerr=[[do], [du]], color=(0.5, 0.5, 0.5))
-        if self.hasTolerance[2]:
-            radius = 0.1
-            do = self.p[2].l * 180 / np.pi
-            du = self.p[2].u * 180 / np.pi
-            arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
-            axes_handle.add_patch(arc)
+        if show_tolerance:
+            if self.hasTolerance[0]:
+                do = -self.p[0].l + pn[0]
+                du =  self.p[0].u - pn[0]
+                axes_handle.errorbar(pn[0], pn[1], xerr=[[do], [du]], color=(0.5, 0.5, 0.5))
+            if self.hasTolerance[1]:
+                do = -self.p[1].l + pn[1]
+                du =  self.p[1].u - pn[1]
+                axes_handle.errorbar(pn[0], pn[1], yerr=[[do], [du]], color=(0.5, 0.5, 0.5))
+            if self.hasTolerance[2]:
+                radius = 0.1
+                do = self.p[2].l * 180 / np.pi
+                du = self.p[2].u * 180 / np.pi
+                arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
+                axes_handle.add_patch(arc)
     
 
-def plot_path(axes_handle, path):
+def plot_path(axes_handle, path, show_tolerance=True):
     for pt in path:
-        pt.plot(axes_handle)
+        pt.plot(axes_handle, show_tolerance)
    
 def discretize(pt):
     r = []
