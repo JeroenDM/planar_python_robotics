@@ -9,7 +9,7 @@ Created on Thu Nov 16 12:41:14 2017
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ppr.graph import get_shortest_path
+from ppr.graph import get_shortest_path, create_graph, create_cost_matrices
 from ppr.path import TolerancedNumber, TrajectoryPt, cart_to_joint, cart_to_joint_d
 from ppr.geometry import Rectangle
 from example_robots import Robot_3R, Robot_2P3R
@@ -81,11 +81,15 @@ sc2 = [Rectangle(0.5, 1.1, 0.1, 0.2, -0.3),
       Rectangle(0.2, 1.0, 0.1, 0.5, 0.2)]
 plot_scene(ax2, sc1, 'g')
 
-jt = cart_to_joint_d(robot2, traj, check_collision = False, scene = sc1)
+jt = cart_to_joint_d(robot2, traj, check_collision = True, scene = sc1)
+n_nodes = [el.shape[0] for el in jt]
+print("Number of nodes: " + str(np.sum(n_nodes)))
+n_edges = [n_nodes[i] * n_nodes[i+1] for i in range(len(n_nodes)-1)]
+print("Number of edges: " + str(np.sum(n_edges)))
 print(jt[0].shape)
 
-f, p = get_shortest_path(jt)
-print(f, p)
-q_path = [jt[i][p[i]] for i in range(len(jt))]
-
-robot2.plot_path(ax2, q_path)
+#f, p = get_shortest_path(jt)
+#print(f, p)
+#q_path = [jt[i][p[i]] for i in range(len(jt))]
+#
+#robot2.plot_path(ax2, q_path)

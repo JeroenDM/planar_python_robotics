@@ -50,6 +50,18 @@ def shortest_path(G, source_nodes, target_nodes):
             path = nx.dijkstra_path(G, source = n, target=n_opt)
     return f_opt, path
 
+def shortest_path2(G, source_nodes, target_nodes):
+    l = np.inf
+    for i, si in enumerate(source_nodes):
+        print("source node " + str(i))
+        for j, tj in enumerate(target_nodes):
+            li = nx.dijkstra_path_length(G, si, tj)
+            if li < l:
+                l = li
+                im = i
+                jm = j
+    return nx.dijkstra_path(G, source_nodes[im], target_nodes[jm])
+
 def get_shortest_path(Q):
     cost = create_cost_matrices(Q)
     graph, sn, tg = create_graph(Q, cost)
