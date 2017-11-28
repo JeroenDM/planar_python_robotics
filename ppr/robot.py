@@ -57,37 +57,37 @@ class Robot:
 
     def set_joint_limits(self, upper_limit, lower_limit=None):
         if lower_limit == None:
-            self.q_up = upper_limit
-            self.q_lo = -upper_limit
+            self.q_up =  np.array(upper_limit)
+            self.q_lo = -np.array(upper_limit)
         else:
-            self.q_up = upper_limit
-            self.q_lo = lower_limit
+            self.q_up = np.array(upper_limit)
+            self.q_lo = np.array(lower_limit)
     
     def set_joint_speed_limits(self, upper_limit, lower_limit=None):
         if lower_limit == None:
-            self.dq_up = upper_limit
-            self.dq_lo = -upper_limit
+            self.dq_up =  np.array(upper_limit)
+            self.dq_lo = -np.array(upper_limit)
         else:
-            self.dq_up = upper_limit
-            self.dq_lo = lower_limit
+            self.dq_up = np.array(upper_limit)
+            self.dq_lo = np.array(lower_limit)
 
     def set_joint_acceleration_limits(self, upper_limit, lower_limit=None):
         if lower_limit == None:
-            self.ddq_up = upper_limit
-            self.ddq_lo = -upper_limit
+            self.ddq_up =  np.array(upper_limit)
+            self.ddq_lo = -np.array(upper_limit)
         else:
-            self.ddq_up = upper_limit
-            self.ddq_lo = lower_limit
+            self.ddq_up = np.array(upper_limit)
+            self.ddq_lo = np.array(lower_limit)
     
     def set_base_pose(self, pose):
         self.base = pose
 
     def check_joint_limits(self, q):
-        if self.q_up == None:
+        if np.all(self.q_up == None):
             raise RuntimeError("Joint limits not set. Use 'set_joint_limits'.")
         else:
             for i, qi in enumerate(q):
-                if qi <= self.q_lo[i] or qi >= self.q_up:
+                if qi <= self.q_lo[i] or qi >= self.q_up[i]:
                     return False
             return True
     
@@ -272,9 +272,6 @@ if __name__ == "__main__":
     
     print("test joint limits. Expect False")
     r1.set_joint_limits([1, 1, 3])
-    print(r1.check_joint_limits([1, 2, 1])
-    #dr = np.linspace(0.5, 1, 10)
-    #qt = np.array([dr, dr, qr, qr]).T
-    #r2 = Robot(['p', 'p', 'r', 'r'], [1, 1, 0.5, 0.5], [1.5, -1.0, 0, 0])
-    #r2.plot_path_kinematics(ax, qt)
-    #r2.plot_path(ax, qt)
+    r1.set_joint_speed_limits([1, 2, 3])
+    r1.set_joint_acceleration_limits([1, 2, 3])
+    print(r1.check_joint_limits([1, 2, 1]))
