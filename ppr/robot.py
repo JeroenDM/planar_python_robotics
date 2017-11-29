@@ -50,10 +50,18 @@ class Robot:
         self.dq_lo  = None
         self.ddq_up = None
         self.ddq_lo = None
+        self.m      = None
+        self.c      = None # position of center of gravity along link
+        self.I      = None # mass moment of inertia around cg
 
     def set_link_collision_shape(self, lx, ly, lw, ll):
         """ set collision origin and width and length for all links """
         pass
+    
+    def set_link_inertia(self, mass, cg_position, Icg):
+        self.m = mass
+        self.c = cg_position
+        self.I = Icg
 
     def set_joint_limits(self, upper_limit, lower_limit=None):
         if lower_limit == None:
@@ -244,6 +252,62 @@ class Robot:
         mi = 0
         ti = 0
         return fi, mi, ti
+    
+    def _fw_prop(self, ib, va, aa, wa, dwa, qb, dqb, ddqb):
+        """ Forward propagation of speed and velocity from link i to i+1 """
+        if self.jt[ib] == 'r':
+            db = self.d[ib]
+            vrel = [0, (wa + dqb) * db]
+            arel = [-(wa + dqb)**2 * db, (dwa + ddqb)*db]
+            wb = wa + dqb
+            dwb = dwa + ddqb
+        elif self.jt[ib] == 'p':
+            vrel = [dqb, wa * db]
+            arel = [-wa**2 * db + ddqb, dwa*db + 2*wa*dqb]
+            wb = wa
+            dwb = dwa
+        else:
+            raise ValueError("wrong joint type: " + self.jt[ib])
+        
+        R = self._R_link(ib, qb)
+        vb = np.dot(R, va) + np.array(vrel)
+        ab = np.dot(R, aa) + np.array(arel)
+        return vb, ab, wb, dwb
+    
+    def _bw_prop(self, ia, Fb, Mb, aca, dwa, qb):
+        # transforme Fb to frame of link a (given in frame b)
+        R = self._R_link(ia+1, qb).T
+        Fbt = np.dot(R, Fb)
+        
+        # calculate Fa and Ma
+        Fa = Fb + self.m[ia] * Fbt
+        Ma = Mb + self.cg[ia] * Fa[1]
+        Ma += (self.d[ia] - self.cg[ia]) * Fb[1]
+        Ma += self.I[ia] * dwa
+        
+        # calculate joint torque or force
+        if self.jt[ia] == 'r':
+            ja = Ma
+        elif self.jt[ia] == 'p':
+            ja = Fa[0]
+        else:
+            raise ValueError("wrong joint type: " + self.jt[ia])
+        
+        return Fa, Ma, ja
+    
+    def _R_link(self, i, qi):
+        """ rotation matrix of link i relative to link i-1 """
+        if self.jt[i] == 'r':
+            a = qi
+        elif self.jt[i] == 'p':
+            a = self.a[i]
+        else:
+            raise ValueError("wrong joint type: " + self.jt[i])
+        
+        ca = np.cos(a)
+        sa = np.sin(a)
+        R = np.array([[ca, -sa], [sa, ca]])
+        return R
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -265,13 +329,22 @@ if __name__ == "__main__":
     r1.set_base_pose([0.3, 0.3, -0.5])
     r1.plot_path_kinematics(ax, qt)
     
-    qt = [0, 0.1, 0.2]
-    dqt = [0, 0.1, 0.2]
-    ddqt = [0, 0.1, 0.2]
-    print(r1.euler_newton(qt, dqt, ddqt))
+    print("speed and acc propatation")
+    from numpy.random import rand
+    v = rand(2)
+    a = rand(2)
+    v2, a2, w2, dw2 = r1._fw_prop(1, v, a, 0.5, 0.5, 0.2, 0.2, 0.2)
+    print(v2)
+    print(a2)
+    print(w2, dw2)
     
-    print("test joint limits. Expect False")
-    r1.set_joint_limits([1, 1, 3])
-    r1.set_joint_speed_limits([1, 2, 3])
-    r1.set_joint_acceleration_limits([1, 2, 3])
-    print(r1.check_joint_limits([1, 2, 1]))
+#    qt = [0, 0.1, 0.2]
+#    dqt = [0, 0.1, 0.2]
+#    ddqt = [0, 0.1, 0.2]
+#    print(r1.euler_newton(qt, dqt, ddqt))
+#    
+#    print("test joint limits. Expect False")
+#    r1.set_joint_limits([1, 1, 3])
+#    r1.set_joint_speed_limits([1, 2, 3])
+#    r1.set_joint_acceleration_limits([1, 2, 3])
+#    print(r1.check_joint_limits([1, 2, 1]))
