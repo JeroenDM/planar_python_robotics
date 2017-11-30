@@ -79,6 +79,32 @@ plot_scene(ax4, sc1, 'r')
 plt.savefig("image/example_first_solution.png")
 
 """fictional code block 5 """
+#import numpy as np
+#from ppr.optimize import derivatives
+#
+#N = len(shortest_path_js)
+#q = np.array(shortest_path_js).T
+#
+## add time info, assume constant sample time
+#t = np.linspace(0, 1, N)
+#ts, qs, s = derivatives(t, q)
+#
+#fig5, ax5 = plt.subplots(1, 3)
+#dq = np.array([sp(t, 1) for sp in s])
+#ddq = np.array([sp(t, 2) for sp in s])
+#
+#ax5[0].plot(t, q[0], t, q[1], t, q[2])
+#ax5[1].plot(t, dq[0], t, dq[1], t, dq[2])
+#ax5[2].plot(t, ddq[0], t, ddq[1], t, ddq[2])
+##plt.legend(['q', 'dq', 'ddq'])
+#
+#robot1.set_link_inertia([2, 2, 2], [0.5, 0.5, 0.25], [0.05]*3)
+#tau = np.zeros((3, N))
+#for k in range(N):
+#    tau[:, k] = robot1.euler_newton(q[:, k], dq[:, k], ddq[:, k])
+#
+#plt.figure()
+#plt.plot(t, tau[0], t, tau[1], t, tau[2])
 
 #from ppr.optimize import get_optimal_trajectory
 #

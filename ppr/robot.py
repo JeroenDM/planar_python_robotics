@@ -181,6 +181,9 @@ class Robot:
     def euler_newton(self, q, dq, ddq):
         """ Euler-Netwon recursive algorithm from book Sicilliano """
         ndof = self.ndof
+        lq = [len(vec) for vec in [q, dq, ddq]]
+        if not np.all(np.array(lq) == ndof):
+            raise ValueError("Input vectors must have same length, not: " + str(lq))
         
         # initialize vectors for solution (base at index 0)
         # i = 0 -> base
@@ -192,122 +195,104 @@ class Robot:
         Ac = np.zeros((ndof + 1, 2)) # link cg acceleration
         
         # forward recursion for speed and acceleration
+        print("---start forward propagation")
         for k in range(1, ndof+1):
+            print(k)
             i = k-1 # link index in robot parameters
-            W[k], dW[k], A[k], Ac[k] = self._fwr(i, q[i], dq[i], ddq[i],
-                                                 W[k-1], dW[k-1], A[k-1])
+            W[k], dW[k], A[k], Ac[k] = self._fw_prop(i, q[i], dq[i], ddq[i],
+                                                     W[k-1], dW[k-1], A[k-1])
         
         # initialize some more vectors (OTHER INDEX DEFINITION than W, dW, ...)
         # i = ndof+1 -> end effector
         # i = 0 - > first link
         # assume no end effector force or torque
-        F = np.zeros((ndof + 1, 2))
-        M = np.zeros(ndof + 1)
-        t = np.zeros(ndof) # joint force or torque
+        F   = np.zeros((ndof + 1, 2))
+        M   = np.zeros(ndof + 1)
+        tau = np.zeros(ndof) # joint force or torque
         
         # backward recursion for forces and torques
-        print("backward")
+        print("---start backward propagation")
         for k in np.flip(np.arange(ndof), 0):
             print(k)
             i = k # link index in robot parameters
-            F[k], M[k], t[k] = self._bwr(q[i], dq[i], ddq[i],
-                                         F[k+1], M[k+1],
-                                         W[k+1], dW[k+1],
-                                         A[k+1], Ac[k+1])
-        return t
+            F[k], M[k], tau[k] = self._bw_prop(i, q[i],
+                                             F[k+1], M[k+1],
+                                             dW[k+1], Ac[k+1])
+        return tau
     
-    def _fwr(self, i, q, dq, ddq, w, dw, a):
-        """ speed of next frame based on speed previous frame """
-        from numpy import sin as s
-        from numpy import cos as c
-        # first angular velocity and frame i acceleration
-        if self.jt[i] == 'p':
-            ai = self.a[i]
-            rx = q * c(ai)
-            ry = q * s(ai)
-            
-            wi = w
-            aix = ddq * c(ai) + 2 * dq * w * s(ai) + dw * ry - w**2 * rx 
-            aiy = ddq * s(ai) - 2 * dq * w * c(ai) - dw * rx - w**2 * ry
-            
-        elif self.jt[i] == 'r':
-            rx = self.d[i] * c(q)
-            ry = self.d[i] * s(q)
-            
-            wi = w + dq
-            aix =  dw * ry - w**2 * rx 
-            aiy = -dw * rx - w**2 * ry
-            
-        else:
-            raise ValueError("wrong joint type: " + self.jt[i])
-        ai  = np.array([aix, aiy])
-        
-        # cg acceleration ang angular acceleration
-        dwi = 0
-        aci = np.zeros(2)
-        return wi, dwi, ai, aci
-    
-    def _bwr(self, q, dq, ddq, f, m, w, dw, a, ac):
-        fi = np.zeros(2)
-        mi = 0
-        ti = 0
-        return fi, mi, ti
-    
-    def _fw_prop(self, ib, va, aa, wa, dwa, qb, dqb, ddqb):
+    def _fw_prop(self, ib, qb, dqb, ddqb, wa, dwa, aa):
         """ Forward propagation of speed and velocity from link i to i+1 """
+        
+        cb = self.c[ib]
         if self.jt[ib] == 'r':
-            db = self.d[ib]
-            vrel = [0, (wa + dqb) * db]
-            arel = [-(wa + dqb)**2 * db, (dwa + ddqb)*db]
-            wb = wa + dqb
-            dwb = dwa + ddqb
+            db    = self.d[ib]
+            arel  = [-(wa + dqb)**2 * db, (dwa + ddqb)*db]
+            acrel = [-(wa + dqb)**2 * cb, (dwa + ddqb)*cb]
+            wb    = wa  + dqb
+            dwb   = dwa + ddqb
+            R = self._R_link(ib, qb).T
         elif self.jt[ib] == 'p':
-            vrel = [dqb, wa * db]
-            arel = [-wa**2 * db + ddqb, dwa*db + 2*wa*dqb]
-            wb = wa
-            dwb = dwa
+            db    = qb
+            arel  = [-wa**2 * db + ddqb, dwa*db + 2*wa*dqb]
+            acrel = [-wa**2 * cb + ddqb, dwa*cb + 2*wa*dqb]
+            wb    = wa
+            dwb   = dwa
+            R = self._R_link(ib, self.a[ib]).T
         else:
             raise ValueError("wrong joint type: " + self.jt[ib])
         
-        R = self._R_link(ib, qb)
-        vb = np.dot(R, va) + np.array(vrel)
         ab = np.dot(R, aa) + np.array(arel)
-        return vb, ab, wb, dwb
+        ac = np.dot(R, aa) + np.array(acrel)
+        return wb, dwb, ab, ac
     
-    def _bw_prop(self, ia, Fb, Mb, aca, dwa, qb):
-        # transforme Fb to frame of link a (given in frame b)
-        R = self._R_link(ia+1, qb).T
-        Fbt = np.dot(R, Fb)
+    def _bw_prop(self, ia, qb, Fb, Mb, dwa, aca):
+        """ Backward force and torque propagation from i+1 to i """
         
-        # calculate Fa and Ma
-        Fa = Fb + self.m[ia] * Fbt
-        Ma = Mb + self.cg[ia] * Fa[1]
-        Ma += (self.d[ia] - self.cg[ia]) * Fb[1]
-        Ma += self.I[ia] * dwa
-        
-        # calculate joint torque or force
         if self.jt[ia] == 'r':
-            ja = Ma
+            # transforme Fb to frame of link a (given in frame b)
+            R = self._R_link(ia+1, qb)
+            Fbt = np.dot(R, Fb)
+            # calculate Fa and Ma
+            Fa = Fbt + self.m[ia] * aca
+            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma += (self.d[ia] - self.c[ia]) * Fb[1]
+            Ma += self.I[ia] * dwa
+            # joint torque
+            taua = Ma
         elif self.jt[ia] == 'p':
-            ja = Fa[0]
+            # transforme Fb to frame of link a (given in frame b)
+            R = self._R_link(ia+1, self.a[ia+1])
+            Fbt = np.dot(R, Fb)
+            # calculate Fa and Ma
+            Fa = Fbt + self.m[ia] * aca
+            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma += (qb - self.c[ia]) * Fb[1]
+            Ma += self.I[ia] * dwa
+            # joint force
+            taua = Fa[0]
         else:
             raise ValueError("wrong joint type: " + self.jt[ia])
         
-        return Fa, Ma, ja
+        return Fa, Ma, taua
     
     def _R_link(self, i, qi):
         """ rotation matrix of link i relative to link i-1 """
-        if self.jt[i] == 'r':
-            a = qi
-        elif self.jt[i] == 'p':
-            a = self.a[i]
+        if (i+1) >= self.ndof:
+            # frame i is the end effector frame
+            # end effector pose not implemented
+            return np.eye(2)
         else:
-            raise ValueError("wrong joint type: " + self.jt[i])
-        
-        ca = np.cos(a)
-        sa = np.sin(a)
-        R = np.array([[ca, -sa], [sa, ca]])
-        return R
+            if self.jt[i] == 'r':
+                a = qi
+            elif self.jt[i] == 'p':
+                a = self.a[i]
+            else:
+                raise ValueError("wrong joint type: " + self.jt[i])
+            
+            ca = np.cos(a)
+            sa = np.sin(a)
+            R = np.array([[ca, -sa], [sa, ca]])
+            return R
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -329,19 +314,23 @@ if __name__ == "__main__":
     r1.set_base_pose([0.3, 0.3, -0.5])
     r1.plot_path_kinematics(ax, qt)
     
+    r1.set_link_inertia([2, 2, 2], [0.5, 0.5, 0.25], [0.05]*3)
+    
     print("speed and acc propatation")
     from numpy.random import rand
     v = rand(2)
     a = rand(2)
-    v2, a2, w2, dw2 = r1._fw_prop(1, v, a, 0.5, 0.5, 0.2, 0.2, 0.2)
+    v2, a2, w2, dw2 = r1._fw_prop(1, v, a, 0.5, 0.5, 0.2, 0.2)
     print(v2)
     print(a2)
     print(w2, dw2)
     
-#    qt = [0, 0.1, 0.2]
-#    dqt = [0, 0.1, 0.2]
-#    ddqt = [0, 0.1, 0.2]
-#    print(r1.euler_newton(qt, dqt, ddqt))
+    print("speed and acc propatation")
+    print("-------------------------")
+    qt = [0, 0.1, 0.2]
+    dqt = [0, 0.1, 0.2]
+    ddqt = [0, 0.1, 0.2]
+    print(r1.euler_newton(qt, dqt, ddqt))
 #    
 #    print("test joint limits. Expect False")
 #    r1.set_joint_limits([1, 1, 3])
