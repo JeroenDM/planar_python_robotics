@@ -10,9 +10,10 @@ import networkx as nx
 import numpy as np
 
 
-""" graph functions """
+""" graph functions """ 
 
-def create_graph(Q, CM):
+# TODO double default of the and th_value
+def create_graph(Q, CM, th=False, th_value=0.1):
     N = len(Q)
     Q_size = [len(q) for q in Q]
     G = nx.DiGraph()
@@ -34,20 +35,28 @@ def create_graph(Q, CM):
             # add edges
             if i > 0:
                 for k in range(Q_size[i-1]):
-                    prev_node = str(i-1) + "|" + str(k)
-                    G.add_edge(prev_node, node, weight = CM[i-1][k, j])
+                    cost_k = CM[i-1][k, j]
+                    if th and cost_k > th_value:
+                        pass # do not add edge
+                    else:
+                        prev_node = str(i-1) + "|" + str(k)
+                        G.add_edge(prev_node, node, weight = cost_k)
     return G, source_nodes, target_nodes
 
 def shortest_path(G, source_nodes, target_nodes):
     f_opt = np.inf
+    path = None
     for n in source_nodes:
         f_vec = nx.single_source_dijkstra_path_length(G, source=n)
-        f_vec = [f_vec[key] for key in target_nodes]
-        f_min = min(f_vec)
-        if f_min < f_opt:
-            f_opt = f_min
-            n_opt = target_nodes[f_vec.index(f_opt)]
-            path = nx.dijkstra_path(G, source = n, target=n_opt)
+        try:
+            f_vec = [f_vec[key] for key in target_nodes]
+            f_min = min(f_vec)
+            if f_min < f_opt:
+                f_opt = f_min
+                n_opt = target_nodes[f_vec.index(f_opt)]
+                path = nx.dijkstra_path(G, source = n, target=n_opt)
+        except KeyError:
+            print("[ppr.graph.py] No path found for this source node " + n)
     return f_opt, path
 
 def shortest_path2(G, source_nodes, target_nodes):
@@ -67,8 +76,12 @@ def get_shortest_path(Q):
     graph, sn, tg = create_graph(Q, cost)
     del cost
     f_opt, path = shortest_path(graph, sn, tg)
-    path = [int(s.split("|")[1]) for s in path]
-    path = [Q[i][path[i]] for i in range(len(Q))]
+    if path == None:
+        print("[ppr.graph.py] no path found in TOTAL!")
+        return False, None
+    else:
+        path = [int(s.split("|")[1]) for s in path]
+        path = [Q[i][path[i]] for i in range(len(Q))]
     return f_opt, path
 
 """ util functions """
@@ -89,23 +102,48 @@ def create_cost_matrices(Q):
 
 if __name__ == "__main__":
     print("-----test graph.py-----")
+    print("-----------------------")
     import matplotlib.pyplot as plt
     from numpy.random import rand
     # create random testdata
-    #np.random.seed(42)
+    np.random.seed(42)
     N_test = 8
     Q_size_test = [15]*N_test # change this if change N
     Q_test = [rand(Q_size_test[i], 3) for i in range(N_test)]
     
-    cost = create_cost_matrices(Q_test)
-    graph, sn, tg = create_graph(Q_test, cost)
+#    cost = create_cost_matrices(Q_test)
+#    graph, sn, tg = create_graph(Q_test, cost)
+#    
+##    plt.figure()
+##    nx.draw_spectral(graph, with_labels=True)
+#    
+#    fs, path = shortest_path(graph, sn, tg)
+#    if fs:
+#        path = [int(s.split("|")[1]) for s in path]
+#        print(fs, path)
     
-    plt.figure()
-    nx.draw_spectral(graph, with_labels=True)
+    print("test single joint graph")
+    print("-----------------------")
+    Q1 = [q[:, 0] for q in Q_test]
     
-    fs, path = shortest_path(graph, sn, tg)
-    path = [int(s.split("|")[1]) for s in path]
-    print(fs, path)
+    
+    
+#    c1 = create_cost_matrices(Q1)
+#    g1, sn1, tn1 = create_graph(Q1, c1)
+#    fs1, path1 = shortest_path(g1, sn1, tn1)
+#    print(path1)
+    
+    f1, p1 = get_shortest_path(Q1)
+    
+    if f1:
+        print(p1)
+        plt.figure()
+        for i, q1 in enumerate(Q1):
+            ind = np.ones(q1.shape) * i
+            plt.plot(ind, q1, 'g*')
+            plt.plot(i, p1[i], 'r*')
+    else:
+        print("No path found!")
 
 
 

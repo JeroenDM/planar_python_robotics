@@ -105,7 +105,7 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
                     else:
                         qi.append(qsol)
             else:
-                print("no solution found for " + str(cart_pt))
+                print("[ppr.path.py] no collision free solution found for " + str(cart_pt))
         joint_traj.append(np.array(qi))
     return joint_traj
 
