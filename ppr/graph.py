@@ -100,6 +100,36 @@ def create_cost_matrices(Q):
         CM.append(Mi)
     return CM
 
+def create_single_joint_graph(Q, dist_th=0.5):
+    N = len(Q)
+    Q_size = [len(q) for q in Q]
+    G = nx.DiGraph()
+    source_nodes = []
+    target_nodes = []
+    for i in range(N):
+        for j in range(Q_size[i]):
+            # add nodes
+            node = str(i) + "|" + str(j)
+            G.add_node(node)
+            
+            # remeber source nodes
+            if i == 0:
+                source_nodes.append(node)
+            # remember target nodes
+            if i == N-1:
+                target_nodes.append(node)
+            
+            # add edges
+            if i > 0:
+                for k in range(Q_size[i-1]):
+                    dist = np.abs(Q[i][j] - Q[i-1][k])
+                    if dist > dist_th:
+                        pass # do not add edge
+                    else:
+                        prev_node = str(i-1) + "|" + str(k)
+                        G.add_edge(prev_node, node, weight = dist)
+    return G, source_nodes, target_nodes
+
 if __name__ == "__main__":
     print("-----test graph.py-----")
     print("-----------------------")
@@ -107,7 +137,7 @@ if __name__ == "__main__":
     from numpy.random import rand
     # create random testdata
     np.random.seed(42)
-    N_test = 8
+    N_test = 6
     Q_size_test = [15]*N_test # change this if change N
     Q_test = [rand(Q_size_test[i], 3) for i in range(N_test)]
     
@@ -144,6 +174,9 @@ if __name__ == "__main__":
             plt.plot(i, p1[i], 'r*')
     else:
         print("No path found!")
-
+    
+    plt.figure()
+    g1, s1, t1 = create_single_joint_graph(Q1)
+    nx.draw_spectral(g1, with_labels=True)
 
 
