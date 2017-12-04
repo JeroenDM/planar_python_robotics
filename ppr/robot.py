@@ -195,9 +195,8 @@ class Robot:
         Ac = np.zeros((ndof + 1, 2)) # link cg acceleration
         
         # forward recursion for speed and acceleration
-        print("---start forward propagation")
+#        print("---start forward propagation")
         for k in range(1, ndof+1):
-            print(k)
             i = k-1 # link index in robot parameters
             W[k], dW[k], A[k], Ac[k] = self._fw_prop(i, q[i], dq[i], ddq[i],
                                                      W[k-1], dW[k-1], A[k-1])
@@ -211,9 +210,8 @@ class Robot:
         tau = np.zeros(ndof) # joint force or torque
         
         # backward recursion for forces and torques
-        print("---start backward propagation")
+#        print("---start backward propagation")
         for k in np.flip(np.arange(ndof), 0):
-            print(k)
             i = k # link index in robot parameters
             F[k], M[k], tau[k] = self._bw_prop(i, q[i],
                                              F[k+1], M[k+1],
