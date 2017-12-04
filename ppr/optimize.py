@@ -10,6 +10,34 @@ Created on Tue Nov 21 11:59:33 2017
 import numpy as np
 from scipy.optimize import minimize, fmin_slsqp
 
+from scipy.interpolate import CubicSpline
+
+def get_optimal_trajectory(robot, path, path_js_init, c_torque=1.0, c_position=1.0):
+    n_path = len(path)
+    q_init = np.array(path_js_init).flatten()
+    
+    def obj(x):
+        return c_torque * torque_cost(robot, x) + c_position * path_pos_error(robot, x, path)
+
+    sol = fmin_slsqp(obj, 
+                     q_init,
+                     f_ieqcons=lambda x: path_constraints(robot, x, path))
+    
+    qsol = sol.reshape(n_path, 3)
+    dqs, ddqs = q_derivatives(qsol)
+    return qsol, dqs, ddqs
+
+def optimal_spline_wrap(robot, path, path_js_init):
+    qp = path_js_init
+    n_path = len(qp)
+    t_end = (n_path - 1) * 0.1
+    tp = np.linspace(0, t_end, n_path)
+    q_splines = []
+    for i in range(3):
+        q_splines.append(CubicSpline(tp, qp[:, i]))
+    
+    return 0
+    
 
 def rk4(ode,h,x,u):
   k1 = ode(x,       u)
@@ -18,13 +46,16 @@ def rk4(ode,h,x,u):
   k4 = ode(x+h*k3,  u)
   return x + h/6 * (k1 + 2*k2 + 2*k3 + k4)
 
-def path_pos_error(robot, q_path, x_path):
+def path_pos_error(robot, q_path, path):
     n_path = int(len(q_path) / 3)
-    xp = np.array([robot.fk(q) for q in q_path.reshape(n_path, 3)])
-    xp = xp[:, :2].flatten()
-    x_path = x_path[:, :2].flatten()
-    
-    return np.sum((xp - x_path)**2)
+    qp = q_path.reshape(n_path, 3)
+    con = []
+    for i, tp in enumerate(path):
+        pp = tp.p_nominal
+        pfk = robot.fk(qp[i])
+        con.append(np.sum((pp - pfk)**2))
+    con = np.array(con).flatten()
+    return np.sum(con**2)
 
 def path_cost(q_path):
     n_path = int(len(q_path) / 3)
@@ -32,6 +63,8 @@ def path_cost(q_path):
     dqp = np.diff(qp, axis=0)
     
     return np.sum(np.abs(dqp))
+
+
 
 def obj(robot, q_path, x_path):
     return path_pos_error(robot, q_path, x_path) + 0.1 * path_cost(q_path)
@@ -72,12 +105,23 @@ def torque_cost(robot, q_path):
     tau = np.array(tau)
     return np.sum(tau**2)
 
-def q_derivatives(q):
+def jerk_cost(robot, q_path):
+    n_path = int(len(q_path) / 3)
+    qp = q_path.reshape(n_path, 3)
+    dqp, ddqp = q_derivatives(qp)
+    tau = []
+    for i in range(n_path):
+        tau.append(robot.euler_newton(qp[i], dqp[i], ddqp[i]))
+    tau = np.array(tau)
+    jerk = np.gradient(tau, axis=0)
+    return np.sum(jerk**2)
+
+def q_derivatives(q, dt=0.1):
     dq = []
     ddq = []
     for i in range(3):
-        dq.append(np.gradient(q[:, i]))
-        ddq.append(np.gradient(dq[i]))
+        dq.append( np.gradient(q[:, i]) * dt)
+        ddq.append(np.gradient(dq[i])   * dt)
     dq = np.array(dq).T
     ddq = np.array(ddq).T
     return dq, ddq
@@ -154,22 +198,22 @@ if __name__ == "__main__":
     sol1 = fmin_slsqp(path_cost, q_init, f_eqcons=feq)
 #    r1.plot_path_kinematics(ax, sol1.reshape(10, 3))
     print(sol1)
+    qsol1 = sol1.reshape(10, 3)
     
     r1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
     print(torque_cost(r1, q_init))
     
-    def fieq(q):
-        return path_constraints(r1, q, path)
+#    def fieq(q):
+#        return path_constraints(r1, q, path)
+#    
+#    def obj2(q):
+#        return torque_cost(r1, q)
+#    sol2 = fmin_slsqp(obj2, sol1, f_ieqcons=fieq)
+    qsol2, dq, ddq = get_optimal_trajectory(r1, path, qsol1)
+    r1.plot_path_kinematics(ax, qsol2)
+    print(qsol2)
     
-    def obj2(q):
-        return path_cost(q) + torque_cost(r1, q)
-    sol2 = fmin_slsqp(obj2, sol1, f_ieqcons=fieq)
-    r1.plot_path_kinematics(ax, sol2.reshape(10, 3))
-    print(sol2)
-    
-    
-    qsol2 = sol2.reshape(10, 3)
-    dq, ddq = q_derivatives(qsol2)
+#    dq, ddq = q_derivatives(qsol2)
 #    dq = []
 #    ddq = []
 #    for i in range(3):
@@ -192,7 +236,13 @@ if __name__ == "__main__":
     plt.title('Torque')
     plt.plot(tau)
     
-    
+#def path_pos_error(robot, q_path, x_path):
+#    n_path = int(len(q_path) / 3)
+#    xp = np.array([robot.fk(q) for q in q_path.reshape(n_path, 3)])
+#    xp = xp[:, :2].flatten()
+#    x_path = x_path[:, :2].flatten()
+#    
+#    return np.sum((xp - x_path)**2)   
 # from scipy.interpolate import CubicSpline, interp1d  
 #from scipy.signal import resample
 #def derivatives(t, x):

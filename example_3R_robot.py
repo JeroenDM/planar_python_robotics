@@ -17,9 +17,9 @@ angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
 
 # create a list with path points
 path = []
-n_path = 10
+n_path = 12
 for i in range(n_path):
-   yi = 0.7 + i * 0.6 / 10
+   yi = 0.7 + i * 0.6 / n_path
    path.append(TrajectoryPt([dx, yi, angle]))
 
 # look at the created path
@@ -79,6 +79,62 @@ plot_scene(ax4, sc1, 'r')
 plt.savefig("image/example_first_solution.png")
 
 """fictional code block 5 """
+from ppr.optimize import get_optimal_trajectory, q_derivatives
+
+#robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
+#robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
+robot1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
+
+qs, dqs, ddqs = get_optimal_trajectory(robot1, path, path_js_init=shortest_path_js,
+                                       c_torque=10.0)
+
+fig5, ax5 = plt.subplots()
+plt.title("Optimized solution")
+ax5.axis('equal')
+robot1.plot_path(ax5, qs)
+plot_path(ax5, path, show_tolerance=False)
+plot_scene(ax5, sc1, 'r')
+
+""" some scrap code """
+import numpy as np
+
+q1 = np.array(shortest_path_js)
+dq1, ddq1 = q_derivatives(q1)
+tau1 = []
+tau = []
+for i in range(n_path):
+    tau1.append(robot1.euler_newton(q1[i], dq1[i], ddq1[i]))
+    tau.append(robot1.euler_newton(qs[i], dqs[i], ddqs[i]))
+tau1 = np.array(tau1)
+tau = np.array(tau)
+
+plt.figure()
+plt.title('Torque')
+plt.plot(tau1, '--')
+plt.plot(tau, '.-')
+plt.legend(['t11', 't21', 't31', 't1s', 't2s', 't3s'])
+
+fig6, ax6 = plt.subplots(1, 3)
+ax6[0].plot(qs)
+ax6[1].plot(dqs)
+ax6[2].plot(ddqs)
+
+from scipy.interpolate import CubicSpline, interp1d
+t_end = (n_path-1) * 0.1
+ts = np.linspace(0, t_end, n_path)
+
+cs = []
+tauf = []
+tf = np.linspace(0, t_end, 100)
+for i in range(3):
+    cs.append(CubicSpline(ts, tau[:, i]))
+    tauf.append(cs[i](tf))
+tauf = np.array(tauf).T
+
+plt.figure()
+plt.plot(tauf)
+
+
 #import numpy as np
 #from ppr.optimize import derivatives
 #
@@ -105,10 +161,3 @@ plt.savefig("image/example_first_solution.png")
 #
 #plt.figure()
 #plt.plot(t, tau[0], t, tau[1], t, tau[2])
-
-#from ppr.optimize import get_optimal_trajectory
-#
-#robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
-#robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
-#
-#traj, info = get_optimal_trajectory(robot1, path, path_js_init=shortest_path_js)

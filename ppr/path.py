@@ -44,6 +44,7 @@ class TrajectoryPt:
                 self.p_nominal.append(self.p[i].n)
             else:
                 self.p_nominal.append(self.p[i])
+        self.timing = 0.1 # with respect to previous point
     
     def plot(self, axes_handle, show_tolerance):
         pn = self.p_nominal
