@@ -132,7 +132,8 @@ for i in range(3):
 tauf = np.array(tauf).T
 
 plt.figure()
-plt.plot(tauf)
+plt.plot(ts, tau, '.')
+plt.plot(tf, tauf)
 
 
 #import numpy as np
