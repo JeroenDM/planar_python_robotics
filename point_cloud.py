@@ -160,6 +160,17 @@ for dof in range(3):
             if Qbd[i][j]:
                 ax[dof].plot(i, qij, '*',  color=(0.9,0.6, 0.2, 0.2))
 
+
+
+ax[0].set_title("q_1")
+ax[0].set_xlabel("i")
+ax[1].set_title("q_2")
+ax[1].set_xlabel("i")
+ax[2].set_title("q_3")
+ax[2].set_xlabel("i")
+fig.suptitle("Joint space motion")
+#plt.savefig("image/filter_graph.png")
+
 Qtotal = []
 for k in range(len(QQ[0])):
     Qtotal.append(np.logical_and(QQ[0][k], QQ[1][k], QQ[2][k]))

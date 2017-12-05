@@ -10,7 +10,7 @@ import numpy as np
 
 # should find a better fix, but it finally works !
 # the name == robot occurs when importing this file
-# from the name == main section of another module in this package
+# from the "if __name__ == '__main__'" section of another module in this package
 if __name__ == "__main__" or __name__ == "robot":
     from geometry import Rectangle, rotation
 else:
