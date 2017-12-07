@@ -12,6 +12,13 @@ from scipy.optimize import minimize, fmin_slsqp
 
 from scipy.interpolate import CubicSpline
 
+""" spline version """
+def points_to_spline(points, x):
+    """ convert a 1D numpy array to a spline with these values as coefs  """
+    sp = CubicSpline(x, points, bc_type='clamped')
+    return sp
+
+""" normal version """
 def get_optimal_trajectory(robot, path, path_js_init, c_torque=1.0, c_position=1.0):
     n_path = len(path)
     q_init = np.array(path_js_init).flatten()
@@ -131,31 +138,6 @@ if __name__ == "__main__":
     from robot import Robot
     from path import TolerancedNumber, TrajectoryPt, plot_path
     
-    print("-----test optimize.py-----")
-    print("--------------")
-    fig = plt.figure()
-    ax = fig.gca()
-    plt.axis('equal')
-    plt.axis([-1, 3, -2, 3])
-    
-    qr = np.linspace(0, 1, 10)
-    qt = np.array([qr, qr, qr]).T
-    
-    r1 = Robot(['r', 'r', 'r'], [1, 1, 0.5], [0, 0, 0])
-    
-    
-    # use minimize to solve ik ?    
-    qt = np.array([[0.3, 0.2, -0.1], [0.4, 0.2, -0.1]])
-    xt = np.array([r1.fk([0.3, 0.2, -0.1]), r1.fk([0.4, 0.2, -0.1])])
-    print(xt)
-    
-    print(path_pos_error(r1, qt.flatten(), xt))
-    print(path_cost(qt.flatten()))
-    print(obj(r1, qt.flatten(), xt))
-    
-#    sol = minimize(lambda x: path_pos_error(r1, x, xt), [0, 0, 0, 0, 0, 0])
-#    print(sol)
-    
     # create path
     N = 10
     path = []
@@ -166,15 +148,6 @@ if __name__ == "__main__":
     q_init = np.zeros((N, 3))
     q_init[:, 0] = 0.5
     q_init = q_init.flatten()
-    
-#    path = np.array(path)
-##    sol = minimize(lambda x: path_pos_error(r1, x, path), q_init)
-#    
-#    sol = minimize(lambda x: obj(r1, x, path), q_init)
-#    print(sol['x'])
-#    q_sol = sol['x'].reshape(N, 3)
-#    
-#    r1.plot_path_kinematics(ax, q_sol)
     
     # create tolerances for x-position and orientation
     dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
@@ -203,24 +176,10 @@ if __name__ == "__main__":
     r1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
     print(torque_cost(r1, q_init))
     
-#    def fieq(q):
-#        return path_constraints(r1, q, path)
-#    
-#    def obj2(q):
-#        return torque_cost(r1, q)
-#    sol2 = fmin_slsqp(obj2, sol1, f_ieqcons=fieq)
     qsol2, dq, ddq = get_optimal_trajectory(r1, path, qsol1)
     r1.plot_path_kinematics(ax, qsol2)
     print(qsol2)
     
-#    dq, ddq = q_derivatives(qsol2)
-#    dq = []
-#    ddq = []
-#    for i in range(3):
-#        dq.append(np.gradient(qsol2[:, i]))
-#        ddq.append(np.gradient(dq[i]))
-#    dq = np.array(dq).T
-#    ddq = np.array(ddq).T
     
     fig1, ax1 = plt.subplots(1, 3)
     ax1[0].plot(qsol2)
