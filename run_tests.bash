@@ -15,7 +15,8 @@ done
 echo "========================================="
 echo "Running scripts form module ppr"
 echo "========================================="
-for m in ppr/*.py
+cd ppr
+for m in *.py
 do
  python3 $m
 done

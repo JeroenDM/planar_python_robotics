@@ -85,8 +85,7 @@ from ppr.optimize import get_optimal_trajectory, q_derivatives
 #robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
 robot1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
 
-qs, dqs, ddqs = get_optimal_trajectory(robot1, path, path_js_init=shortest_path_js,
-                                       c_torque=10.0)
+qs, dqs, ddqs = get_optimal_trajectory(robot1, path, shortest_path_js)
 
 fig5, ax5 = plt.subplots()
 plt.title("Optimized solution")
@@ -127,7 +126,7 @@ cs = []
 tauf = []
 tf = np.linspace(0, t_end, 100)
 for i in range(3):
-    cs.append(CubicSpline(ts, tau[:, i]))
+    cs.append(CubicSpline(ts, tau[:, i], bc_type='clamped'))
     tauf.append(cs[i](tf))
 tauf = np.array(tauf).T
 
