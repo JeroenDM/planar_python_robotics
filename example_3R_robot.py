@@ -27,7 +27,7 @@ fig1, ax1 = plt.subplots()
 plt.title("The path")
 ax1.axis('equal')
 plot_path(ax1, path)
-plt.savefig("image/example_path.png")
+#plt.savefig("image/example_path.png")
 
 """ code block 2 """
 from example_robots import Robot_3R
@@ -41,7 +41,7 @@ fig2, ax2 = plt.subplots()
 plt.title("The Robot")
 ax2.axis('equal')
 robot1.plot(ax2, [1.3, -0.8, 1.4], 'k')
-plt.savefig("image/example_robot.png")
+#plt.savefig("image/example_robot.png")
 
 """ code block 3 """
 from ppr.path import cart_to_joint
@@ -61,7 +61,7 @@ plt.title("The joint solutions")
 ax3.axis('equal')
 robot1.plot_path_kinematics(ax3, path_js[0])
 plot_scene(ax3, sc1, 'r')
-plt.savefig("image/example_joint_solutions.png")
+#plt.savefig("image/example_joint_solutions.png")
 
 """ code block 4 """
 from ppr.graph import get_shortest_path
@@ -76,13 +76,14 @@ ax4.axis('equal')
 robot1.plot_path(ax4, shortest_path_js)
 plot_path(ax4, path, show_tolerance=False)
 plot_scene(ax4, sc1, 'r')
-plt.savefig("image/example_first_solution.png")
+#plt.savefig("image/example_first_solution.png")
 
 """fictional code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives
 
 #robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
 #robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
+# set link mass, cg position and mass moment of inertia.
 robot1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
 
 qs, dqs, ddqs = get_optimal_trajectory(robot1, path, shortest_path_js)
@@ -93,6 +94,7 @@ ax5.axis('equal')
 robot1.plot_path(ax5, qs)
 plot_path(ax5, path, show_tolerance=False)
 plot_scene(ax5, sc1, 'r')
+plt.savefig("image/optimized_solution.png")
 
 """ some scrap code """
 import numpy as np
@@ -106,33 +108,33 @@ for i in range(n_path):
     tau.append(robot1.euler_newton(qs[i], dqs[i], ddqs[i]))
 tau1 = np.array(tau1)
 tau = np.array(tau)
-
-plt.figure()
-plt.title('Torque')
-plt.plot(tau1, '--')
-plt.plot(tau, '.-')
-plt.legend(['t11', 't21', 't31', 't1s', 't2s', 't3s'])
-
-fig6, ax6 = plt.subplots(1, 3)
-ax6[0].plot(qs)
-ax6[1].plot(dqs)
-ax6[2].plot(ddqs)
-
-from scipy.interpolate import CubicSpline, interp1d
-t_end = (n_path-1) * 0.1
-ts = np.linspace(0, t_end, n_path)
-
-cs = []
-tauf = []
-tf = np.linspace(0, t_end, 100)
-for i in range(3):
-    cs.append(CubicSpline(ts, tau[:, i], bc_type='clamped'))
-    tauf.append(cs[i](tf))
-tauf = np.array(tauf).T
-
-plt.figure()
-plt.plot(ts, tau, '.')
-plt.plot(tf, tauf)
+#
+#plt.figure()
+#plt.title('Torque')
+#plt.plot(tau1, '--')
+#plt.plot(tau, '.-')
+#plt.legend(['t11', 't21', 't31', 't1s', 't2s', 't3s'])
+#
+#fig6, ax6 = plt.subplots(1, 3)
+#ax6[0].plot(qs)
+#ax6[1].plot(dqs)
+#ax6[2].plot(ddqs)
+#
+#from scipy.interpolate import CubicSpline, interp1d
+#t_end = (n_path-1) * 0.1
+#ts = np.linspace(0, t_end, n_path)
+#
+#cs = []
+#tauf = []
+#tf = np.linspace(0, t_end, 100)
+#for i in range(3):
+#    cs.append(CubicSpline(ts, tau[:, i], bc_type='clamped'))
+#    tauf.append(cs[i](tf))
+#tauf = np.array(tauf).T
+#
+#plt.figure()
+#plt.plot(ts, tau, '.')
+#plt.plot(tf, tauf)
 
 
 #import numpy as np
