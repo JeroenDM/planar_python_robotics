@@ -8,6 +8,9 @@ Created on Mon Nov 20 15:10:09 2017
 import numpy as np
 import matplotlib.pyplot as plt
 
+import os
+os.chdir('../')
+
 from example_robots import Robot_3R, Robot_2P3R
 
 def create_axes_handle():

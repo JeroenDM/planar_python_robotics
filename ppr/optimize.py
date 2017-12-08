@@ -192,14 +192,14 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from path import plot_path
     from scene import plot_scene
-    from test_util import default_test_data
+    from default_test_data import default_test_data
     
     r1, path, s1 = default_test_data()
     q_rand = np.random.rand(10, 3)
     
     print('Test main function')
     print('---------------------------------')
-    qp_init = np.loadtxt('../initial_path.txt')
+    qp_init = np.loadtxt('../data/initial_path.txt')
     
     # default case
     qp_sol, dqs, ddqs = get_optimal_trajectory(r1, path, qp_init)

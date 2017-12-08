@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as np_test
 
+import os
+os.chdir('../')
 from ppr.robot import Robot
 
 """ test input """
