@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 21 11:59:33 2017
+Solve numerical optimization problem for robot path
 
 @author: jeroen
 """
 
 
 import numpy as np
-from scipy.optimize import minimize, fmin_slsqp
+from scipy.optimize import fmin_slsqp
 
-from scipy.interpolate import CubicSpline
 
-""" spline version """
-def points_to_spline(points, x):
-    """ convert a 1D numpy array to a spline with these values as coefs  """
-    sp = CubicSpline(x, points, bc_type='clamped')
-    return sp
-
-""" normal version """
-def get_optimal_trajectory(robot, path, path_js_init, c_torque=1.0, c_position=1.0):
+#=============================================================================
+# Main functions to run the problem
+#=============================================================================
+def get_optimal_trajectory(robot, path, q_path_init, c_torque=1.0, c_position=1.0):
     n_path = len(path)
-    q_init = np.array(path_js_init).flatten()
+    q_init = np.array(q_path_init).flatten()
     
     def obj(x):
-        return c_torque * torque_cost(robot, x) + c_position * path_pos_error(robot, x, path)
+        return c_torque * torque_obj(x, robot) + c_position * path_error_obj(x, robot, path)
 
     sol = fmin_slsqp(obj, 
                      q_init,
@@ -33,48 +28,52 @@ def get_optimal_trajectory(robot, path, path_js_init, c_torque=1.0, c_position=1
     qsol = sol.reshape(n_path, 3)
     dqs, ddqs = q_derivatives(qsol)
     return qsol, dqs, ddqs
-
-def optimal_spline_wrap(robot, path, path_js_init):
-    qp = path_js_init
-    n_path = len(qp)
-    t_end = (n_path - 1) * 0.1
-    tp = np.linspace(0, t_end, n_path)
-    q_splines = []
-    for i in range(3):
-        q_splines.append(CubicSpline(tp, qp[:, i]))
     
-    return 0
-    
+#=============================================================================
+# Objectives
+# function structure : xxxx_obj(opt_var, params ...)
+    # xxxxx   : name, the thing that is minimized
+    # opt_var : the optimizationsv variables
+    # parmas  : parameters, such as robot, path, coefficients, ....
+# returns
+    # a a scalar that has to be minimized
+#=============================================================================
 
-def rk4(ode,h,x,u):
-  k1 = ode(x,       u)
-  k2 = ode(x+h/2*k1,u)
-  k3 = ode(x+h/2*k2,u)
-  k4 = ode(x+h*k3,  u)
-  return x + h/6 * (k1 + 2*k2 + 2*k3 + k4)
-
-def path_pos_error(robot, q_path, path):
-    n_path = int(len(q_path) / 3)
-    qp = q_path.reshape(n_path, 3)
+def path_error_obj(q_path, robot, path):
     con = []
     for i, tp in enumerate(path):
         pp = tp.p_nominal
-        pfk = robot.fk(qp[i])
+        pfk = robot.fk(q_path[i])
         con.append(np.sum((pp - pfk)**2))
     con = np.array(con).flatten()
     return np.sum(con**2)
 
-def path_cost(q_path):
-    n_path = int(len(q_path) / 3)
-    qp = q_path.reshape(n_path, 3)
-    dqp = np.diff(qp, axis=0)
+def joint_motion_obj(q_path):
+    dqp = np.diff(q_path, axis=0)
     
     return np.sum(np.abs(dqp))
 
+def torque_obj(q_path, robot):
+    n_path, ndof = q_path.shape
+    dqp, ddqp = q_derivatives(q_path)
+    tau = np.zeros((n_path, robot.ndof))
+    for i in range(n_path):
+        tau[i, :] = robot.euler_newton(q_path[i], dqp[i], ddqp[i])
+    return np.sum(tau**2)
 
+#=============================================================================
+# Constraints
+    # function structure : xxxx_obj(opt_var, params ...)
+    # xxxxx   : name, the thing that causes the constraints
+    # opt_var : the optimizationsv variables
+    # parmas  : parameters, such as robot, path, coefficients, ....
+# returns
+    # a numpy array, each elment is positive when the constraints
+    # is satisfied
+#=============================================================================
 
 def obj(robot, q_path, x_path):
-    return path_pos_error(robot, q_path, x_path) + 0.1 * path_cost(q_path)
+    return path_error_obj(robot, q_path, x_path) + 0.1 * path_cost(q_path)
 
 def path_constraints(robot, q_path, path, tol=1e-6):
     n_path = int(len(q_path) / 3)
@@ -102,15 +101,7 @@ def path_c2(robot, q_path, path):
         con.append(np.sum((pp - pfk)**2))
     return np.array(con).flatten()
 
-def torque_cost(robot, q_path):
-    n_path = int(len(q_path) / 3)
-    qp = q_path.reshape(n_path, 3)
-    dqp, ddqp = q_derivatives(qp)
-    tau = []
-    for i in range(n_path):
-        tau.append(robot.euler_newton(qp[i], dqp[i], ddqp[i]))
-    tau = np.array(tau)
-    return np.sum(tau**2)
+
 
 def jerk_cost(robot, q_path):
     n_path = int(len(q_path) / 3)
@@ -123,133 +114,99 @@ def jerk_cost(robot, q_path):
     jerk = np.gradient(tau, axis=0)
     return np.sum(jerk**2)
 
+#=============================================================================
+# Utility functions
+#=============================================================================
+    
+def reshape_path_vector(v_flat, n_dof=3):
+    """ Convert flat vector to n_path x n_dof path array
+    
+    P is the number of discrete path points.
+    This reshaping if often needed to formulate optimization problems.
+    The standard optimization variable shape in scipy.optimize is a
+    1D vector.
+    
+    Parameters
+    ----------
+    v_flat : ndarray
+        Vector of length n_path*ndof containing the joint position vector for
+        every path point [q1, q2, ...] with q1 of length ndof.
+    ndof : int
+        Degrees of freedom of robot.
+    
+    Returns
+    -------
+    ndarray
+        Array of shape (n_path, ndof) every row containt the joint positions for
+        a single path point.
+    """
+    n_path = int(len(v_flat) / n_dof)
+    return n_path, v_flat.reshape(n_path, n_dof)
+
 def q_derivatives(q, dt=0.1):
-    dq = []
-    ddq = []
-    for i in range(3):
-        dq.append( np.gradient(q[:, i]) * dt)
-        ddq.append(np.gradient(dq[i])   * dt)
-    dq = np.array(dq).T
-    ddq = np.array(ddq).T
+    """ Calculate joint speed and acceleration
+    
+    Based on a given path, caculate speed and acceleration using the
+    numpy.gradient function. A constant sample time dt is assumed.
+    
+    Parameters
+    ----------
+    q : ndarray
+        Array of shape (n_path, ndof) every row containt the joint positions for
+        a single path point.
+    dt : float
+        Sample time for joint position path
+    
+    Returns
+    -------
+    tuple
+        (dq, ddq) the joint speed and acceleration along the path.
+        Arrays with the same shape as the input path array q.
+    """
+    dq = np.gradient(q, dt, axis=0)
+    ddq = np.gradient(dq, dt, axis=0)
     return dq, ddq
 
+#=============================================================================
+# Testing
+#=============================================================================
 if __name__ == "__main__":
+    from test_util import default_test_data
+    
+    r1, path = default_test_data()
+    q_rand = np.random.rand(10, 3)
+    
+    print('Test objectives')
+    print('---------------------------------')
+    o1 = path_error_obj(q_rand, r1, path)
+    o2 = joint_motion_obj(q_rand)
+    o3 = torque_obj(q_rand, r1)
+    print(o1, o2, o3)
+    print('Test utils')
+    print('---------------------------------')
+    a_in = np.arange(1, 13)
+    a_out = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
+    n_path, a_test = reshape_path_vector(a_in)
+    np.testing.assert_equal(n_path, 4)
+    np.testing.assert_equal(a_test, a_out)
+    
+    t = np.linspace(0, 10, 50)
+    dt = t[1]-t[0]
+    x   = np.array([ np.sin(t),  np.cos(t), t**3     ]).T
+    dx  = np.array([ np.cos(t), -np.sin(t), 3 * t**2 ]).T
+    ddx = np.array([-np.sin(t), -np.cos(t), 6 * t    ]).T
+    dx_test, ddx_test = q_derivatives(x, dt=dt)
+    
     import matplotlib.pyplot as plt
-    from robot import Robot
-    from path import TolerancedNumber, TrajectoryPt, plot_path
+    fig, ax = plt.subplots(3)
+    for i in range(3):
+        ax[i].plot(t, dx[:, i], t, dx_test[:, i], '.')
+    fig2, ax2 = plt.subplots(3)
+    for i in range(3):
+        ax2[i].plot(t, ddx[:, i], t, ddx_test[:, i], '.')
     
-    # create path
-    N = 10
-    path = []
-    for i in range(N):
-        path.append([1.5, i/10, 1])
-    
-#    q_init = np.zeros((N, 3)).flatten()
-    q_init = np.zeros((N, 3))
-    q_init[:, 0] = 0.5
-    q_init = q_init.flatten()
-    
-    # create tolerances for x-position and orientation
-    dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
-    angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
-    
-    # create a list with path points
-    path = []
-    n_path = 10
-    for i in range(n_path):
-       yi = 0.7 + i * 0.6 / 10
-       path.append(TrajectoryPt([dx, yi, angle]))
-    
-    c = path_constraints(r1, q_init, path)
-    print(c)
-    
-    plot_path(ax, path, show_tolerance=False)
-    
-    def feq(q):
-        return path_c2(r1, q, path)
-    
-    sol1 = fmin_slsqp(path_cost, q_init, f_eqcons=feq)
-#    r1.plot_path_kinematics(ax, sol1.reshape(10, 3))
-    print(sol1)
-    qsol1 = sol1.reshape(10, 3)
-    
-    r1.set_link_inertia([1, 1, 1], [0.5, 0.5, 0.25], [0.05, 0.05, 0.05])
-    print(torque_cost(r1, q_init))
-    
-    qsol2, dq, ddq = get_optimal_trajectory(r1, path, qsol1)
-    r1.plot_path_kinematics(ax, qsol2)
-    print(qsol2)
+#    np.testing.assert_allclose(dx_test[10:40, :], dx[10:40, :], atol=0.01)
+#    np.testing.assert_allclose(ddx_test[10:40, :], ddx[10:40, :], astol=0.01)
     
     
-    fig1, ax1 = plt.subplots(1, 3)
-    ax1[0].plot(qsol2)
-    ax1[1].plot(dq)
-    ax1[2].plot(ddq)
     
-    
-    tau = []
-    for i in range(n_path):
-        tau.append(r1.euler_newton(qsol2[i], dq[i], ddq[i]))
-    tau = np.array(tau)
-    plt.figure()
-    plt.title('Torque')
-    plt.plot(tau)
-    
-#def path_pos_error(robot, q_path, x_path):
-#    n_path = int(len(q_path) / 3)
-#    xp = np.array([robot.fk(q) for q in q_path.reshape(n_path, 3)])
-#    xp = xp[:, :2].flatten()
-#    x_path = x_path[:, :2].flatten()
-#    
-#    return np.sum((xp - x_path)**2)   
-# from scipy.interpolate import CubicSpline, interp1d  
-#from scipy.signal import resample
-#def derivatives(t, x):
-#    """ Calculate derivative along second axis,
-#    or first axis if one dimensional input
-#    """
-#    
-#    x = np.array(x)
-#    sh = x.shape
-#    if len(sh) == 1:
-#        N = sh[0]
-#        M = 1
-#    else:
-#        M, N = sh
-#    
-#    Ns = 30
-#    ts = np.linspace(0, t[-1], Ns)
-#    f = interp1d(t, x)
-#    xs = f(ts)
-#    print(xs.shape)
-#    sp = []
-#    for i in range(M):
-#        cs = CubicSpline(ts, xs[i], bc_type='clamped')
-#        sp.append(cs)
-#    return ts, xs, sp 
-#    #x = np.arange(10)
-#    x = np.linspace(0, 10, 10)
-#    y = np.sin(x)
-#    cs = CubicSpline(x, y)
-#    xs = np.arange(-0.5, 9.6, 0.1)
-#    plt.figure(figsize=(6.5, 4))
-#    plt.plot(x, y, 'o', label='data')
-#    plt.plot(xs, np.sin(xs), label='true')
-#    plt.plot(xs, cs(xs), label="S")
-#    plt.plot(xs, cs(xs, 1), label="S'")
-#    plt.plot(xs, cs(xs, 2), label="S''")
-#    plt.plot(xs, cs(xs, 3), label="S'''")
-#    plt.xlim(-0.5, 9.5)
-#    plt.legend(loc='lower left', ncol=2)
-#    plt.show()
-#    
-#    t = np.linspace(0, 10, 10)
-#    q = np.array([y, y, -y])
-#    ts, xs, s = derivatives(t, q)
-#    
-#    fig5, ax5 = plt.subplots()
-#    ax5.plot(ts, xs[0], '.')
-#    qs = s[0](ts)
-#    dq = s[0](ts, 1)
-#    ddq = s[0](ts, 2)
-#    ax5.plot(ts, qs, ts, dq, ts, ddq)
