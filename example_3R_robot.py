@@ -78,6 +78,21 @@ plot_path(ax4, path, show_tolerance=False)
 plot_scene(ax4, sc1, 'r')
 #plt.savefig("image/example_first_solution.png")
 
+""" code block 4b """
+from ppr.ga import get_shortest_path
+
+# find the best sequence of joint solutions in path_js
+# currently total joint movement is minimized by default
+path_length, shortest_path_js = get_shortest_path(path_js)
+
+fig4b, ax4b = plt.subplots()
+plt.title("The GA solution")
+ax4b.axis('equal')
+robot1.plot_path(ax4b, shortest_path_js)
+plot_path(ax4b, path, show_tolerance=False)
+plot_scene(ax4b, sc1, 'r')
+#plt.savefig("image/example_first_solution.png")
+
 """fictional code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives
 

@@ -22,7 +22,42 @@ return list with 2D arrays if higher dimension
 import numpy as np
 from numpy.random import rand, randint, choice
 
-""" GA parameters defaults"""
+#=============================================================================
+# Main functions
+#=============================================================================
+
+
+def get_shortest_path(Q, method='ga'):
+    if method == 'ga':
+        return _get_shortest_path_ga(Q)
+    else:
+        raise ValueError("Method not implemented: " + method)
+
+def _get_shortest_path_ga(Q,
+                          cross_rate=0.9, mut_rate=0.2,
+                          pop_init=30, iters=200):
+    # set ga parameters based on test data
+    gp['Q'] = Q
+    gp['N'] = len(Q)
+    gp['Q_size'] = [len(q) for q in Q]
+    
+    # Check whether at least one path exists
+    if 0 in gp['Q_size']:
+        return False, None
+    
+    # set crossover and mutation rate
+    gp['cross_rate'] = cross_rate
+    gp['mut_rate'] = mut_rate
+    
+    # create initial population and run ga algorithm
+    pop = create_population(pop_init)
+    f_opt, path_index, fvec = run_ga(pop, iters=iters)
+    path = [ Q[i][path_index[i], :] for i in range(gp['N']) ]
+    return f_opt, path
+
+#=============================================================================
+# GA parameters defaults
+#=============================================================================
 gp = {}
 gp['N'] = 1 # path size
 gp['Q_size'] = [1] # chromosome length for every path point
@@ -30,7 +65,28 @@ gp['Q'] = [rand(gp['Q_size'][i], 3) for i in range(gp['N'])] # random default da
 gp['cross_rate'] = 0.8
 gp['mut_rate'] = 0.1
 
-""" GA functions """
+
+
+#=============================================================================
+# GA functions
+#=============================================================================
+def run_ga(init_pop, iters=100):
+    cnt = iters
+    pop = init_pop
+    f_opt = np.inf
+    f_all = []
+    while(cnt > 0):
+        pop = sort_population(pop)
+        
+        f_cur = fitness(pop[0])
+        f_all.append(f_cur)
+        if f_cur < f_opt:
+            f_opt = f_cur
+        
+        pop = new_generation(pop)
+        cnt -= 1
+    f_all = np.array(f_all)
+    return f_opt, pop[0], f_all
 
 def create_chromosome():
     return np.array([randint(0, gp['Q_size'][i]) for i in range(gp['N'])])
@@ -94,28 +150,10 @@ def new_generation(pop):
         new_pop.append(c2)
         current_size += 2
     return np.array(new_pop)
-
-def run_ga(init_pop, iters=100):
-    cnt = iters
-    pop = init_pop
-    f_opt = np.inf
-    f_all = []
-    while(cnt > 0):
-        pop = sort_population(pop)
         
-        f_cur = fitness(pop[0])
-        f_all.append(f_cur)
-        if f_cur < f_opt:
-            f_opt = f_cur
-        
-        pop = new_generation(pop)
-        cnt -= 1
-    f_all = np.array(f_all)
-    return f_opt, f_all
-        
-
-""" UTIL functions """
-
+#=============================================================================
+# UTIL functions
+#=============================================================================
 def get_path(c):
     return np.array([gp['Q'][i][c[i]] for i in range(gp['N'])])
 
@@ -130,7 +168,9 @@ def brute_force(iters = 100):
     
     return f_opt, f_all
 
-""" TEST CODE """
+#=============================================================================
+# Testing
+#=============================================================================
 if __name__ == "__main__":
     gp['N'] = 4
     gp['Q_size'] = [8]*gp['N']
@@ -196,12 +236,22 @@ if __name__ == "__main__":
     print("TEST GA vs brute force")
     print("----------------------")
     p4 = create_population(10)
-    fsol, fvec = run_ga(p4, iters=100)
-    ivec = np.linspace(0, 100*10, 100)
+    
+    fsol, fpop, fvec = run_ga(p4, iters=100)
     fsol2, fvec2 = brute_force(iters = 1000)
+    
+    print("path " + str(fpop))
+    
+    ivec = np.linspace(0, 100*10, 100)
     ivec2 = np.linspace(0, 100*10, 1000)
     import matplotlib.pyplot as plt
     plt.figure()
     plt.plot(ivec, fvec, '.', ivec2, np.minimum.accumulate(fvec2), '.')
     plt.show()
+    
+    print("----------------------")
+    print("get shortest path")
+    print("----------------------")
+    fopt, p = get_shortest_path(gp['Q'])
+    print("path " + str(p))
 

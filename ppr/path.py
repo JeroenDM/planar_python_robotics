@@ -7,7 +7,7 @@ Created on Thu Nov 16 12:29:32 2017
 """
 
 import numpy as np
-from matplotlib.patches import Arc, Wedge
+from matplotlib.patches import Wedge
 
 class TolerancedNumber:
     def __init__(self, nominal, lower_bound, upper_bound, samples=10):
