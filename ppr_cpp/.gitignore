@@ -4,3 +4,4 @@
 rectangle.py
 __pycache__/
 .cache/
+*.out

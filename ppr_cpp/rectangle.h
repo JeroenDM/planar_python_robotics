@@ -2,10 +2,11 @@
 #define _RECTANGLE_H_
 
 class Rectangle {
-    int width, height;
+    float width, height;
   public:
-    void set_values (int,int);
-    int area();
+    void set_values (float,float);
+    float area();
+    void eigen_stuff();
 };
 
 #endif
