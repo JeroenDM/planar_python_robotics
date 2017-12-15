@@ -1,3 +1,3 @@
-g++ -c rectangle.cxx -I /home/jeroen/Eigen334/
-g++ test_rectangle.cxx rectangle.o -o test.out
+g++ -c geometry.cxx -I /home/jeroen/Eigen3/
+g++ test_geometry.cxx geometry.o -o test.out -I /home/jeroen/Eigen3/
 ./test.out
