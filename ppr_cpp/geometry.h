@@ -15,11 +15,15 @@ class Rectangle {
     float width, height, pos_x, pos_y;
     rmatrix R;
     std::vector<point> p;
+    float tolerance;
   public:
     Rectangle(float, float, float, float, float);
+    void set_tolerance(float new_tolerance);
     float area();
     std::vector<point> get_coordinates();
     std::vector<point> get_normals();
+    std::vector<float> get_projection(point direction);
+    bool in_colission(Rectangle other);
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <Eigen/Dense>
 using Eigen::MatrixXd;
 int main()
@@ -9,4 +10,12 @@ int main()
   m(0,1) = -1;
   m(1,1) = m(1,0) + m(0,1);
   std::cout << m << std::endl;
+
+  std::vector<float> v;
+  v.push_back(1.5);
+  v.push_back(3.1);
+  v.push_back(-1.2);
+  float max = *std::max_element(v.begin(), v.end());
+  std::cout << max << std::endl;
+
 }

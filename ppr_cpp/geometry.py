@@ -104,15 +104,29 @@ class Rectangle(_object):
         except Exception:
             self.this = this
 
+    def set_tolerance(self, new_tolerance):
+        return _geometry.Rectangle_set_tolerance(self, new_tolerance)
+
     def area(self):
         return _geometry.Rectangle_area(self)
 
-    def eigen_stuff(self):
-        return _geometry.Rectangle_eigen_stuff(self)
+    def get_coordinates(self):
+        return _geometry.Rectangle_get_coordinates(self)
+
+    def get_normals(self):
+        return _geometry.Rectangle_get_normals(self)
+
+    def get_projection(self, direction):
+        return _geometry.Rectangle_get_projection(self, direction)
+
+    def in_colission(self, other):
+        return _geometry.Rectangle_in_colission(self, other)
     __swig_destroy__ = _geometry.delete_Rectangle
     __del__ = lambda self: None
 Rectangle_swigregister = _geometry.Rectangle_swigregister
 Rectangle_swigregister(Rectangle)
+cvar = _geometry.cvar
+PI = cvar.PI
 
 # This file is compatible with both classic and new-style classes.
 

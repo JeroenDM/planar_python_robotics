@@ -16,6 +16,11 @@ Rectangle::Rectangle(float x, float y, float px, float py, float a) {
   pos_y = py;
   R = rotation(a);
   p = get_coordinates();
+  tolerance = 1e-6;
+}
+
+void Rectangle::set_tolerance(float new_tolerance) {
+    tolerance = new_tolerance;
 }
 
 float Rectangle::area() {
@@ -44,7 +49,42 @@ std::vector<point> Rectangle::get_normals() {
     // Rotate this n0 3 times for the other normals
     rmatrix Rtemp = rotation(PI/2);
     normals.push_back(Rtemp * normals[0]);
-    normals.push_back(Rtemp * normals[0]);
-    normals.push_back(Rtemp * normals[0]);
+    normals.push_back(Rtemp * normals[1]);
+    normals.push_back(Rtemp * normals[2]);
     return normals;
+}
+
+std::vector<float> Rectangle::get_projection(point direction) {
+    float angle = -atan2(direction[1], direction[0]);
+    rmatrix Rtemp = rotation(angle);
+    std::vector<float> proj;
+    for (int i=0; i<4; ++i) {
+        point ptemp = Rtemp * p[i];
+        proj.push_back(ptemp[0]);
+    }
+    return proj;
+}
+
+bool Rectangle::in_colission(Rectangle other) {
+    std::vector<point> n1 = get_normals();
+    std::vector<point> n2 = other.get_normals();
+    // concatenate n1 and n2, save in n1
+    n1.insert(n1.end(), n2.begin(), n2.end());
+    bool col = true;
+    int i = 0;
+    while (col and i < 8) {
+        std::vector<float> proj1 = get_projection(n1[i]);
+        std::vector<float> proj2 = other.get_projection(n1[i]);
+        float max1, max2, min1, min2;
+        // calculate min and max
+        max1 = *std::max_element(proj1.begin(), proj1.end());
+        max2 = *std::max_element(proj2.begin(), proj2.end());
+        min1 = *std::min_element(proj1.begin(), proj1.end());
+        min2 = *std::min_element(proj2.begin(), proj2.end());
+        if ((max1 + tolerance < min2) or (min1 > max2 + tolerance)) {
+            col = false;
+        }
+        ++i;
+    }
+    return col;
 }
