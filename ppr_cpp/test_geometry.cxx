@@ -15,4 +15,5 @@ int main() {
     std::cout << rec.area() << std::endl;
     std::cout << rotation(1.6) << std::endl;
     printv(rec.get_coordinates());
+    printv(rec.get_normals());
 }
