@@ -10,6 +10,10 @@ typedef Eigen::Vector2f point;
 const double PI = 3.14159265358979323846;
 
 rmatrix rotation(float);
+void abel(int len1, double* ivec);
+void kane(double* data, int nrows, int ncols);
+void range(int *rangevec, int n);
+void jane(double mat[2][2]);
 
 class Rectangle {
     float width, height, pos_x, pos_y;

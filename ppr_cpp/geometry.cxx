@@ -1,12 +1,50 @@
 #include "geometry.h"
 #include <Eigen/Dense>
 #include <math.h>
+#include <iostream>
 
 rmatrix rotation(float angle) {
     rmatrix R;
     R << cos(angle), -sin(angle),
          sin(angle),  cos(angle);
     return R;
+}
+
+void abel(int len1, double* ivec) {
+    Eigen::VectorXd v(len1);
+    for (int i=0; i<len1; ++i) {
+        v[i] = ivec[i];
+    }
+    std::cout << "Abel received a vector!\n";
+    ivec[0] = 99.0;
+    std::cout << v << std::endl;
+}
+
+void range(int *rangevec, int n) {
+    int i;
+    for (i=0; i<n; ++i) {
+        rangevec[i] = i;
+    }
+}
+
+void jane(double mat[2][2]) {
+    std::cout << "This is jane" << std::endl;
+    mat[0][0] = 99.0;
+    mat[0][1] = 2.0;
+    mat[1][0] = 3.0;
+    mat[1][1] = 4.0;
+}
+
+void kane(double* data, int nrows, int ncols) {
+    Eigen::MatrixXd m(nrows, ncols);
+    std::cout << "Kane received a matrix!\n";
+    for (int i=0; i<nrows; ++i) {
+        for (int j=0; j<ncols; ++j) {
+            int index = j + (nrows+1)*i;
+            m(i, j) = data[index];
+        }
+    }
+    std::cout << m << std::endl;
 }
 
 Rectangle::Rectangle(float x, float y, float px, float py, float a) {

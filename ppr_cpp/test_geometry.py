@@ -6,26 +6,46 @@ print(r.area())
 r2 =geometry.Rectangle(1, 2, 0, 0, 0)
 print(r.in_colission(r2))
 
-from geometry import Rectangle
+# test array input
+v = np.array([1.0, 2.0])
+print(v.dtype)
+geometry.abel(v)
+print(v)
 
-print("-----test random rectangles-----")
+a = geometry.range(5)
+print(a)
+print(a.dtype)
 
-# test random set of rectangles
-nr = 4
-r_pos = np.random.rand(nr, 2) * 10 - 5
-r_sha = np.random.rand(nr, 2) * 6 - 3
-r_ang = np.random.rand(nr) * np.pi - np.pi/2
-rectangles = []
-for i in range(nr):
-    rectangles.append(Rectangle(r_sha[i, 0], r_sha[i, 1],
-                                r_pos[i, 0], r_pos[i, 1],
-                                r_ang[i]))
 
-res = rectangles[0].in_colission(rectangles[1])
-print(res)
-for rect_a in rectangles:
-    for rect_b in rectangles:
-        if rect_a.in_colission(rect_b):
-            print("collision!")
-        else:
-            print("oof")
+m = np.random.rand(2, 3)
+m[1, 2] = 9
+print(m)
+print(m.dtype)
+geometry.kane(m)
+
+jn = geometry.jane()
+print(jn)
+
+# from geometry import Rectangle
+
+# print("-----test random rectangles-----")
+
+# # test random set of rectangles
+# nr = 4
+# r_pos = np.random.rand(nr, 2) * 10 - 5
+# r_sha = np.random.rand(nr, 2) * 6 - 3
+# r_ang = np.random.rand(nr) * np.pi - np.pi/2
+# rectangles = []
+# for i in range(nr):
+#     rectangles.append(Rectangle(r_sha[i, 0], r_sha[i, 1],
+#                                 r_pos[i, 0], r_pos[i, 1],
+#                                 r_ang[i]))
+# 
+# res = rectangles[0].in_colission(rectangles[1])
+# print(res)
+# for rect_a in rectangles:
+#     for rect_b in rectangles:
+#         if rect_a.in_colission(rect_b):
+#             print("collision!")
+#         else:
+#             print("oof")
