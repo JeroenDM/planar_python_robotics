@@ -135,8 +135,11 @@ class Rectangle(_object):
     def get_projection(self, direction):
         return _geometry.Rectangle_get_projection(self, direction)
 
-    def in_colission(self, other):
-        return _geometry.Rectangle_in_colission(self, other)
+    def in_collision(self, other):
+        return _geometry.Rectangle_in_collision(self, other)
+
+    def get_plot_points(self):
+        return _geometry.Rectangle_get_plot_points(self)
     __swig_destroy__ = _geometry.delete_Rectangle
     __del__ = lambda self: None
 Rectangle_swigregister = _geometry.Rectangle_swigregister

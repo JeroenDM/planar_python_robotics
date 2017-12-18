@@ -27,7 +27,8 @@ class Rectangle {
     std::vector<point> get_coordinates();
     std::vector<point> get_normals();
     std::vector<float> get_projection(point direction);
-    bool in_colission(Rectangle other);
+    bool in_collision(Rectangle other);
+    void get_plot_points(double mat[4][2]);
 };
 
 #endif

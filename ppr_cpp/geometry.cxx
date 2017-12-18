@@ -47,9 +47,9 @@ void kane(double* data, int nrows, int ncols) {
     std::cout << m << std::endl;
 }
 
-Rectangle::Rectangle(float x, float y, float px, float py, float a) {
-  width = x;
-  height = y;
+Rectangle::Rectangle(float px, float py, float dx, float dy, float a) {
+  width = dx;
+  height = dy;
   pos_x = px;
   pos_y = py;
   R = rotation(a);
@@ -103,7 +103,7 @@ std::vector<float> Rectangle::get_projection(point direction) {
     return proj;
 }
 
-bool Rectangle::in_colission(Rectangle other) {
+bool Rectangle::in_collision(Rectangle other) {
     std::vector<point> n1 = get_normals();
     std::vector<point> n2 = other.get_normals();
     // concatenate n1 and n2, save in n1
@@ -125,4 +125,12 @@ bool Rectangle::in_colission(Rectangle other) {
         ++i;
     }
     return col;
+}
+
+void Rectangle::get_plot_points(double mat[4][2]) {
+    std::vector<point> temp = get_coordinates();
+    for (int i=0; i < temp.size(); ++i) {
+        mat[i][0] = temp[i][0];
+        mat[i][1] = temp[i][1];
+    }
 }

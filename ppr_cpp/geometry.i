@@ -17,7 +17,7 @@
 
 // apply numpy typemaps for output stuff
 %apply(int* ARGOUT_ARRAY1, int DIM1) {(int* rangevec, int n)}
-%apply( double ARGOUT_ARRAY2[ANY][ANY] ) {double mat[2][2]}
+%apply( double ARGOUT_ARRAY2[ANY][ANY] ) {(double mat[2][2]), (double mat[4][2])}
 // %apply (double** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(double** data, int* nrows, int* ncols)}
 
 %ignore rotation(float);
