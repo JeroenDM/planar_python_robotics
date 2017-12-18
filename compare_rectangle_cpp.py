@@ -6,9 +6,9 @@ Created on Mon Dec 18 15:04:37 2017
 @author: jeroen
 """
 
-from ppr.geometry import Rectangle
+#from ppr.geometry import Rectangle
 
-#import ppr_cpp.geometry as gm
+from ppr_cpp.geometry_cpp import Rectangle
 #class Rectangle(gm.Rectangle):
 #    """Wrap the cpp class for visualisation"""
 #
@@ -53,7 +53,7 @@ plt.axis('equal')
 plt.axis([-10, 10, -10, 10])
 
 N = 50
-for k in range(10):
+for k in range(2):
     rectangles = create_random_rectangles(N)
     cols = check_collision(rectangles)
 

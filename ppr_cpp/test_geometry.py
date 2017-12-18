@@ -2,32 +2,11 @@ import geometry
 import numpy as np
 
 r = geometry.Rectangle(1, 2, 0, 0, 0.2)
-print(r.area())
 r2 =geometry.Rectangle(1, 2, 0, 0, 0)
 print(r.in_collision(r2))
 
 pts = r2.get_plot_points()
 print(pts)
-
-# # test array input
-# v = np.array([1.0, 2.0])
-# print(v.dtype)
-# geometry.abel(v)
-# print(v)
-
-# a = geometry.range(5)
-# print(a)
-# print(a.dtype)
-
-
-# m = np.random.rand(2, 3)
-# m[1, 2] = 9
-# print(m)
-# print(m.dtype)
-# geometry.kane(m)
-
-# jn = geometry.jane()
-# print(jn)
 
 class Rectangle(geometry.Rectangle):
     """Wrap the cpp class for visualisation"""
@@ -68,4 +47,4 @@ for rect_a in rectangles:
     else:
         print("oof")
         rect_a.plot(ax2, 'g')
-plt.show()
+# plt.show()

@@ -90,22 +90,6 @@ except AttributeError:
     _newclass = 0
 
 
-
-def abel(len1):
-    return _geometry.abel(len1)
-abel = _geometry.abel
-
-def kane(data):
-    return _geometry.kane(data)
-kane = _geometry.kane
-
-def range(rangevec):
-    return _geometry.range(rangevec)
-range = _geometry.range
-
-def jane():
-    return _geometry.jane()
-jane = _geometry.jane
 class Rectangle(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Rectangle, name, value)
@@ -122,9 +106,6 @@ class Rectangle(_object):
 
     def set_tolerance(self, new_tolerance):
         return _geometry.Rectangle_set_tolerance(self, new_tolerance)
-
-    def area(self):
-        return _geometry.Rectangle_area(self)
 
     def get_coordinates(self):
         return _geometry.Rectangle_get_coordinates(self)

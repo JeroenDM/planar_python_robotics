@@ -31,6 +31,6 @@ int main() {
     std::cout << "---------------------------" << std::endl;
     Rectangle rec2(1, 2, 3, 0, 0.2);
     Rectangle rec3(1, 2, 0, 0, 0.2);
-    std::cout << rec.in_colission(rec2) << std::endl;
-    std::cout << rec.in_colission(rec3) << std::endl;
+    std::cout << rec.in_collision(rec2) << std::endl;
+    std::cout << rec.in_collision(rec3) << std::endl;
 }
