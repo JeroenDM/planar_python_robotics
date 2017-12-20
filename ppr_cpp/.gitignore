@@ -1,0 +1,7 @@
+*.o
+*.so
+*_wrap.cxx
+rectangle.py
+__pycache__/
+.cache/
+*.out
