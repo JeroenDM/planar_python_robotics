@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <cmath> // for abs()
 #include <algorithm> // for reverse()
+#include <vector>
 
 using namespace std;
 using namespace Eigen;
@@ -20,6 +21,7 @@ int main() {
     // create random test data
     const int nrows = 3;
     const int ncols = 4;
+    const int ndof = 6;
     MatrixXf m = MatrixXf::Random(nrows, ncols);
     cout << m << endl;
 
@@ -37,6 +39,24 @@ int main() {
     property_map<Graph, joint_value_t>::type distance = get(joint_value_t(), g);
     //property_map<Graph, edge_weight_t>::type weight = get(edge_weight_t(), g);
 
+    // create cost matrix
+    // std::vector<Matrix<float, (nrows-1), ndof, RowMajor>> cms(ncols);
+    // for (auto cm : cms) {
+    //     for (int col=1, col<ncols; ++col) {
+            
+    //     }
+    // }
+    for (int col=1; col<ncols; ++col) {
+        cout << "---------------\n";
+        cout << m.col(col) << "\n";
+        for (int row=0; row < nrows; ++row) {
+            m.col(col) = m.col(col).array() - 1.0;
+        }
+    }
+
+    cout << "new Matrix\n";
+    cout << m << endl;
+
     // add data to graph
     float max_distance = 0.8;
     vector<Graph::vertex_descriptor> prev_vertices;
@@ -45,6 +65,7 @@ int main() {
     pair<Graph::edge_descriptor, bool> e_temp;
     float w_temp;
     for (int col=0; col<ncols; ++col) {
+
         // create vertices for current column
         cout << "\nColumn: " << col << "\n";
         for (int row=0; row<nrows; ++row) {
@@ -53,6 +74,7 @@ int main() {
             put(distance, v_temp, j_temp);
             cur_vertices.push_back(v_temp);
         }
+
         // add edges from previous column to current column
         if (col == 0) {
             prev_vertices = cur_vertices;
