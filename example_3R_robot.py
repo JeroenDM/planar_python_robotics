@@ -109,7 +109,7 @@ ax5.axis('equal')
 robot1.plot_path(ax5, qs)
 plot_path(ax5, path, show_tolerance=False)
 plot_scene(ax5, sc1, 'r')
-plt.savefig("image/optimized_solution.png")
+#plt.savefig("image/optimized_solution.png")
 
 """ some scrap code """
 import numpy as np
