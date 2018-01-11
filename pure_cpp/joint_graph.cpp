@@ -46,16 +46,16 @@ int main() {
             
     //     }
     // }
-    for (int col=1; col<ncols; ++col) {
-        cout << "---------------\n";
-        cout << m.col(col) << "\n";
-        for (int row=0; row < nrows; ++row) {
-            m.col(col) = m.col(col).array() - 1.0;
-        }
-    }
+    // for (int col=1; col<ncols; ++col) {
+    //     cout << "---------------\n";
+    //     cout << m.col(col) << "\n";
+    //     for (int row=0; row < nrows; ++row) {
+    //         m.col(col) = m.col(col).array() - 1.0;
+    //     }
+    // }
 
-    cout << "new Matrix\n";
-    cout << m << endl;
+    // cout << "new Matrix\n";
+    // cout << m << endl;
 
     // add data to graph
     float max_distance = 0.8;
