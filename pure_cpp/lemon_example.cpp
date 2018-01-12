@@ -6,6 +6,8 @@
 using namespace lemon;
 using namespace std;
 
+void print_shortest_path(Dijkstra<ListDigraph>, vector<ListDigraph::Node>, ListDigraph::NodeMap<int>&);
+
 int main() {
 
     ListDigraph g;
@@ -61,5 +63,28 @@ int main() {
     }
     cout << endl;
 
+    print_shortest_path(dk, nodes, &label);
+
     return 0;
+}
+
+void print_shortest_path(Dijkstra<ListDigraph> d,
+                            vector<ListDigraph::Node> nodes,
+                            ListDigraph::NodeMap<int>& label) {
+    // go from last node to start and put the nodes in a vector
+    vector<ListDigraph::Node> path;
+    for (ListDigraph::Node n = nodes[3]; n != nodes[0]; n = d.predNode(n)) {
+        path.push_back(n);
+    }
+    path.push_back(nodes[0]);
+
+    // reverse path vector
+    reverse(path.begin(), path.end());
+
+    // the final path
+    cout << "The path: \n";
+    for (auto p : path) {
+        cout << label[p] << " ";
+    }
+    cout << endl;
 }

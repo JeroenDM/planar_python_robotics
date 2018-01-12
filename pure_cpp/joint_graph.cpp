@@ -8,28 +8,29 @@
 #include <lemon/list_graph.h>
 #include <lemon/dijkstra.h>
 
-using namespace std;
-using namespace Eigen;
-using namespace lemon;
-
-typedef array<float, 6> joint_value;
-
-float cost_function(joint_value, joint_value);
+// new type for robot joint values
+typedef std::array<float, 6> joint_value;
 
 int main() {
+    using namespace std;
+    using namespace Eigen;
+    using namespace lemon;
+
+    float test = -0.23558;
+    cout << "abs(float): " << abs(test) << endl;
+
     // create random test data
     const int nrows = 3;
     const int ncols = 4;
     const int ndof = 6;
-    MatrixXf m = MatrixXf::Random(nrows, ncols);
-    cout << "Matrix with random test data: \n";
-    cout << m << endl;
+    MatrixXf data = MatrixXf::Random(nrows, ncols);
+    //cout << "Matrix with random test data: \n";
+    //cout << data << endl;
 
-    // defualt lemon graph
     ListDigraph g;
 
     // map containing graph data
-    ListDigraph::NodeMap<joint_value> joint_value(g);
+    ListDigraph::NodeMap<joint_value> joint_values(g);
     ListDigraph::ArcMap<int> cost(g);
 
     // add data from matrix m to graph
@@ -43,9 +44,11 @@ int main() {
         // add joint values  to graph
         for (int row = 0; row < nrows; ++row) {
             n = g.addNode();
-            joint_value[n] = { m(row, col), 0, 0, 0, 0, 0 };
+            joint_values[n] = { data(row, col), 0, 0, 0, 0, 0 };
             current.push_back(n);
+            cout << g.id(n) << "(" << joint_values[n][0] << ")" << " ";
         }
+        cout << "\n---------------\n";
 
         // connect with previous column if exists
         if (col == 0) {
@@ -54,9 +57,11 @@ int main() {
         } else {
             for (auto nc : current) {
                 for (auto np : previous) {
+                    // add arc with calculated cost
                     a = g.addArc(np, nc);
-                    c = cost_function(joint_value[np], joint_value[nc]);
+                    c = abs(joint_values[np][0] - joint_values[nc][0]);
                     cost[a] = static_cast<int>(100 * c);
+                    // print arc
                     cout << "(" << g.id(np) << ", " << g.id(nc) << ")  ";
                     cout << cost[a] << "\n";
                 }
@@ -67,7 +72,7 @@ int main() {
     }
 
     for (ListDigraph::NodeIt it(g); it != INVALID; ++it) {
-        cout << g.id(it) << " | " << joint_value[it][0] << "\n";
+        cout << g.id(it) << " | " << joint_values[it][0] << "\n";
     }
     cout << endl;
 
@@ -101,16 +106,8 @@ int main() {
     for (auto p : path) {
         cout << g.id(p) << " ";
     }
-    cout << endl;
+    // cout << endl;
     
+    cout << endl;
     return 0;
-}
-
-float cost_function(joint_value j1, joint_value j2) {
-        float cost = 0;
-        for (int i=0; i<j1.size(); ++i) {
-            cost += abs(j1[i] - j2[i]);
-        }
-        return cost;
-        // return abs(j1[0] - j2[0]);
 }
