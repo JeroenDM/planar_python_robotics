@@ -46,7 +46,7 @@ int main() {
     vector<float> test;
     
     graph_data data;
-    read_file("data.txt", data);
+    read_file("simple_example.txt", data);
     //print_test_data(data);
 
     // test Node structure
@@ -73,9 +73,11 @@ int main() {
     vector<Node*> unvisited;
 
     // add pointers to all notes to unvisited
+    // nodes of first column that are not added
+    // they cannot be reached by a node from the same column
     for (auto &p : g) {
         for (Node& n : p) {
-            unvisited.push_back(&n);
+            if (n.path_index > 0) unvisited.push_back(&n);
         }
     }
 
@@ -93,7 +95,6 @@ int main() {
     std::sort(unvisited.begin(), unvisited.end(), sort_function);
     // when sorted, the last element is the one just visited
     visited.push_back(start_node);
-    unvisited.pop_back();
 
     cout << "after start node is visited" << endl;
     print_nodes(unvisited);
@@ -101,15 +102,18 @@ int main() {
 
     Node* current;
     //int iter = 0;
-    //const int MAX_ITER = 100;
-    for (int i = 0; i<9; ++i) {
-        current = unvisited.back();
-        visit(current, g);
-        std::sort(unvisited.begin(), unvisited.end(), sort_function);
-        visited.push_back(current);
-        cout << unvisited.size() << endl;
-        unvisited.pop_back();
-            
+    const int MAX_ITER = 10;
+    for (int i = 0; i<MAX_ITER; ++i) {
+        if (unvisited.size() > 0) {
+            current = unvisited.back();
+            unvisited.pop_back();
+            visit(current, g);
+            std::sort(unvisited.begin(), unvisited.end(), sort_function);
+            visited.push_back(current);
+        } else {
+            cout << "Alle nodes visited!" << endl;
+            break;
+        }       
     }
 
     cout << "after loop" << endl;
@@ -131,9 +135,9 @@ void visit(Node* n, Graph& g) {
     std::vector<Node*> neighbors;
     neighbors = get_neighbors(*n, g);
     for (Node* nb : neighbors) {
-        float cost = (*n).dist + cost_function(*nb, *n);
-        if (cost < (*nb).dist) {
-            (*nb).dist = cost;
+        float dist = (*n).dist + cost_function(*nb, *n);
+        if (dist < (*nb).dist) {
+            (*nb).dist = dist;
             (*nb).parent = n;
         }
     }
@@ -219,21 +223,33 @@ void read_file(std::string filename, graph_data& gd) {
     std::string line;
     int i = 0;
     while(infile) {
-        getline(infile, line);
-        // the last line is an empty string apparantly
-        if (line != "") {
-            // use stringstream object to parse a single line
-            std::stringstream ss(line);
+        std::string str_input;
+        getline(infile, str_input);
+        if (str_input != ""){
+            std::stringstream line_data(str_input);
             std::string temp;
-            // add new column so I can do gd[i] assignment
             std::vector<float> new_column;
             gd.push_back(new_column);
-            while (getline(ss, temp, ',')) {
-                // convert to float and print
-                gd[i].push_back(stof(temp));
+            while (getline(line_data, temp, ',')) {
+                gd.back().push_back(stof(temp));
             }
-            ++i;
         }
+        // getline(infile, line);
+        // std::cout << "reading line: " << line << std::endl;
+        // // the last line is an empty string apparantly
+        // if (line != "") {
+        //     // use stringstream object to parse a single line
+        //     std::stringstream ss(line);
+        //     std::string temp;
+        //     // add new column so I can do gd[i] assignment
+        //     std::vector<float> new_column;
+        //     gd.push_back(new_column);
+        //     while (getline(ss, temp, ',')) {
+        //         // convert to float and print
+        //         gd[i].push_back(stof(temp));
+        //     }
+        //     ++i;
+        // }
     }
     // file is closed when infile goes out of scope
 }
