@@ -19,6 +19,9 @@ struct Node {
 };
 Node DUMMY_NODE;
 typedef std::vector<std::vector<float>> graph_data;
+// the graph is the only variable containing the nodes
+// all the other containers with nodes
+// contain pointers to the nodes in graph
 typedef std::vector<std::vector<Node>> Graph;
 
 void add_data_to_graph(graph_data& gd, Graph& g);
@@ -26,6 +29,7 @@ float cost_function(Node, Node);
 std::vector<Node*> get_neighbors(Node&, Graph& g);
 void visit(Node*, Graph&);
 bool sort_function(Node*, Node*);
+std::vector<Node*> get_path(Node*);
 
 // util functions
 void read_file(std::string filename, graph_data& gd);
@@ -120,12 +124,36 @@ int main() {
     print_nodes(unvisited);
     print_nodes(visited);
 
+    cout << "Shortest path" << endl;
+    // find last node with shortest distance to start
+    float min_dist = INF;
+    Node* goal;
+    for (auto n : g[2]) {
+        if (n.dist < min_dist) {
+            goal = &n;
+            min_dist = n.dist;
+        }
+    }
+    vector<Node*> p = get_path(goal);
+    print_nodes(p);
+
     return 0;
 }
 
 //===========================================
 // declaration graph functions
 //===========================================
+
+std::vector<Node*> get_path(Node* goal) {
+    std::vector<Node*> path;
+    Node* current_node = goal;
+    while ((*current_node).path_index > 0) {
+        path.push_back(current_node);
+        current_node = (*current_node).parent;
+    }
+    path.push_back(current_node);
+    return path;
+}
 
 bool sort_function(Node* n1, Node* n2) {
     return (*n2).dist < (*n1).dist;
