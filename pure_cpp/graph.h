@@ -22,8 +22,9 @@ void add_data_to_graph(graph_data& gd, graph& g);
 
 namespace print {
     void test_data(graph_data& gd);
-    void nodes(std::vector<Node>);
-    void nodes(std::vector<Node*>);
+    void nodes(std::vector<Node>&);
+    void nodes(std::vector<Node*>&);
+    void node(Node&);
     void node(Node*);
     void test_graph(graph&);
 }
@@ -72,41 +73,31 @@ void read_file(std::string filename, graph_data& gd) {
 // print functions for debugging
 //===========================================
 
-void print::nodes(std::vector<Node> nodes) {
+void print::node(Node& node) {
     using namespace std;
-    for (auto node : nodes) {
-        cout << "(" << node.path_index << ", ";
+    cout << "(" << node.path_index << ", ";
         cout << node.sample_index << ")";
         cout << " dist: " << node.dist;
-        cout << " parent: ";
-        cout << "(" << (*node.parent).path_index << ", ";
-        cout << (*node.parent).sample_index << ")\n";
-    }
-    cout << endl;
-}
-
-void print::nodes(std::vector<Node*> nodes) {
-    using namespace std;
-    for (auto node : nodes) {
-        cout << "(" << (*node).path_index << ", ";
-        cout << (*node).sample_index << ")";
-        cout << " dist: " << (*node).dist;
         cout << "\tparent: ";
-        cout << "(" << (*(*node).parent).path_index << ", ";
-        cout << (*(*node).parent).sample_index << ")\n";
-    }
-    cout << endl;
+        cout << "(" << (*node.parent).path_index << ", ";
+        cout << (*node.parent).sample_index << ")";
+        cout << endl;
 }
 
 void print::node(Node* node) {
-    using namespace std;
-    cout << "(" << (*node).path_index << ", ";
-        cout << (*node).sample_index << ")";
-        cout << " dist: " << (*node).dist;
-        cout << "\tparent: ";
-        cout << "(" << (*(*node).parent).path_index << ", ";
-        cout << (*(*node).parent).sample_index << ")\n";
-        cout << endl;
+    print::node(*node);
+}
+
+void print::nodes(std::vector<Node>& nodes) {
+    for (Node& n : nodes) {
+        print::node(n);
+    }
+}
+
+void print::nodes(std::vector<Node*>& nodes) {
+    for (Node* n : nodes) {
+        print::node(n);
+    }
 }
 
 void print::test_data(graph_data& gd) {
@@ -120,7 +111,7 @@ void print::test_data(graph_data& gd) {
     std::cout << "-------------" << std::endl;
 }
 
-void print::test_graph(graph &g) {
+void print::test_graph(graph& g) {
     for (auto col : g) {
         std::cout << "--------\n";
         print::nodes(col);

@@ -19,13 +19,12 @@ int main() {
 
     graph g;
     add_data_to_graph(data, g);
-    print::test_graph(g);
+    //print::test_graph(g);
 
-    Dijkstra dk;
-    dk.init(g, &g[0][0]);
+    Dijkstra dk(g, 0);
+    dk.show_graph();
 
-    //vector<Node*> nb = dk.get_neighbors(dk.start);
-    //print::nodes(nb);
+    dk.test();
 
     return 0;
 }
