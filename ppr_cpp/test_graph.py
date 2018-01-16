@@ -17,6 +17,8 @@ for i in range(3):
 # print(mm[0].shape)
 # gr.input_matrix(mm[1])
 
+print(mm)
+
 g = graph.Graph()
 g.add_data_column(mm[0])
 g.add_data_column(mm[1])

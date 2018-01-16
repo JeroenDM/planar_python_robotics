@@ -58,7 +58,7 @@ void Graph::dijkstra_algorithm(Node* start_node){
     // keep track of unvisited nodes with updated distance
     // this allows you to only sort the relevant part of unvisited
     // int nodes_seen_cntr = 0;
-    const int MAX_ITER = 10;
+    const int MAX_ITER = 10000;
     int i;
     for (i = 0; i<MAX_ITER; ++i) {
         if (unvisited.size() > 0) {
@@ -90,7 +90,12 @@ void Graph::init_unvisited(std::vector<Node*>& uv) {
 }
 
 float Graph::cost_function(Node n1, Node n2) {
-    return fabs((*n1.jv)[0] - (*n2.jv)[0]);
+    float cost = 0;
+    int s = (*n1.jv).size();
+    for (int i = 0; i<(*n1.jv).size(); ++i) {
+        cost += fabs( (*n1.jv)[i] - (*n2.jv)[i] );
+    }
+    return cost;
 }
 
 std::vector<Node*> Graph::get_neighbors(Node* node) {
