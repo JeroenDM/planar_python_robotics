@@ -55,47 +55,6 @@ int main() {
     Graph g;
     add_data_to_graph(data, g);
 
-    // // sorting the whole unvisited set is inefficient
-    // vector<Node*> visited;
-    // vector<Node*> unvisited;
-
-    // // add pointers to all notes to unvisited
-    // // nodes of first column that are not added
-    // init_unvisited(unvisited, g);    
-
-    // add start node at the back, no sorting needed at the start
-    // Node* start_node = &g[0][0];
-    // (*start_node).dist = 0;
-    // unvisited.push_back(start_node);
-
-    // cout << "Before dijkstra" << endl;
-    // print_nodes(unvisited);
-    // print_nodes(visited);
-
-    // Node* current;
-    // // keep track of unvisited nodes with updated distance
-    // // this allows you to only sort the relevant part of unvisited
-    // // int nodes_seen_cntr = 0;
-    // const int MAX_ITER = 10;
-    // int i;
-    // for (i = 0; i<MAX_ITER; ++i) {
-    //     if (unvisited.size() > 0) {
-    //         current = unvisited.back();
-    //         unvisited.pop_back();
-    //         visit(current, g);
-    //         std::sort(unvisited.begin(), unvisited.end(), sort_function);
-    //         visited.push_back(current);
-    //     } else {
-    //         cout << "Alle nodes visited!" << endl;
-    //         break;
-    //     }      
-    // }
-    // if (i == MAX_ITER) cout << "Maximum iterations reached" << endl;
-
-    // cout << "after loop" << endl;
-    // print_nodes(unvisited);
-    // print_nodes(visited);
-
     run_dijkstra(&g[0][0], g);
 
     cout << "Shortest path" << endl;
