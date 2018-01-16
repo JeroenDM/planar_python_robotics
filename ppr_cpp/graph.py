@@ -101,8 +101,8 @@ class Graph(_object):
     __getattr__ = lambda self, name: _swig_getattr(self, Graph, name)
     __repr__ = _swig_repr
 
-    def add_data_column(self, vec):
-        return _graph.Graph_add_data_column(self, vec)
+    def add_data_column(self, mat):
+        return _graph.Graph_add_data_column(self, mat)
 
     def print_graph_data(self):
         return _graph.Graph_print_graph_data(self)
@@ -112,6 +112,9 @@ class Graph(_object):
 
     def run_dijkstra(self):
         return _graph.Graph_run_dijkstra(self)
+
+    def get_path(self, vec):
+        return _graph.Graph_get_path(self, vec)
 
     def print_path(self):
         return _graph.Graph_print_path(self)

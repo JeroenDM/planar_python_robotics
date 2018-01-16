@@ -1,22 +1,33 @@
 
 import numpy as np
-import graph as gr
+import graph
 
 m = np.array([[0, 0, 0],
               [2, 1, 0.5],
               [3, 1.5, 1]])
-print(m)
+# print(m)
 
-gr.input_matrix(m)
+mm = []
+for i in range(3):
+    temp = []
+    for j in range(3):
+        temp.append( np.array([m[i, j], 0, 0, 0]) )
+    mm.append(np.array(temp))
 
-g = gr.Graph()
-g.add_data_column(m[0])
-g.add_data_column(m[1])
-g.add_data_column(m[2])
-g.print_graph_data()
+# print(mm[0].shape)
+# gr.input_matrix(mm[1])
+
+g = graph.Graph()
+g.add_data_column(mm[0])
+g.add_data_column(mm[1])
+g.add_data_column(mm[2])
+# g.print_graph_data()
 
 g.init_dijkstra()
-g.print_graph()
+# g.print_graph()
 
 g.run_dijkstra()
 g.print_path()
+
+p = g.get_path(len(mm))
+print(p)

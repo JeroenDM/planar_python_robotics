@@ -6,7 +6,6 @@ using namespace std;
 void input_matrix(double* mat, int nrows, int ncols) {
     cout << "Executing input_matrix" << endl;
 
-    graph_data gd;
     int index = 0;
     for (int i=0; i<nrows; ++i) {
         for (int j=0; j<ncols; ++j) {
@@ -55,22 +54,6 @@ void Graph::dijkstra_algorithm(Node* start_node){
     print_nodes(unvisited);
     print_nodes(visited);
 
-    // Node* current;
-    // int i;
-    // for (i = 0; i<4; ++i) {
-    //     current = unvisited.back();
-    //     unvisited.pop_back();
-
-    //     visit(current);
-    //     std::sort(unvisited.begin(), unvisited.end(), sort_function);
-
-    //     visited.push_back(current);
-
-    //     cout << "During dijkstra---------------" << endl;
-    //     print_nodes(unvisited);
-    //     print_nodes(visited);
-    // }
-
     Node* current;
     // keep track of unvisited nodes with updated distance
     // this allows you to only sort the relevant part of unvisited
@@ -107,7 +90,7 @@ void Graph::init_unvisited(std::vector<Node*>& uv) {
 }
 
 float Graph::cost_function(Node n1, Node n2) {
-    return fabs(*n1.value - *n2.value);
+    return fabs((*n1.jv)[0] - (*n2.jv)[0]);
 }
 
 std::vector<Node*> Graph::get_neighbors(Node* node) {
@@ -161,36 +144,7 @@ void Graph::print_nodes(std::vector<Node> nodes) {
     cout << endl;
 }
 
-// ===========================================================
-// puplic graph fucntions
-// ===========================================================
-void Graph::add_data_column(double* vec, int n) {
-    std::vector<double> new_column;
-    gd.push_back(new_column);
-    for (int i=0; i<n; ++i) {
-        gd.back().push_back(vec[i]);
-    }
-}
-void Graph::print_graph_data() {
-    for(auto& col : gd) {
-        for (double& d : col) {
-            cout << d << endl;
-        }
-    }
-}
-
-void Graph::init_dijkstra() {
-    cout << "Initializing graph for planning" << endl;
-    graph_data_to_node_array();
-}
-
-void Graph::run_dijkstra() {
-    cout << "Running dijkstra's algorithm" << endl;
-    dijkstra_algorithm(&na[0][0]);
-}
-
-void Graph::print_path() {
-    cout << "The most recent shortest path is:" << endl;
+std::vector<Node*> Graph::get_path_nodes() {
     // find last node with shortest distance to start
     double min_dist = INF;
     Node* goal;
@@ -208,7 +162,65 @@ void Graph::print_path() {
         current_node = (*current_node).parent;
     }
     path.push_back(current_node);
-    print_nodes(path);
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
+// ===========================================================
+// puplic graph fucntions
+// ===========================================================
+// rows containing the different solutions
+// columns different joints
+void Graph::add_data_column(double* mat, int nrows, int ncols) {
+    int index;
+    std::vector<joint_value> new_col;
+    for (int i=0; i<nrows; ++i) {
+        joint_value new_jv;
+        for (int j=0; j<ncols; ++j) {
+            index = index = j + ncols*i;
+            new_jv.push_back(mat[index]);
+        }
+        new_col.push_back(new_jv);
+    }
+    gd.push_back(new_col);
+}
+void Graph::print_graph_data() {
+    for(auto& col : gd) {
+        cout << "----------------" << endl;
+        for (auto& val : col) {
+            for (double& d : val) {
+                cout << d << " ";
+            }
+            cout << endl;
+        }
+    }
+}
+
+void Graph::init_dijkstra() {
+    cout << "Initializing graph for planning" << endl;
+    graph_data_to_node_array();
+}
+
+void Graph::run_dijkstra() {
+    cout << "Running dijkstra's algorithm" << endl;
+    dijkstra_algorithm(&na[0][0]);
+}
+
+void Graph::get_path(int* vec, int n) {
+    std::vector<Node*> path;
+    path = get_path_nodes();
+    if (n != path.size()) {
+        cout << "Wrong path length" << endl;
+    } else {
+        for (int i = 0; i<n; ++i) {
+            vec[i] = (*path[i]).sample_index;
+        }
+    }
+}
+
+void Graph::print_path() {
+    cout << "The most recent shortest path is:" << endl;
+    print_nodes(get_path_nodes());
 }
 
 void Graph::print_graph() {

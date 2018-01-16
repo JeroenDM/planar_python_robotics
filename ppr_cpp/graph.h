@@ -6,16 +6,20 @@
 
 void input_matrix(double* mat, int nrows, int ncols);
 
+// fixed length container more efficient but less flexible
+typedef std::vector<double> joint_value;
+
 // graph functions
 struct Node {
     int path_index;
     int sample_index;
-    double* value;
+    //double* value;
+    joint_value* jv;
     double dist;
     Node* parent;
 };
 
-typedef std::vector< std::vector<double> > graph_data;
+typedef std::vector< std::vector<joint_value> > graph_data;
 // the graph is the only variable containing the nodes
 // all the other containers with nodes
 // contain pointers to the nodes in graph
@@ -36,11 +40,13 @@ class Graph {
     void print_nodes(std::vector<Node*> nodes);
     void print_nodes(std::vector<Node> nodes);
     std::vector<Node*> get_neighbors(Node* node);
+    std::vector<Node*> get_path_nodes();
 public:
-    void add_data_column(double* vec, int n);
+    void add_data_column(double* mat, int nrows, int ncols);
     void print_graph_data();
     void init_dijkstra();
     void run_dijkstra();
+    void get_path(int* vec, int n);
     void print_path();
     void print_graph();
 };
