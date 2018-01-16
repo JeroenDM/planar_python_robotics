@@ -64,12 +64,13 @@ plot_scene(ax3, sc1, 'r')
 #plt.savefig("image/example_joint_solutions.png")
 
 """ code block 4 """
-from ppr.graph import get_shortest_path
+#from ppr.graph import get_shortest_path
+from ppr_cpp.graph_cpp import get_shortest_path
 
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
 path_length, shortest_path_js = get_shortest_path(path_js)
-
+#
 fig4, ax4 = plt.subplots()
 plt.title("The first solution")
 ax4.axis('equal')
