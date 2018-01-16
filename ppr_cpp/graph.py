@@ -15,20 +15,20 @@ if version_info >= (2, 6, 0):
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_geometry', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_graph', [dirname(__file__)])
         except ImportError:
-            import _geometry
-            return _geometry
+            import _graph
+            return _graph
         if fp is not None:
             try:
-                _mod = imp.load_module('_geometry', fp, pathname, description)
+                _mod = imp.load_module('_graph', fp, pathname, description)
             finally:
                 fp.close()
             return _mod
-    _geometry = swig_import_helper()
+    _graph = swig_import_helper()
     del swig_import_helper
 else:
-    import _geometry
+    import _graph
 del version_info
 try:
     _swig_property = property
@@ -90,43 +90,47 @@ except AttributeError:
     _newclass = 0
 
 
-class Rectangle(_object):
+
+def input_matrix(mat):
+    return _graph.input_matrix(mat)
+input_matrix = _graph.input_matrix
+class Graph(_object):
     __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Rectangle, name, value)
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Graph, name, value)
     __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Rectangle, name)
+    __getattr__ = lambda self, name: _swig_getattr(self, Graph, name)
     __repr__ = _swig_repr
 
-    def __init__(self, arg2, arg3, arg4, arg5, arg6):
-        this = _geometry.new_Rectangle(arg2, arg3, arg4, arg5, arg6)
+    def add_data_column(self, vec):
+        return _graph.Graph_add_data_column(self, vec)
+
+    def print_graph_data(self):
+        return _graph.Graph_print_graph_data(self)
+
+    def init_dijkstra(self):
+        return _graph.Graph_init_dijkstra(self)
+
+    def run_dijkstra(self):
+        return _graph.Graph_run_dijkstra(self)
+
+    def print_path(self):
+        return _graph.Graph_print_path(self)
+
+    def print_graph(self):
+        return _graph.Graph_print_graph(self)
+
+    def __init__(self):
+        this = _graph.new_Graph()
         try:
             self.this.append(this)
         except Exception:
             self.this = this
-
-    def set_tolerance(self, new_tolerance):
-        return _geometry.Rectangle_set_tolerance(self, new_tolerance)
-
-    def get_coordinates(self):
-        return _geometry.Rectangle_get_coordinates(self)
-
-    def get_normals(self):
-        return _geometry.Rectangle_get_normals(self)
-
-    def get_projection(self, direction):
-        return _geometry.Rectangle_get_projection(self, direction)
-
-    def in_collision(self, other):
-        return _geometry.Rectangle_in_collision(self, other)
-
-    def get_plot_points(self):
-        return _geometry.Rectangle_get_plot_points(self)
-    __swig_destroy__ = _geometry.delete_Rectangle
+    __swig_destroy__ = _graph.delete_Graph
     __del__ = lambda self: None
-Rectangle_swigregister = _geometry.Rectangle_swigregister
-Rectangle_swigregister(Rectangle)
-cvar = _geometry.cvar
-PI = cvar.PI
+Graph_swigregister = _graph.Graph_swigregister
+Graph_swigregister(Graph)
+cvar = _graph.cvar
+INF = cvar.INF
 
 # This file is compatible with both classic and new-style classes.
 
