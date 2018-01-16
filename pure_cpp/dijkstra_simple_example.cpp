@@ -25,10 +25,12 @@ typedef std::vector<std::vector<float>> graph_data;
 typedef std::vector<std::vector<Node>> Graph;
 
 void add_data_to_graph(graph_data& gd, Graph& g);
+void init_unvisited(std::vector<Node*>&, Graph& g);
 float cost_function(Node, Node);
 std::vector<Node*> get_neighbors(Node&, Graph& g);
 void visit(Node*, Graph&);
 bool sort_function(Node*, Node*);
+void run_dijkstra(Node* start, Graph& g);
 std::vector<Node*> get_path(Node*);
 
 // util functions
@@ -45,84 +47,56 @@ void print_nodes(Node*);
 int main() {
     using namespace std;
     //using namespace Eigen;
-
-    // read random test data from text file
-    vector<float> test;
     
     graph_data data;
     read_file("simple_example.txt", data);
     //print_test_data(data);
 
-    // test Node structure
-    Node node1 = {0, 0, &data[0][0]};
-    Node node2 = {1, 0, &data[1][0]};
-    vector<Node> ns = {node1, node2};
-    // print_nodes(ns);
-    // cout << cost_function(node1, node2) << endl;
-
     Graph g;
     add_data_to_graph(data, g);
-    // for (auto col : g) {
-    //     cout << "--------\n";
-    //     print_nodes(col);
+
+    // // sorting the whole unvisited set is inefficient
+    // vector<Node*> visited;
+    // vector<Node*> unvisited;
+
+    // // add pointers to all notes to unvisited
+    // // nodes of first column that are not added
+    // init_unvisited(unvisited, g);    
+
+    // add start node at the back, no sorting needed at the start
+    // Node* start_node = &g[0][0];
+    // (*start_node).dist = 0;
+    // unvisited.push_back(start_node);
+
+    // cout << "Before dijkstra" << endl;
+    // print_nodes(unvisited);
+    // print_nodes(visited);
+
+    // Node* current;
+    // // keep track of unvisited nodes with updated distance
+    // // this allows you to only sort the relevant part of unvisited
+    // // int nodes_seen_cntr = 0;
+    // const int MAX_ITER = 10;
+    // int i;
+    // for (i = 0; i<MAX_ITER; ++i) {
+    //     if (unvisited.size() > 0) {
+    //         current = unvisited.back();
+    //         unvisited.pop_back();
+    //         visit(current, g);
+    //         std::sort(unvisited.begin(), unvisited.end(), sort_function);
+    //         visited.push_back(current);
+    //     } else {
+    //         cout << "Alle nodes visited!" << endl;
+    //         break;
+    //     }      
     // }
-    // cout << "--------" << endl;
+    // if (i == MAX_ITER) cout << "Maximum iterations reached" << endl;
 
-    //vector<Node> nb;
-    //nb = get_neighbors(g[0][0], g);
-    // print_nodes(nb);
+    // cout << "after loop" << endl;
+    // print_nodes(unvisited);
+    // print_nodes(visited);
 
-    // sorting the whole unvisited set is inefficient
-    vector<Node*> visited;
-    vector<Node*> unvisited;
-
-    // add pointers to all notes to unvisited
-    // nodes of first column that are not added
-    // they cannot be reached by a node from the same column
-    for (auto &p : g) {
-        for (Node& n : p) {
-            if (n.path_index > 0) unvisited.push_back(&n);
-        }
-    }
-
-    //print_nodes(unvisited);
-
-    // vist first Node
-    Node* start_node = &g[0][0];
-    (*start_node).dist = 0;
-    visit(start_node, g);
-
-    //print_nodes(unvisited);
-
-    // the end iterator can maybe be smaller
-    // depending on which distance is already up to date
-    std::sort(unvisited.begin(), unvisited.end(), sort_function);
-    // when sorted, the last element is the one just visited
-    visited.push_back(start_node);
-
-    cout << "after start node is visited" << endl;
-    print_nodes(unvisited);
-    print_nodes(visited);
-
-    Node* current;
-    //int iter = 0;
-    const int MAX_ITER = 10;
-    for (int i = 0; i<MAX_ITER; ++i) {
-        if (unvisited.size() > 0) {
-            current = unvisited.back();
-            unvisited.pop_back();
-            visit(current, g);
-            std::sort(unvisited.begin(), unvisited.end(), sort_function);
-            visited.push_back(current);
-        } else {
-            cout << "Alle nodes visited!" << endl;
-            break;
-        }       
-    }
-
-    cout << "after loop" << endl;
-    print_nodes(unvisited);
-    print_nodes(visited);
+    run_dijkstra(&g[0][0], g);
 
     cout << "Shortest path" << endl;
     // find last node with shortest distance to start
@@ -143,6 +117,59 @@ int main() {
 //===========================================
 // declaration graph functions
 //===========================================
+
+void run_dijkstra(Node* start_node, Graph& g) {
+    using namespace std;
+    // sorting the whole unvisited set is inefficient
+    std::vector<Node*> visited;
+    std::vector<Node*> unvisited;
+
+    // add pointers to all notes to unvisited
+    // nodes of first column that are not added
+    init_unvisited(unvisited, g);
+
+    // start node stuff
+    (*start_node).dist = 0;
+    unvisited.push_back(start_node);
+
+    cout << "Before dijkstra" << endl;
+    print_nodes(unvisited);
+    print_nodes(visited);
+
+    Node* current;
+    // keep track of unvisited nodes with updated distance
+    // this allows you to only sort the relevant part of unvisited
+    // int nodes_seen_cntr = 0;
+    const int MAX_ITER = 10;
+    int i;
+    for (i = 0; i<MAX_ITER; ++i) {
+        if (unvisited.size() > 0) {
+            current = unvisited.back();
+            unvisited.pop_back();
+            visit(current, g);
+            std::sort(unvisited.begin(), unvisited.end(), sort_function);
+            visited.push_back(current);
+        } else {
+            cout << "Alle nodes visited!" << endl;
+            break;
+        }      
+    }
+    if (i == MAX_ITER) cout << "Maximum iterations reached" << endl;
+
+    cout << "after loop" << endl;
+    print_nodes(unvisited);
+    print_nodes(visited);
+}
+
+void init_unvisited(std::vector<Node*>& uv, Graph& g) {
+    // do not add fist column (start at i=1)
+    // start node in first column cannot reached the other nodes there
+    for (int i = 1; i < g.size(); ++i) {
+        for (Node& n : g[i]) {
+            uv.push_back(&n);
+        }
+    }
+}
 
 std::vector<Node*> get_path(Node* goal) {
     std::vector<Node*> path;

@@ -21,14 +21,12 @@ class Dijkstra {
     const int MAX_ITER = 10;
 public:
     Dijkstra(graph g, int i);
-
-    // algorithm functions
     void init();
     std::vector<Node*> get_neighbors(Node* node);
     float cost_function(Node*, Node*);
     void visit(Node*);
     //bool sort_function(Node*, Node*);
-    void run();
+    //void run();
 
     // debug functions
     void show_graph();
