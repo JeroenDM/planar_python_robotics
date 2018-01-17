@@ -67,6 +67,8 @@ plot_scene(ax3, sc1, 'r')
 #from ppr.graph import get_shortest_path
 from ppr_cpp.graph_cpp import get_shortest_path
 
+# cpp version usen only one start node at the moment
+
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
 path_length, shortest_path_js = get_shortest_path(path_js)
