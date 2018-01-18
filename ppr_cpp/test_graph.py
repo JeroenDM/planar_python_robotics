@@ -2,9 +2,12 @@
 import numpy as np
 import graph
 
-m = np.array([[0, 0, 0],
-              [2, 1, 0.5],
-              [3, 1.5, 1]])
+# m = np.array([[7, 0, 0],
+#               [7.5, 1, 0.5],
+#               [8, 1.5, 1]])
+m = np.array([[0, 7, 0],
+              [1, 7.5, 0.5],
+              [1.5, 8, 1]])
 # print(m)
 
 mm = []

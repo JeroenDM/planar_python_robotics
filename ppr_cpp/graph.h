@@ -32,6 +32,7 @@ class Graph {
     graph_data gd;
     node_array na;
     int MAX_ITER = 10000;
+    bool path_found = false;
 
     void               graph_data_to_node_array();
     void               init_unvisited(std::vector<Node*>& uv);

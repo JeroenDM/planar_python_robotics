@@ -71,14 +71,18 @@ from ppr_cpp.graph_cpp import get_shortest_path
 
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
-path_length, shortest_path_js = get_shortest_path(path_js)
-#
-fig4, ax4 = plt.subplots()
-plt.title("The first solution")
-ax4.axis('equal')
-robot1.plot_path(ax4, shortest_path_js)
-plot_path(ax4, path, show_tolerance=False)
-plot_scene(ax4, sc1, 'r')
+res = get_shortest_path(path_js)
+
+if res['success']:
+    shortest_path_js = res['path']
+    fig4, ax4 = plt.subplots()
+    plt.title("The first solution")
+    ax4.axis('equal')
+    robot1.plot_path(ax4, shortest_path_js)
+    plot_path(ax4, path, show_tolerance=False)
+    plot_scene(ax4, sc1, 'r')
+else:
+    print("No shortest path found with graph search")
 #plt.savefig("image/example_first_solution.png")
 
 """ code block 4b """

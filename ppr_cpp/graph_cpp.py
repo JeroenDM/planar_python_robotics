@@ -8,6 +8,7 @@ import numpy as np
 
 def get_shortest_path(Q):
     Q = _check_dtype(Q)
+
     n_path = len(Q)
     # initialize graph
     g = graph.Graph()
@@ -25,11 +26,15 @@ def get_shortest_path(Q):
     # get joint values for the shortest path
     p_i = g.get_path(n_path)
     print(p_i)
-    res = []
-    for k, i in zip(range(n_path), p_i):
-        res.append(Q[k][i])
-    
-    return -1, res
+
+    if p_i[0] == -1:
+        return {'success': False}
+    else:
+        res = []
+        for k, i in zip(range(n_path), p_i):
+            res.append(Q[k][i])
+        
+        return {'success': True, 'path': res}
 
 def _check_dtype(Q):
     if Q[0].dtype == 'float64':

@@ -14,6 +14,16 @@ bool sort_function(Node* n1, Node* n2) {
     return (*n2).dist < (*n1).dist;
 }
 
+// debug function counting the number of infinities in a vector
+void show_inf(std::vector<Node*> v) {
+    int cnt = 0;
+    int s = v.size();
+    for (Node* n : v) {
+        if ((*n).dist == INF) cnt++;
+    }
+    std::cout << ":::length: " << s << " cnt: " << cnt << std::endl;
+}
+
 // ===========================================================
 // MISTER DIJKSTRA
 // ===========================================================
@@ -26,6 +36,8 @@ void Graph::dijkstra_algorithm(Node* start_node){
     // add pointers to all notes to unvisited
     // nodes of first column that are not added
     init_unvisited(unvisited);
+    unvisited.push_back(&na[0][1]);
+    unvisited.push_back(&na[0][2]);
 
     // start node stuff
     (*start_node).dist = 0;
@@ -41,7 +53,12 @@ void Graph::dijkstra_algorithm(Node* start_node){
     int i;
     for (i = 0; i<MAX_ITER; ++i) {
         if (unvisited.size() > 0) {
+            show_inf(unvisited);
             current = unvisited.back();
+            if ((*current).dist == INF ) {
+                //only unreachable nodes left
+                break;
+            }
             unvisited.pop_back();
             visit(current);
             std::sort(unvisited.begin(), unvisited.end(), sort_function);
@@ -51,7 +68,12 @@ void Graph::dijkstra_algorithm(Node* start_node){
             break;
         }      
     }
-    if (i == MAX_ITER) cout << "Maximum iterations reached" << endl;
+    if (i == MAX_ITER) {
+        cout << "Maximum iterations reached" << endl;
+    } else {
+        cout << "Dijkstra finished succesfully" << endl;
+        path_found = true;
+    }
 
     cout << "After dijkstra" << endl;
     print_nodes(unvisited);
@@ -117,25 +139,32 @@ std::vector<Node*> Graph::get_neighbors(Node* node) {
 }
 
 std::vector<Node*> Graph::get_path_nodes() {
-    // find last node with shortest distance to start
-    float min_dist = INF;
-    Node* goal;
-    for (auto& n : na.back()) {
-        if (n.dist < min_dist) {
-            goal = &n;
-            min_dist = n.dist;
-        }
-    }
-
     std::vector<Node*> path;
-    Node* current_node = goal;
-    while ((*current_node).path_index > 0) {
+
+    if (path_found) {
+        // find last node with shortest distance to start
+        float min_dist = INF;
+        Node* goal;
+        for (auto& n : na.back()) {
+            if (n.dist < min_dist) {
+                goal = &n;
+                min_dist = n.dist;
+            }
+        }
+
+        Node* current_node = goal;
+        while ((*current_node).path_index > 0) {
+            path.push_back(current_node);
+            current_node = (*current_node).parent;
+        }
         path.push_back(current_node);
-        current_node = (*current_node).parent;
+        std::reverse(path.begin(), path.end());
+        return path;
     }
-    path.push_back(current_node);
-    std::reverse(path.begin(), path.end());
-    return path;
+    else {
+        std::cout << "No path found" << std::endl;
+        return path;
+    }
 }
 
 // ===========================================================
@@ -160,6 +189,7 @@ void Graph::add_data_column(float* mat, int nrows, int ncols) {
 void Graph::init_dijkstra() {
     std::cout << "Initializing graph for planning" << std::endl;
     graph_data_to_node_array();
+    path_found = false;
 }
 
 void Graph::run_dijkstra() {
@@ -168,13 +198,22 @@ void Graph::run_dijkstra() {
 }
 
 void Graph::get_path(int* vec, int n) {
-    std::vector<Node*> path;
-    path = get_path_nodes();
-    if (n != path.size()) {
-        std::cout << "Wrong path length" << std::endl;
-    } else {
+    if (path_found) {
+        std::vector<Node*> path;
+        path = get_path_nodes();
+        if (n != path.size()) {
+            std::cout << "Wrong path length" << std::endl;
+        }
+        else {
+            for (int i = 0; i<n; ++i) {
+                vec[i] = (*path[i]).sample_index;
+            }
+        }
+    }
+    else {
+        std::cout << "No path found" << std::endl;
         for (int i = 0; i<n; ++i) {
-            vec[i] = (*path[i]).sample_index;
+                vec[i] = -1;
         }
     }
 }
