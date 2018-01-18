@@ -1,46 +1,27 @@
 #include <iostream>
 #include <algorithm>
+#include <limits> // infinity()
 #include "graph.h"
 
-using namespace std;
-void input_matrix(double* mat, int nrows, int ncols) {
-    cout << "Executing input_matrix" << endl;
-
-    int index = 0;
-    for (int i=0; i<nrows; ++i) {
-        for (int j=0; j<ncols; ++j) {
-            index = j + ncols*i;
-            cout << mat[index];
-        }
-    }
-    cout << "\n-------------------" << endl;
-}
-
+// dummy node to initialize parent nodes
 Node DUMMY_NODE;
 
+// to initialize distances for dijkstra
+const float INF = std::numeric_limits<float>::infinity();
+
+// sort function for dijkstra unvisited list
 bool sort_function(Node* n1, Node* n2) {
     return (*n2).dist < (*n1).dist;
 }
 
 // ===========================================================
-// private graph fucntions
+// MISTER DIJKSTRA
 // ===========================================================
-void Graph::graph_data_to_node_array() {
-    for (int i = 0; i < gd.size(); ++i) {
-            std::vector<Node> new_column;
-            na.push_back(new_column);
-            for (int j = 0; j < gd[i].size(); ++j) {
-                Node new_node = {i, j, &gd[i][j], INF, &DUMMY_NODE};
-                na[i].push_back(new_node);
-            }
-        }
-}
-
 void Graph::dijkstra_algorithm(Node* start_node){
     using namespace std;
     // sorting the whole unvisited set is inefficient
-    std::vector<Node*> visited;
-    std::vector<Node*> unvisited;
+    vector<Node*> visited;
+    vector<Node*> unvisited;
 
     // add pointers to all notes to unvisited
     // nodes of first column that are not added
@@ -57,8 +38,6 @@ void Graph::dijkstra_algorithm(Node* start_node){
     Node* current;
     // keep track of unvisited nodes with updated distance
     // this allows you to only sort the relevant part of unvisited
-    // int nodes_seen_cntr = 0;
-    const int MAX_ITER = 10000;
     int i;
     for (i = 0; i<MAX_ITER; ++i) {
         if (unvisited.size() > 0) {
@@ -77,6 +56,20 @@ void Graph::dijkstra_algorithm(Node* start_node){
     cout << "After dijkstra" << endl;
     print_nodes(unvisited);
     print_nodes(visited);
+}
+
+// ===========================================================
+// private graph fucntions
+// ===========================================================
+void Graph::graph_data_to_node_array() {
+    for (int i = 0; i < gd.size(); ++i) {
+            std::vector<Node> new_column;
+            na.push_back(new_column);
+            for (int j = 0; j < gd[i].size(); ++j) {
+                Node new_node = {i, j, &gd[i][j], INF, &DUMMY_NODE};
+                na[i].push_back(new_node);
+            }
+        }
 }
 
 void Graph::init_unvisited(std::vector<Node*>& uv) {
@@ -98,6 +91,18 @@ float Graph::cost_function(Node n1, Node n2) {
     return cost;
 }
 
+void Graph::visit(Node* n) {
+    std::vector<Node*> neighbors;
+    neighbors = get_neighbors(n);
+    for (Node* nb : neighbors) {
+        float dist = (*n).dist + cost_function(*nb, *n);
+        if (dist < (*nb).dist) {
+            (*nb).dist = dist;
+            (*nb).parent = n;
+        }
+    }
+}
+
 std::vector<Node*> Graph::get_neighbors(Node* node) {
     std::vector<Node*> result;
     // check if we are at the end of the graph
@@ -111,47 +116,9 @@ std::vector<Node*> Graph::get_neighbors(Node* node) {
     }
 }
 
-void Graph::visit(Node* n) {
-    std::vector<Node*> neighbors;
-    neighbors = get_neighbors(n);
-    for (Node* nb : neighbors) {
-        float dist = (*n).dist + cost_function(*nb, *n);
-        if (dist < (*nb).dist) {
-            (*nb).dist = dist;
-            (*nb).parent = n;
-        }
-    }
-}
-
-void Graph::print_nodes(std::vector<Node*> nodes) {
-    using namespace std;
-    for (auto node : nodes) {
-        cout << "(" << (*node).path_index << ", ";
-        cout << (*node).sample_index << ")";
-        cout << " dist: " << (*node).dist;
-        cout << "\tparent: ";
-        cout << "(" << (*(*node).parent).path_index << ", ";
-        cout << (*(*node).parent).sample_index << ")\n";
-    }
-    cout << endl;
-}
-
-void Graph::print_nodes(std::vector<Node> nodes) {
-    using namespace std;
-    for (auto node : nodes) {
-        cout << "(" << node.path_index << ", ";
-        cout << node.sample_index << ")";
-        cout << " dist: " << node.dist;
-        cout << " parent: ";
-        cout << "(" << (*node.parent).path_index << ", ";
-        cout << (*node.parent).sample_index << ")\n";
-    }
-    cout << endl;
-}
-
 std::vector<Node*> Graph::get_path_nodes() {
     // find last node with shortest distance to start
-    double min_dist = INF;
+    float min_dist = INF;
     Node* goal;
     for (auto& n : na.back()) {
         if (n.dist < min_dist) {
@@ -175,8 +142,8 @@ std::vector<Node*> Graph::get_path_nodes() {
 // puplic graph fucntions
 // ===========================================================
 // rows containing the different solutions
-// columns different joints
-void Graph::add_data_column(double* mat, int nrows, int ncols) {
+// columns different joint values
+void Graph::add_data_column(float* mat, int nrows, int ncols) {
     int index;
     std::vector<joint_value> new_col;
     for (int i=0; i<nrows; ++i) {
@@ -189,25 +156,14 @@ void Graph::add_data_column(double* mat, int nrows, int ncols) {
     }
     gd.push_back(new_col);
 }
-void Graph::print_graph_data() {
-    for(auto& col : gd) {
-        cout << "----------------" << endl;
-        for (auto& val : col) {
-            for (double& d : val) {
-                cout << d << " ";
-            }
-            cout << endl;
-        }
-    }
-}
 
 void Graph::init_dijkstra() {
-    cout << "Initializing graph for planning" << endl;
+    std::cout << "Initializing graph for planning" << std::endl;
     graph_data_to_node_array();
 }
 
 void Graph::run_dijkstra() {
-    cout << "Running dijkstra's algorithm" << endl;
+    std::cout << "Running dijkstra's algorithm" << std::endl;
     dijkstra_algorithm(&na[0][0]);
 }
 
@@ -215,7 +171,7 @@ void Graph::get_path(int* vec, int n) {
     std::vector<Node*> path;
     path = get_path_nodes();
     if (n != path.size()) {
-        cout << "Wrong path length" << endl;
+        std::cout << "Wrong path length" << std::endl;
     } else {
         for (int i = 0; i<n; ++i) {
             vec[i] = (*path[i]).sample_index;
@@ -223,7 +179,52 @@ void Graph::get_path(int* vec, int n) {
     }
 }
 
+// ===========================================================
+// print functions for debugging
+// ===========================================================
+// private
+void Graph::print_node(Node n) {
+    using namespace std;
+    cout << "(" << n.path_index << ", ";
+    cout << n.sample_index << ")";
+    cout << " dist: " << n.dist;
+    cout << " parent: ";
+    cout << "(" << (*n.parent).path_index << ", ";
+    cout << (*n.parent).sample_index << ")\n";
+}
+
+void Graph::print_nodes(std::vector<Node*> nodes) {
+    using namespace std;
+    for (Node* node : nodes) {
+        print_node(*node);
+    }
+    cout << endl;
+}
+
+void Graph::print_nodes(std::vector<Node> nodes) {
+    using namespace std;
+    for (Node& node : nodes) {
+        print_node(node);
+    }
+    cout << endl;
+}
+
+//public
+void Graph::print_graph_data() {
+    using namespace std;
+    for(auto& col : gd) {
+        cout << "----------------" << endl;
+        for (auto& val : col) {
+            for (float& d : val) {
+                cout << d << " ";
+            }
+            cout << endl;
+        }
+    }
+}
+
 void Graph::print_path() {
+    using namespace std;
     cout << "The most recent shortest path is:" << endl;
     print_nodes(get_path_nodes());
 }

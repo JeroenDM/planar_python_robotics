@@ -90,10 +90,6 @@ except AttributeError:
     _newclass = 0
 
 
-
-def input_matrix(mat):
-    return _graph.input_matrix(mat)
-input_matrix = _graph.input_matrix
 class Graph(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Graph, name, value)
@@ -132,8 +128,6 @@ class Graph(_object):
     __del__ = lambda self: None
 Graph_swigregister = _graph.Graph_swigregister
 Graph_swigregister(Graph)
-cvar = _graph.cvar
-INF = cvar.INF
 
 # This file is compatible with both classic and new-style classes.
 

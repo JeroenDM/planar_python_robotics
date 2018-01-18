@@ -7,6 +7,7 @@ else:
 import numpy as np
 
 def get_shortest_path(Q):
+    Q = _check_dtype(Q)
     n_path = len(Q)
     # initialize graph
     g = graph.Graph()
@@ -29,3 +30,11 @@ def get_shortest_path(Q):
         res.append(Q[k][i])
     
     return -1, res
+
+def _check_dtype(Q):
+    if Q[0].dtype == 'float64':
+        print("converting type of Q")
+        for i in range(len(Q)):
+            Q[i] = Q[i].astype('float32')
+    
+    return Q

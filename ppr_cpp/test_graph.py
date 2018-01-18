@@ -11,7 +11,7 @@ mm = []
 for i in range(3):
     temp = []
     for j in range(3):
-        temp.append( np.array([m[i, j], 0, 0, 0]) )
+        temp.append( np.array([m[i, j], 0, 0, 0], dtype='float32') )
     mm.append(np.array(temp))
 
 # print(mm[0].shape)
