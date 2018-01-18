@@ -48,7 +48,7 @@ from ppr.path import cart_to_joint
 from ppr.geometry import Rectangle
 from ppr.scene import plot_scene
 
-# create list collision objects (Rectangles)
+# create list collision objects (Rectangles
 sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
        Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
 
