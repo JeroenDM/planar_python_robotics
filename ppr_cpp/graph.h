@@ -2,6 +2,7 @@
 #define _GRAPH_H_
 
 #include <vector>
+//#include <utility> // std::pair
 
 // fixed length container more efficient but less flexible
 // the length is the number of dofs of the robot, which can vary
@@ -40,7 +41,8 @@ class Graph {
     void               visit(Node* node);
     std::vector<Node*> get_neighbors(Node* node);
     std::vector<Node*> get_path_nodes();
-    void               dijkstra_algorithm(Node* start_node);
+    int                dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V);
+    void               single_source_dijkstra(Node* start_node);
 
     void print_node(Node n);
     void print_nodes(std::vector<Node*> nodes);

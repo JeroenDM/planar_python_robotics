@@ -17,7 +17,39 @@ bool sort_function(Node* n1, Node* n2) {
 // ===========================================================
 // MISTER DIJKSTRA
 // ===========================================================
-void Graph::dijkstra_algorithm(Node* start_node){
+// returns status int
+//  1 : success
+// -1 : maximum itterations reached
+int Graph::dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V) {
+    Node* current;
+    // keep track of unvisited nodes with updated distance
+    // this allows you to only sort the relevant part of unvisited
+    int i;
+    for (i = 0; i<MAX_ITER; ++i) {
+        if (U.size() > 0) {
+            current = U.back();
+            if ((*current).dist == INF ) {
+                //only unreachable nodes left
+                break;
+            }
+            U.pop_back();
+            visit(current);
+            std::sort(U.begin(), U.end(), sort_function);
+            V.push_back(current);
+        } else {
+            // all nodes visited
+            break;
+        }      
+    }
+    if (i == MAX_ITER) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
+
+
+void Graph::single_source_dijkstra(Node* start_node){
     using namespace std;
     // sorting the whole unvisited set is inefficient
     vector<Node*> visited;
@@ -35,31 +67,16 @@ void Graph::dijkstra_algorithm(Node* start_node){
     print_nodes(unvisited);
     print_nodes(visited);
 
-    Node* current;
-    // keep track of unvisited nodes with updated distance
-    // this allows you to only sort the relevant part of unvisited
-    int i;
-    for (i = 0; i<MAX_ITER; ++i) {
-        if (unvisited.size() > 0) {
-            current = unvisited.back();
-            if ((*current).dist == INF ) {
-                //only unreachable nodes left
-                break;
-            }
-            unvisited.pop_back();
-            visit(current);
-            std::sort(unvisited.begin(), unvisited.end(), sort_function);
-            visited.push_back(current);
-        } else {
-            cout << "Alle nodes visited!" << endl;
-            break;
-        }      
-    }
-    if (i == MAX_ITER) {
+    // run the actual algorithm
+    int stat = dijkstra_core(unvisited, visited);
+
+    if (stat == -1) {
         cout << "Maximum iterations reached" << endl;
-    } else {
+    } else if (stat == 1) {
         cout << "Dijkstra finished succesfully" << endl;
         path_found = true;
+    } else {
+        cout << "Unkown status" << endl;
     }
 
     cout << "After dijkstra" << endl;
@@ -181,7 +198,7 @@ void Graph::init_dijkstra() {
 
 void Graph::run_dijkstra() {
     std::cout << "Running dijkstra's algorithm" << std::endl;
-    dijkstra_algorithm(&na[0][0]);
+    single_source_dijkstra(&na[0][0]);
 }
 
 void Graph::get_path(int* vec, int n) {
