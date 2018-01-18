@@ -14,16 +14,6 @@ bool sort_function(Node* n1, Node* n2) {
     return (*n2).dist < (*n1).dist;
 }
 
-// debug function counting the number of infinities in a vector
-void show_inf(std::vector<Node*> v) {
-    int cnt = 0;
-    int s = v.size();
-    for (Node* n : v) {
-        if ((*n).dist == INF) cnt++;
-    }
-    std::cout << ":::length: " << s << " cnt: " << cnt << std::endl;
-}
-
 // ===========================================================
 // MISTER DIJKSTRA
 // ===========================================================
@@ -36,8 +26,6 @@ void Graph::dijkstra_algorithm(Node* start_node){
     // add pointers to all notes to unvisited
     // nodes of first column that are not added
     init_unvisited(unvisited);
-    unvisited.push_back(&na[0][1]);
-    unvisited.push_back(&na[0][2]);
 
     // start node stuff
     (*start_node).dist = 0;
@@ -53,7 +41,6 @@ void Graph::dijkstra_algorithm(Node* start_node){
     int i;
     for (i = 0; i<MAX_ITER; ++i) {
         if (unvisited.size() > 0) {
-            show_inf(unvisited);
             current = unvisited.back();
             if ((*current).dist == INF ) {
                 //only unreachable nodes left
