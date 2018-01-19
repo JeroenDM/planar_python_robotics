@@ -110,7 +110,7 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
         joint_traj.append(np.array(qi))
     return joint_traj
 
-def cart_to_joint_d(robot, traj_points, check_collision = False, scene=None):
+def cart_to_joint_d(robot, traj_points, check_collision = False, scene=None, ik_sample=5):
     # get sampled version of trajectory points
     cart_traj = []
     for pt in traj_points:
@@ -124,7 +124,7 @@ def cart_to_joint_d(robot, traj_points, check_collision = False, scene=None):
     for cart_vec in cart_traj:
         qi = []
         for cart_pt in cart_vec:
-            sol = robot.ik_discrete(cart_pt)
+            sol = robot.ik_discrete(cart_pt, n_sample=ik_sample)
 #            print("Ik solution found for traj point " + str(cart_pt))
 #            print(len(sol))
             if sol['success']:

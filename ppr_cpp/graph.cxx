@@ -37,8 +37,7 @@ int Graph::dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V) {
             std::sort(U.begin(), U.end(), sort_function);
             V.push_back(current);
         } else {
-            // all nodes visited
-            break;
+            return 2;
         }      
     }
     if (i == MAX_ITER) {
@@ -63,9 +62,10 @@ void Graph::single_source_dijkstra(Node* start_node){
     (*start_node).dist = 0;
     unvisited.push_back(start_node);
 
-    cout << "Before dijkstra" << endl;
-    print_nodes(unvisited);
-    print_nodes(visited);
+    // DEBUG stuff
+    // cout << "Before dijkstra" << endl;
+    // print_nodes(unvisited);
+    // print_nodes(visited);
 
     // run the actual algorithm
     int stat = dijkstra_core(unvisited, visited);
@@ -75,13 +75,18 @@ void Graph::single_source_dijkstra(Node* start_node){
     } else if (stat == 1) {
         cout << "Dijkstra finished succesfully" << endl;
         path_found = true;
+    } else if (stat == 2) {
+        cout << "Dijkstra finished succesfully" << endl;
+        cout << "All nodes where visited" << endl;
+        path_found = true;
     } else {
         cout << "Unkown status" << endl;
     }
 
-    cout << "After dijkstra" << endl;
-    print_nodes(unvisited);
-    print_nodes(visited);
+    // DEBUG stuff
+    // cout << "After dijkstra" << endl;
+    // print_nodes(unvisited);
+    // print_nodes(visited);
 }
 
 // ===========================================================
