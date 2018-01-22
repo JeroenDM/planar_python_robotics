@@ -59,44 +59,44 @@ fig3, ax3 = plt.subplots()
 robot1.plot_path_kinematics(ax3, Q[0][1:30])
 print(Q[0].shape)
 
-#from ppr.cpp.graph_cpp import get_shortest_path
-#
-#res = get_shortest_path(Q)
+from ppr.cpp.graph_cpp import get_shortest_path
+
+res = get_shortest_path(Q)
 
 # MMM, UNITS of angle and distance are mixed
 # convert it to actual motor rotation??
 
 
 #%%
-#if res['success']:
-#    shortest_path_js = res['path']
-#    fig4, ax4 = plt.subplots()
-#    plt.title("graph search solution")
-#    ax4.axis('equal')
-#    robot1.plot_path(ax4, shortest_path_js)
-#    plot_path(ax4, path, show_tolerance=False)
-#    plot_scene(ax4, sc1, 'r')
+if res['success']:
+    shortest_path_js = res['path']
+    fig4, ax4 = plt.subplots()
+    plt.title("graph search solution")
+    ax4.axis('equal')
+    robot1.plot_path(ax4, shortest_path_js)
+    plot_path(ax4, path, show_tolerance=False)
+    plot_scene(ax4, sc1, 'r')
 
 #%%
 
 #j1 = [p[0] for p in shortest_path_js]
 #print(j1)    
     
-#"""fictional code block 5 """
-#from ppr.optimize import get_optimal_trajectory, q_derivatives
-#
-##robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
-##robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
-## set link mass, cg position and mass moment of inertia.
-#robot1.set_link_inertia([1, 1, 1, 0.5, 0.5],
-#                        [0.5, 0.5, 0.25, 0.25, 0.15],
-#                        [0.05, 0.05, 0.05, 0.05, 0.05])
-#
-#qs, dqs, ddqs = get_optimal_trajectory(robot1, path, shortest_path_js)
-#
-#fig5, ax5 = plt.subplots()
-#plt.title("Optimized solution")
-#ax5.axis('equal')
-#robot1.plot_path(ax5, qs)
-#plot_path(ax5, path, show_tolerance=False)
-#plot_scene(ax5, sc1, 'r')
+"""fictional code block 5 """
+from ppr.optimize import get_optimal_trajectory, q_derivatives
+
+#robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
+#robot1.add_joint_acceleration_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
+# set link mass, cg position and mass moment of inertia.
+robot1.set_link_inertia([1, 1, 1, 0.5, 0.5],
+                        [0.5, 0.5, 0.25, 0.25, 0.15],
+                        [0.05, 0.05, 0.05, 0.05, 0.05])
+
+qs, dqs, ddqs = get_optimal_trajectory(robot1, path, shortest_path_js)
+
+fig5, ax5 = plt.subplots()
+plt.title("Optimized solution")
+ax5.axis('equal')
+robot1.plot_path(ax5, qs)
+plot_path(ax5, path, show_tolerance=False)
+plot_scene(ax5, sc1, 'r')
