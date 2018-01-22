@@ -100,7 +100,7 @@ plot_path(ax4b, path, show_tolerance=False)
 plot_scene(ax4b, sc1, 'r')
 #plt.savefig("image/example_first_solution.png")
 
-"""fictional code block 5 """
+"""code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives
 
 #robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])

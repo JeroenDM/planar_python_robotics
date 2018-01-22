@@ -47,6 +47,46 @@ int Graph::dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V) {
     }
 }
 
+int Graph::bfs_core(std::vector<Node*>& U) {
+    for (Node* n : U) {
+        visit(n);
+    }
+    return 1;
+}
+
+void Graph::bfs(Node* start_node) {
+    using namespace std;
+    // sorting the whole unvisited set is inefficient
+    vector<Node*> unvisited;
+
+    // add pointers to all notes to unvisited
+    // nodes of first column that are not added
+    init_unvisited(unvisited);
+
+    // start node stuff
+    (*start_node).dist = 0;
+    unvisited.push_back(start_node);
+
+    // DEBUG stuff
+    // cout << "Before dijkstra" << endl;
+    // print_nodes(unvisited);
+    // print_nodes(visited);
+
+    // run the actual algorithm
+    int stat = bfs_core(unvisited);
+
+    if (stat == 1) {
+        cout << "BFS finished" << endl;
+        path_found = true;
+    } else {
+        cout << "Unkown status" << endl;
+    }
+
+    //DEBUG stuff
+    cout << "After BFS" << endl;
+    print_graph();
+}
+
 
 void Graph::single_source_dijkstra(Node* start_node){
     using namespace std;
@@ -204,6 +244,7 @@ void Graph::init_dijkstra() {
 void Graph::run_dijkstra() {
     std::cout << "Running dijkstra's algorithm" << std::endl;
     single_source_dijkstra(&na[0][0]);
+    //bfs(&na[0][0]);
 }
 
 void Graph::get_path(int* vec, int n) {

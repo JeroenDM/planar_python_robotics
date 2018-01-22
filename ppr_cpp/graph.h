@@ -42,7 +42,9 @@ class Graph {
     std::vector<Node*> get_neighbors(Node* node);
     std::vector<Node*> get_path_nodes();
     int                dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V);
+    int                bfs_core(std::vector<Node*>& U);
     void               single_source_dijkstra(Node* start_node);
+    void               bfs(Node* start_node);
 
     void print_node(Node n);
     void print_nodes(std::vector<Node*> nodes);

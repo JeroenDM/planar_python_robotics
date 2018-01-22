@@ -14,7 +14,9 @@ import numpy as np
 if __name__ == "__main__" or __name__ == "robot":
     from geometry import Rectangle, rotation
 else:
-    from .geometry import Rectangle, rotation
+    #from .geometry import Rectangle, rotation
+    from .geometry import rotation
+    from ..ppr_cpp.geometry_cpp import Rectangle
 
 
 class Robot:
