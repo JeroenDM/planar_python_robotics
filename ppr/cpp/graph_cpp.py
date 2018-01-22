@@ -1,6 +1,6 @@
 
-if (__name__ == "ppr_cpp.graph_cpp"):
-    import ppr_cpp.graph as graph
+if (__name__ == "ppr.cpp.graph_cpp"):
+    import ppr.cpp.graph as graph
 else:
     import graph as graph
 

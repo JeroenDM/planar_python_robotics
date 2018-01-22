@@ -33,7 +33,7 @@ from example_robots import Robot_2P3R
 robot1 = Robot_2P3R([1, 1, 0.5, 0.5, 0.3])
 
 """ add collision objects """
-from ppr_cpp.geometry_cpp import Rectangle
+from ppr.cpp.geometry_cpp import Rectangle
 #from ppr.geometry import Rectangle
 from ppr.scene import plot_scene
 
@@ -59,7 +59,7 @@ fig3, ax3 = plt.subplots()
 robot1.plot_path_kinematics(ax3, Q[0][1:30])
 print(Q[0].shape)
 
-#from ppr_cpp.graph_cpp import get_shortest_path
+#from ppr.cpp.graph_cpp import get_shortest_path
 #
 #res = get_shortest_path(Q)
 

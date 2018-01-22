@@ -45,7 +45,8 @@ robot1.plot(ax2, [1.3, -0.8, 1.4], 'k')
 
 """ code block 3 """
 from ppr.path import cart_to_joint
-from ppr.geometry import Rectangle
+#from ppr.geometry import Rectangle
+from ppr.cpp.geometry_cpp import Rectangle
 from ppr.scene import plot_scene
 
 # create list collision objects (Rectangles
@@ -65,7 +66,7 @@ plot_scene(ax3, sc1, 'r')
 
 """ code block 4 """
 #from ppr.graph import get_shortest_path
-from ppr_cpp.graph_cpp import get_shortest_path
+from ppr.cpp.graph_cpp import get_shortest_path
 
 # cpp version usen only one start node at the moment
 

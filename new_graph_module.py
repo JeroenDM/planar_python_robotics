@@ -1,5 +1,5 @@
 
-from ppr_cpp.graph_cpp import get_shortest_path
+from ppr.cpp.graph_cpp import get_shortest_path
 import numpy as np
 
 m = np.array([[0, 0, 0],
