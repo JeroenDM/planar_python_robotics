@@ -12,9 +12,12 @@ import numpy as np
 # the name == robot occurs when importing this file
 # from the "if __name__ == '__main__'" section of another module in this package
 if __name__ == "__main__" or __name__ == "robot":
-    from geometry import Rectangle, rotation
+    from geometry import rotation
+    from cpp.geometry_cpp import Rectangle
 else:
-    from .geometry import Rectangle, rotation
+    #from .geometry import Rectangle, rotation
+    from .geometry import rotation
+    from .cpp.geometry_cpp import Rectangle
 
 
 class Robot:

@@ -1,5 +1,5 @@
-if (__name__ == "ppr_cpp.geometry_cpp"):
-    import ppr_cpp.geometry as gm
+if (__name__ == "ppr.cpp.geometry_cpp"):
+    import ppr.cpp.geometry as gm
 else:
     import geometry as gm
 

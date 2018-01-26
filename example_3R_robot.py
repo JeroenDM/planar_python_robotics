@@ -45,10 +45,11 @@ robot1.plot(ax2, [1.3, -0.8, 1.4], 'k')
 
 """ code block 3 """
 from ppr.path import cart_to_joint
-from ppr.geometry import Rectangle
+#from ppr.geometry import Rectangle
+from ppr.cpp.geometry_cpp import Rectangle
 from ppr.scene import plot_scene
 
-# create list collision objects (Rectangles)
+# create list collision objects (Rectangles
 sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
        Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
 
@@ -64,7 +65,10 @@ plot_scene(ax3, sc1, 'r')
 #plt.savefig("image/example_joint_solutions.png")
 
 """ code block 4 """
-from ppr.graph import get_shortest_path
+#from ppr.graph import get_shortest_path
+from ppr.cpp.graph_cpp import get_shortest_path
+
+# cpp version usen only one start node at the moment
 
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
@@ -102,7 +106,7 @@ if res['success']:
 else:
     print("no path found")
 
-"""fictional code block 5 """
+"""code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives
 
 #robot1.add_joint_speed_limits([-0.5, -0.5, -0.5], [0.5, 0.5, 0.5])
