@@ -27,11 +27,11 @@ def _get_shortest_path_graph_dijkstra(Q):
     f_opt, path = _shortest_path(graph, sn, tg)
     if path == None:
         print("[ppr.graph.py] no path found in TOTAL!")
-        return False, None
+        return {'success': False}
     else:
         path = [int(s.split("|")[1]) for s in path]
         path = [Q[i][path[i]] for i in range(len(Q))]
-    return f_opt, path
+    return {'success': True, 'path': path, 'length': f_opt}
 
 
 #=============================================================================

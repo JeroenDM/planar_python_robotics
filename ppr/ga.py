@@ -53,7 +53,7 @@ def _get_shortest_path_ga(Q,
     pop = create_population(pop_init)
     f_opt, path_index, fvec = run_ga(pop, iters=iters)
     path = [ Q[i][path_index[i], :] for i in range(gp['N']) ]
-    return f_opt, path
+    return {'success': True, 'path': path, 'length': f_opt}
 
 #=============================================================================
 # GA parameters defaults

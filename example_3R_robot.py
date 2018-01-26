@@ -73,33 +73,38 @@ from ppr.cpp.graph_cpp import get_shortest_path
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
 res = get_shortest_path(path_js)
-
 if res['success']:
     shortest_path_js = res['path']
+    path_length = res['length']
     fig4, ax4 = plt.subplots()
     plt.title("The first solution")
     ax4.axis('equal')
     robot1.plot_path(ax4, shortest_path_js)
     plot_path(ax4, path, show_tolerance=False)
     plot_scene(ax4, sc1, 'r')
+    #plt.savefig("image/example_first_solution.png")
 else:
-    print("No shortest path found with graph search")
-#plt.savefig("image/example_first_solution.png")
+    print("no path found")
 
 """ code block 4b """
 from ppr.ga import get_shortest_path
 
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
-path_length, shortest_path_js = get_shortest_path(path_js)
-
-fig4b, ax4b = plt.subplots()
-plt.title("The GA solution")
-ax4b.axis('equal')
-robot1.plot_path(ax4b, shortest_path_js)
-plot_path(ax4b, path, show_tolerance=False)
-plot_scene(ax4b, sc1, 'r')
-#plt.savefig("image/example_first_solution.png")
+res = get_shortest_path(path_js)
+if res['success']:
+    shortest_path_js = res['path']
+    path_length = res['length']
+    
+    fig4b, ax4b = plt.subplots()
+    plt.title("The GA solution")
+    ax4b.axis('equal')
+    robot1.plot_path(ax4b, shortest_path_js)
+    plot_path(ax4b, path, show_tolerance=False)
+    plot_scene(ax4b, sc1, 'r')
+    #plt.savefig("image/example_first_solution.png")
+else:
+    print("no path found")
 
 """code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives
