@@ -92,6 +92,7 @@ from ppr.ga import get_shortest_path
 # find the best sequence of joint solutions in path_js
 # currently total joint movement is minimized by default
 res = get_shortest_path(path_js)
+
 if res['success']:
     shortest_path_js = res['path']
     path_length = res['length']

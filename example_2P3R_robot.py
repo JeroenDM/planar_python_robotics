@@ -50,6 +50,7 @@ plot_path(ax2, path)
 plot_scene(ax2, sc1, 'r')
 #plt.savefig("image/example_robot.png")
 
+#%%
 """ graph search """
 from ppr.path import cart_to_joint_d
 
@@ -63,11 +64,9 @@ from ppr.cpp.graph_cpp import get_shortest_path
 
 res = get_shortest_path(Q)
 
-# MMM, UNITS of angle and distance are mixed
+# TODO, UNITS of angle and distance are mixed
 # convert it to actual motor rotation??
 
-
-#%%
 if res['success']:
     shortest_path_js = res['path']
     fig4, ax4 = plt.subplots()
@@ -79,8 +78,34 @@ if res['success']:
 
 #%%
 
+from ppr.path import cart_to_joint_d
+
+from ppr.ga import get_shortest_path
+
+Q = cart_to_joint_d(robot1, path, check_collision=True, scene=sc1, ik_sample = 10)
+
+# find the best sequence of joint solutions in path_js
+# currently total joint movement is minimized by default
+res = get_shortest_path(Q, pop_init=100, iters=1000)
+
+if res['success']:
+    shortest_path_js = res['path']
+    path_length = res['length']
+    
+    fig4b, ax4b = plt.subplots()
+    plt.title("The GA solution")
+    ax4b.axis('equal')
+    robot1.plot_path(ax4b, shortest_path_js)
+    plot_path(ax4b, path, show_tolerance=False)
+    plot_scene(ax4b, sc1, 'r')
+    #plt.savefig("image/example_first_solution.png")
+else:
+    print("no path found")
+
 #j1 = [p[0] for p in shortest_path_js]
-#print(j1)    
+#print(j1)   
+    
+#%%
     
 """fictional code block 5 """
 from ppr.optimize import get_optimal_trajectory, q_derivatives

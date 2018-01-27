@@ -27,9 +27,9 @@ from numpy.random import rand, randint, choice
 #=============================================================================
 
 
-def get_shortest_path(Q, method='ga'):
+def get_shortest_path(Q, method='ga', *arg, **karg):
     if method == 'ga':
-        return _get_shortest_path_ga(Q)
+        return _get_shortest_path_ga(Q, **karg)
     else:
         raise ValueError("Method not implemented: " + method)
 

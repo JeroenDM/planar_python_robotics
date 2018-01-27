@@ -66,9 +66,9 @@ class Rectangle:
         self.dy = dy
         self.a = angle
         self.R = rotation(angle)
-        self.p = self._getPoints()
+        self.p = self.get_points()
     
-    def _getPoints(self):
+    def get_points(self):
         p = np.zeros((4, 2))
         p[0, 0] = self.x
         p[0, 1] = self.y
@@ -80,19 +80,19 @@ class Rectangle:
     def rotate(self, angle):
         self.a += angle
         self.R = rotation(self.a)
-        self.p = self._getPoints()
+        self.p = self.get_points()
         
     def translate(self, trans_x, trans_y):
         self.x += trans_x
         self.y += trans_y
-        self.p = self._getPoints()
+        self.p = self.get_points()
         
-    def moveToOrigin(self):
+    def move_to_origin(self):
         self.x = 0
         self.y = 0
-        self.p = self._getPoints()
+        self.p = self.get_points()
     
-    def getNormals(self):
+    def get_normals(self):
         p = self.p
         n = np.zeros((4, 2))
         n[0, 0] =   p[1, 1] - p[0, 1]
@@ -113,8 +113,8 @@ class Rectangle:
         return px
     
     def in_collision(self, rect2, tol=1e-9):
-        n1 = self.getNormals()
-        n2 = rect2.getNormals()
+        n1 = self.get_normals()
+        n2 = rect2.get_normals()
         n_all = np.vstack((n1, n2))
         col = True
         i = 0
@@ -156,8 +156,8 @@ if __name__ == "__main__":
     ax = fig.gca()
     plt.axis('equal')
     plt.axis([-10, 10, -10, 10])
-    rect1.plot(ax, 'g.-')
-    rect2.plot(ax, '.-', color=(0.1, 0.1, 0.1, 0.5))
+#    rect1.plot(ax, 'g.-')
+#    rect2.plot(ax, '.-', color=(0.1, 0.1, 0.1, 0.5))
     
     px = rect1.project([1, 0])
     py = np.zeros(4)
