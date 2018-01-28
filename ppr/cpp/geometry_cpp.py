@@ -10,6 +10,6 @@ class Rectangle(gm.Rectangle):
 
     def plot(self, axes_handle, *arg, **karg):
         """Plot the rectangle on axes"""
-        p = self.get_plot_points()
+        p = self.get_points()
         p = np.vstack((p, p[0]))
         axes_handle.plot(p[:, 0], p[:, 1], *arg, **karg)

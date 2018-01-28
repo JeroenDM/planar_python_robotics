@@ -14,7 +14,7 @@ def default_test_data():
     dx    = TolerancedNumber(1, 0.9, 1.1, samples=3)
     angle = TolerancedNumber(0.0, -0.5, 0.5, samples=5)
     path = []
-    n_path = 12
+    n_path = 10
     for i in range(n_path):
        yi = 0.7 + i * 0.6 / n_path
        path.append(TrajectoryPt([dx, yi, angle]))

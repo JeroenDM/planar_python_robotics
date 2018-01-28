@@ -33,7 +33,7 @@ class Plane:
 plane = Plane()
 
 water = [Rectangle(1, 0, 1, 1, np.pi / 4),
-         Rectangle(2, 0, 3, 1, np.pi / 4)]
+         Rectangle(2, 0, 3, 1, np.pi / 6)]
 
 fig, ax = plt.subplots()
 plane.get_rectangles(2)[0].plot(ax)
@@ -91,7 +91,8 @@ cons3, bnds3 = create_collision_constraints(A3, b3)
 cons = cons + cons2 + cons3
 bounds = [(0.1, 6)] + bnds2 + bnds3
 
-z0 = np.zeros(len(bounds))
+#z0 = np.zeros(len(bounds))
+z0 = np.random.rand(len(bounds))
 z0[0] = 2
 
 def obj(z):
@@ -103,6 +104,9 @@ sol = minimize(obj, z0, method='SLSQP', constraints=cons, bounds = bounds)
 print(sol)
 
 plane.get_rectangles(sol['x'][0])[0].plot(ax)
+
+las = sol['x'][1:5]
+mus = sol['x'][5:9]
 
 
 

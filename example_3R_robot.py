@@ -75,7 +75,7 @@ from ppr.cpp.graph_cpp import get_shortest_path
 res = get_shortest_path(path_js)
 if res['success']:
     shortest_path_js = res['path']
-    path_length = res['length']
+    #path_length = res['length']
     fig4, ax4 = plt.subplots()
     plt.title("The first solution")
     ax4.axis('equal')
