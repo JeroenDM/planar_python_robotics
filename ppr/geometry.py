@@ -104,6 +104,13 @@ class Rectangle:
         n[3, :] = np.dot(Rtemp, n[2, :])
         return n
     
+    def get_matrix_form(self):
+        A = self.get_normals()
+        # row wise dot product
+        b = np.sum(A * self.get_points(), axis=1)
+        return A, b
+        
+    
     def project(self, direction):
         p = self.p
         angle = -np.arctan2(direction[1], direction[0])
