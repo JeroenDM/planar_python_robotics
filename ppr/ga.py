@@ -43,7 +43,7 @@ def _get_shortest_path_ga(Q,
     
     # Check whether at least one path exists
     if 0 in gp['Q_size']:
-        return False, None
+        return {'success': False, 'path': None}
     
     # set crossover and mutation rate
     gp['cross_rate'] = cross_rate

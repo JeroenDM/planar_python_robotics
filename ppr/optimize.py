@@ -10,6 +10,130 @@ from numpy.random import rand
 from scipy.optimize import fmin_slsqp
 from scipy.optimize import minimize
 
+class Problem:
+    """ Setup and solve motion planning optimization problem """
+    def __init__(self, robot, env, path, bounds = [], debug=False):
+        self.robot = robot
+        self.env = env
+        self.path = path
+        self.cc = 0 # collision constraint counter
+        self.ndof = robot.ndof
+        self.nvars = len(path) * robot.ndof
+        
+        self.constraints = []
+        self.bounds = bounds
+        
+        self.debug = debug
+    
+    def solve(self, q_init):
+        cons = tuple(self.constraints)
+        bnds = self.bounds
+        obj  = self.create_objective()
+        
+        z0 = rand(self.nvars + self.cc * 8)
+        z0[:self.nvars] = q_init
+        
+        return minimize(obj, z0, method='SLSQP', constraints=cons, bounds = bnds)
+    
+    def create_objective(self):
+        def joint_motion_obj(z):
+            q_flat = z[:self.nvars]
+            n_path, qp = reshape_path_vector(q_flat, n_dof=self.ndof)
+            dqp = np.diff(qp, axis=0)
+            
+            return np.sum(np.abs(dqp))
+        
+        return joint_motion_obj
+    
+    def add_path_constraints(self):
+        for ip, p in enumerate(self.path):
+            con = self.create_path_point_constraint(ip, p)
+            self.constraints += con
+    
+    def create_path_point_constraint(self, ip, pp):
+        c = []
+        for i in range(pp.dim):
+            if pp.hasTolerance[i]:
+                ieq = self.tol_point_con(ip, i, pp)
+                c.append({'type': 'ineq', 'fun': ieq})
+            else:
+                eq = self.fixed_point_con(ip, i, pp)
+                c.append({'type': 'ineq', 'fun': eq})
+        
+        return c
+    
+    def tol_point_con(self, i_path, i_fk, point):
+        def ieq_con(z):
+            # TODO can be faster, get the right thing from z in one line
+            q_flat = z[:self.nvars]
+            n_path, qp = reshape_path_vector(q_flat, n_dof=self.ndof)
+            pfk = self.robot.fk(qp[i_path])
+            
+            return np.array([-pfk[i_fk] + point.p[i_fk].u,
+                              pfk[i_fk] - point.p[i_fk].l])
+        return ieq_con
+    
+    def fixed_point_con(self, i_path, i_fk, point):
+        def eq_con(z):
+            q_flat = z[:self.nvars]
+            n_path, qp = reshape_path_vector(q_flat, n_dof=self.ndof)
+            pfk = self.robot.fk(qp[i_path])
+            
+            return np.array([-pfk[i_fk] + point.p[i_fk] + 1e-3,
+                              pfk[i_fk] - point.p[i_fk] + 1e-3])
+    
+        return eq_con
+    
+    def add_collision_constraints(self):
+        if len(self.bounds) == 0:
+            # add default bounds
+            print("Added default infinit bounds for joint variables")
+            self.bounds = [(-np.inf, np.inf)] * self.nvars
+        
+        # loop over all collision objects in environement
+        for rec in self.env:
+            A2, b2 = rec.get_matrix_form()
+            # loop over all robot link
+            for i in range(self.robot.nlink):
+                con, bound = self.create_collision_constraints(i, A2, b2)
+                self.constraints += con
+                self.bounds += bound
+    
+    def create_collision_constraints(self, link_index, A2, b2, eps=1e-3):
+        self.cc += 1
+        i = self.cc - 1
+        nvars = self.nvars
+        # nvars = number of variables in the primal problem
+        lmin, lmax = nvars + i*8,     nvars + i*8 + 4
+        mmin, mmax = nvars + i*8 + 4, nvars + i*8 + 8
+        if self.debug:
+            print(lmin, lmax)
+            print(mmin, mmax)
+        def distance_limit(z):
+            A1, b1 = self.robot.get_rectangles(z[:nvars])[link_index].get_matrix_form()
+            la = z[lmin:lmax]
+            mu = z[mmin:mmax]
+            return -b1.dot(la) - b2.dot(mu) - eps
+        
+        def plane_equality(z):
+            A1, b1 = self.robot.get_rectangles(z[:nvars])[link_index].get_matrix_form()
+            la = z[lmin:lmax]
+            mu = z[mmin:mmax]
+            return A1.T.dot(la) + A2.T.dot(mu)
+        
+        def z_norm(z):
+            A1, b1 = self.robot.get_rectangles(z[:nvars])[link_index].get_matrix_form()
+            la = z[lmin:lmax]
+            return -np.sum((A1.T.dot(la))**2) + 1
+        
+        c = []
+        c.append({'type': 'ineq', 'fun': distance_limit})
+        c.append({'type': 'ineq', 'fun': z_norm})
+        c.append({'type': 'eq',   'fun': plane_equality})
+        
+        b = [(0, None)] * 8
+        return c, b
+
 
 #=============================================================================
 # Main functions to run the problem
