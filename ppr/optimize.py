@@ -5,10 +5,10 @@ Solve numerical optimization problem for robot path
 
 @author: jeroen
 """
-
-
 import numpy as np
+from numpy.random import rand
 from scipy.optimize import fmin_slsqp
+from scipy.optimize import minimize
 
 
 #=============================================================================
