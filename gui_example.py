@@ -5,13 +5,17 @@ import numpy as np
 from ppr.gui import RobotApp
 from example_robots import Robot_3R
 from ppr.cpp.geometry_cpp import Rectangle
+from ppr.path import TrajectoryPt
 
 robot3R = Robot_3R([1, 1, 0.5], [0.05, 0.03, 0.02])
-sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
+sc = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
        Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
 q_init = [1.5, 0.0, 0.0]
 
-app = RobotApp(robot3R, q_init, scene=sc1)
+n_path = 5
+pa = [TrajectoryPt([1, i / n_path, 3.14]) for i in range(n_path)]
+
+app = RobotApp(robot3R, q_init, scene=sc, path = pa)
 app.start()
 
 
