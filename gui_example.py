@@ -1,77 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button, RadioButtons
 
+from ppr.gui import RobotApp
 from example_robots import Robot_3R
-
-# color scheme
-main_background = 'w' #'#FFFFEA' # whiteish
-widget_background = '#D8D8D8' # gray
-widget_foreground = '#00CECB' # blueish
-# FF5E5B resish FFED66 greensih
-
-class RobotApp:
-    """Gui app to execute planning aglorithms"""
-    def __init__(self, robot, q0):
-        self.robot = robot
-        self.q0 = q0
-        self.create_figure()
-        self.draw_robot()
-        self.draw_sliders()
-        self.update_fun = self.get_update_callback()
-        for s in self.sliders: s.on_changed(self.update_fun)
-
-    def create_figure(self):
-        self.fig, self.ax_robot = plt.subplots(facecolor=main_background)
-        plt.title("The Robot")
-        plt.subplots_adjust(left=0.3, bottom=0.25)
-        self.ax_robot.axis([-2, 2, 0, 3])
-
-    def draw_robot(self):
-        self.robot.plot(self.ax_robot, self.q0, 'k')
-        self.lines = self.ax_robot.get_lines()
-
-    def draw_sliders(self):
-        self.ax_sliders = []
-        self.sliders = []
-        for i in range(self.robot.ndof):
-            ax, sl = self.create_slider(self.fig, i * 0.1,"s_{}".format(i),
-                                        "joint {}".format(i), self.q0[i])
-            self.ax_sliders.append(ax)
-            self.sliders.append(sl)
-
-    def start(self):
-        plt.show()
-
-    @staticmethod
-    def create_slider(f, h, label, joint_label, val_init):
-        ax = f.add_axes([0.2, h, 0.6, 0.03],
-                        facecolor=widget_background,
-                        label=label)
-        sl = Slider(ax,
-                    joint_label,
-                    -3.14, 3.14,
-                    valinit=val_init,
-                    color = widget_foreground)
-        return ax, sl
-
-    def get_update_callback(self):
-        def update(val):
-            q_new = [self.sliders[0].val, self.sliders[1].val, self.sliders[2].val]
-            pt = [rec.get_plot_points() for rec in  self.robot.get_rectangles(q_new)]
-            for i in range(len(self.lines)):
-                self.lines[i].set_data(pt[i].T)
-            # lines[0].set_ydata(q_new)
-            # plot_fun(ax_robot, q_new)
-            self.fig.canvas.draw_idle()
-        return update
-
+from ppr.cpp.geometry_cpp import Rectangle
 
 robot3R = Robot_3R([1, 1, 0.5], [0.05, 0.03, 0.02])
+sc1 = [Rectangle(0.2, 0.4, 0.1, 0.2, -0.3),
+       Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
 q_init = [1.5, 0.0, 0.0]
 
-app = RobotApp(robot3R, q_init)
+app = RobotApp(robot3R, q_init, scene=sc1)
 app.start()
+
 
 # fig, ax_robot = plt.subplots(facecolor=main_background)
 # plt.title("The Robot")
