@@ -11,6 +11,7 @@ rmatrix rotation(float angle) {
 }
 
 Rectangle::Rectangle(float px, float py, float dx, float dy, float a) {
+  // TODO turn around other point than left bottom corner
   width = dx;
   height = dy;
   pos_x = px;

@@ -9,6 +9,35 @@ def plot_scene(axes_handle, scene, *arg):
     for rect in scene:
         rect.plot(axes_handle, *arg)
 
+class Scene:
+    """
+    Scene that containts collision objects
+    acts as an iterator over all shapes in a for loop
+    example: for rectangle in Scene: rectangle.plot()
+    """
+
+    def __init__(self, shapes):
+        self.shapes = shapes
+        self.n = len(shapes)
+
+    def __iter__(self):
+        self.index = 0
+        return self
+
+    def __next__(self):
+        i = self.index
+        if i >= self.n:
+            raise StopIteration
+        self.index += 1
+        return self.shapes[i]
+
+    def __len__(self):
+        return len(self.shapes)
+
+    def plot(self, axes_handle, *arg):
+        for shape in self.shapes:
+            shape.plot(axes_handle, *arg)
+
 """ testing """
 if __name__ == "__main__":
     print("-----test scene.py-----")

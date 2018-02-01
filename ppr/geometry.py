@@ -31,11 +31,11 @@ def normalize_angle(x):
     PI = np.pi
     LO = -PI
     UP = PI
-    
+
     # make sure it works for scalar and vectors
     if np.isscalar(x):
         x = np.array([x])
-        
+
     # create new scaled vector
     y = x.copy()
     for i in range(len(x)):
@@ -47,7 +47,7 @@ def normalize_angle(x):
 
 def rotate(point, angle):
     """ Rotate a point around the origin
-    
+
     given p = [x, y], multiply by the rotation matrix R(angle)
     """
     R = np.array([[np.cos(angle),  -np.sin(angle)],
@@ -57,7 +57,7 @@ def rotate(point, angle):
 
 """ classes """
 class Rectangle:
-    """ Rectangle plotting, handling and collision detection   
+    """ Rectangle plotting, handling and collision detection
     """
     def __init__(self, x, y, dx, dy, angle):
         self.x = x
@@ -66,9 +66,9 @@ class Rectangle:
         self.dy = dy
         self.a = angle
         self.R = rotation(angle)
-        self.p = self.get_points()
-    
-    def get_points(self):
+        self.p = self.get_plot_points()
+
+    def get_plot_points(self):
         p = np.zeros((4, 2))
         p[0, 0] = self.x
         p[0, 1] = self.y
@@ -76,22 +76,22 @@ class Rectangle:
         p[2, :] = np.dot(self.R, [self.dx, self.dy]) + p[0, :]
         p[3, :] = np.dot(self.R, [0 ,      self.dy]) + p[0, :]
         return p
-    
+
     def rotate(self, angle):
         self.a += angle
         self.R = rotation(self.a)
-        self.p = self.get_points()
-        
+        self.p = self.get_plot_points()
+
     def translate(self, trans_x, trans_y):
         self.x += trans_x
         self.y += trans_y
-        self.p = self.get_points()
-        
+        self.p = self.get_plot_points()
+
     def move_to_origin(self):
         self.x = 0
         self.y = 0
-        self.p = self.get_points()
-    
+        self.p = self.get_plot_points()
+
     def get_normals(self):
         p = self.p
         n = np.zeros((4, 2))
@@ -103,14 +103,14 @@ class Rectangle:
         n[2, :] = np.dot(Rtemp, n[1, :])
         n[3, :] = np.dot(Rtemp, n[2, :])
         return n
-    
+
     def get_matrix_form(self):
         A = self.get_normals()
         # row wise dot product
-        b = np.sum(A * self.get_points(), axis=1)
+        b = np.sum(A * self.get_plot_points(), axis=1)
         return A, b
-        
-    
+
+
     def project(self, direction):
         p = self.p
         angle = -np.arctan2(direction[1], direction[0])
@@ -118,7 +118,7 @@ class Rectangle:
         for i in range(4):
             px[i] = rotate(p[i], angle)[0]
         return px
-    
+
     def in_collision(self, rect2, tol=1e-9):
         n1 = self.get_normals()
         n2 = rect2.get_normals()
@@ -131,9 +131,9 @@ class Rectangle:
             if (( max(pr1) + tol < min(pr2) ) or ( min(pr1) > max(pr2) + tol )):
                 col = False
             i += 1
-                
+
         return col
-    
+
     def plot(self, ax, *arg, **karg):
         p = self.p
         p = np.vstack((p, p[0]))
@@ -143,7 +143,7 @@ class Rectangle:
 if __name__ == "__main__":
     print("-----test geometry.py-----")
     import  matplotlib.pyplot as plt
-    
+
     # test fix angle
     x_test = np.random.rand(20)*16 - 8
     x_fix = normalize_angle(x_test)
@@ -151,28 +151,28 @@ if __name__ == "__main__":
     py = [np.sin(x_test), np.sin(x_fix)]
     print(x_test)
     print(x_fix)
-    
+
     plt.figure()
     plt.axis('equal')
     plt.plot(px[0], py[0], '*', px[1], py[1], '.')
-    
+
     rect1 = Rectangle(1, 2, 2, 2, np.pi/4)
     rect2 = Rectangle(1, 1, 3, 2, -np.pi/6)
-    
+
     fig = plt.figure()
     ax = fig.gca()
     plt.axis('equal')
     plt.axis([-10, 10, -10, 10])
 #    rect1.plot(ax, 'g.-')
 #    rect2.plot(ax, '.-', color=(0.1, 0.1, 0.1, 0.5))
-    
+
     px = rect1.project([1, 0])
     py = np.zeros(4)
     ax.plot(px, py, 'r*')
-    
+
     res = rect1.in_collision(rect2)
     print("Do they collide: " + str(res))
-    
+
     # test random set of rectangles
     fig2 = plt.figure(2)
     ax2 = fig2.gca()
@@ -198,4 +198,3 @@ if __name__ == "__main__":
             rect_a.plot(ax2, 'r')
         else:
             rect_a.plot(ax2, 'g')
-                
