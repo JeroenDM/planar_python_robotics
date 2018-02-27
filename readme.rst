@@ -9,7 +9,7 @@ The main drawback is that I have to write a lot of stuff myself. This is why I s
 
 General interface
 =================
-I try to get simple high level commands to set up a path following problem in 2D. The idea of toleranced trajectory points and the structure of the plannning graph comes from the [Descartes package](http://wiki.ros.org/descartes). A big thing missing there is easy handling of inverse kinematics. I ty to come up with a good high level interface to handle redundant inverse kinematics.
+I try to get simple high level commands to set up a path following problem in 2D. The idea of toleranced trajectory points and the structure of the plannning graph comes from the `Descartes package`_. A big thing missing there is easy handling of inverse kinematics. I ty to come up with a good high level interface to handle redundant inverse kinematics.
 
 The path
 --------
@@ -33,3 +33,4 @@ After a course path plan is formulated, the trajectory should be furter optimize
 .. _Anaconda: https://www.anaconda.com/download/
 .. _SciPy:    https://www.scipy.org/
 .. _NetworkX: https://networkx.github.io/
+.. _Descartes package: http://wiki.ros.org/descartes
