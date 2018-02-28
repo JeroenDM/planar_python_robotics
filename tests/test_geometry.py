@@ -10,6 +10,10 @@ import pytest
 atol = 1e-15
 rec = Rectangle(0, 2, np.sqrt(2), np.sqrt(8), -np.pi/4)
 
+rectangles = [Rectangle(0, 0, 1, 1, 0),
+              Rectangle(0, 0, -1, -1, 0),
+              Rectangle(0, 2, np.sqrt(2), np.sqrt(8), -np.pi/4)]
+
 def test_rotation():
     assert_allclose(rotation(0), np.eye(2))
     assert_allclose(rotation(np.pi / 2),
@@ -19,16 +23,32 @@ def test_rotation():
 # create test rectangle known points
 class TestRectangle():
     def test_rectangle_get_plot_points(self):
-        # calculate and check corner points
-        res1 = rec.get_plot_points()
-        sol1 = np.array([[0, 2], [1, 1], [3, 3], [2, 4]])
-        assert_allclose(res1, sol1)
+        # create testdata for different rectangles
+        test_data = [(rectangles[0],
+                      np.array([[0, 0], [1, 0], [1, 1], [0, 1]])),
+                     (rectangles[1],
+                       np.array([[0, 0], [-1, 0], [-1, -1], [0, -1]])),
+                     (rectangles[2],
+                       np.array([[0, 2], [1, 1], [3, 3], [2, 4]]))]
+        # run test for all test data
+        for reci, expected in test_data:
+            assert_allclose(reci.get_plot_points(), expected)
     
     def test_rectangle_get_normals(self):
-        res1 = rec.get_normals()
         s2 = np.sqrt(1/2)
-        sol1 = np.array([[-s2, -s2], [s2, -s2], [s2, s2], [-s2, s2]])
-        assert_allclose(res1, sol1)
+        # create testdata for different rectangles
+        test_data = [(rectangles[0],
+                      np.array([[0, -1], [1, 0], [0, 1], [-1, 0]])),
+                     (rectangles[1],
+                       np.array([[0, 1], [-1, 0], [0, -1], [1, 0]])),
+                     (rectangles[2],
+                       np.array([[-s2, -s2], [s2, -s2], [s2, s2], [-s2, s2]]))]
+        for reci, expected in test_data:
+            assert_allclose(reci.get_normals(), expected, atol=atol)
+        #res1 = rec.get_normals()
+        #s2 = np.sqrt(1/2)
+        #sol1 = np.array([[-s2, -s2], [s2, -s2], [s2, s2], [-s2, s2]])
+        #assert_allclose(res1, sol1)
     
     @pytest.mark.skip(reason="Figure out projection problems")
     def test_rectangle_project(self):
