@@ -1,0 +1,327 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ppr.geometry &#8212; Planar Python Robotics 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ppr.geometry</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">norm</span>
+
+<div class="viewcode-block" id="rotation"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.rotation">[docs]</a><span class="k">def</span> <span class="nf">rotation</span><span class="p">(</span><span class="n">angle</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create 2x2 rotation matrix from angle</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    anlge : float</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Rotation matrix as a numpy array</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rotation(0.0)</span>
+<span class="sd">    array([[ 1., -0.],</span>
+<span class="sd">           [ 0.,  1.]])</span>
+<span class="sd">    &gt;&gt;&gt; rotation(np.pi / 2)</span>
+<span class="sd">    array([[  6.12323400e-17,  -1.00000000e+00],</span>
+<span class="sd">           [  1.00000000e+00,   6.12323400e-17]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span>  <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)],</span></div>
+                      <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span>  <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)]])</span>
+
+<div class="viewcode-block" id="Rectangle"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle">[docs]</a><span class="k">class</span> <span class="nc">Rectangle</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Rectangle plotting, handling and collision detection</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : numpy.ndarray</span>
+<span class="sd">        The four corner points of the rectangle, counter-clockwise, starting</span>
+<span class="sd">        with the point at the (x, y) position. The array has shape (4, 2).</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rect = Rectangle(0.3, 0.4, 1.5, -1.6, 2.7)</span>
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; fig, ax = plt.subplots()</span>
+<span class="sd">    &gt;&gt;&gt; rect.plot(ax)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Create a rectangle object</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float</span>
+<span class="sd">            x-position of rectangle, one of the four corner points.</span>
+<span class="sd">        y : float</span>
+<span class="sd">            y-position of rectangle, one of the four corner points.</span>
+<span class="sd">        dx : float</span>
+<span class="sd">            Width before rotation.</span>
+<span class="sd">        dy : float</span>
+<span class="sd">            Height before roation.</span>
+<span class="sd">        angle : float</span>
+<span class="sd">            Angle between x-axis and bottom side of rectangle.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dy</span> <span class="o">=</span> <span class="n">dy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">angle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Rectangle.get_vertices"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.get_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">get_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get 4 corner points of rectangles</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array with shape (4, 2) containing the x and y coordinates of</span>
+<span class="sd">            the 4 corners of the rectangle.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; rec1 = Rectangle(0, 0, 1, 1, 0)</span>
+<span class="sd">        &gt;&gt;&gt; rec1.get_vertices()</span>
+<span class="sd">        array([[ 0.,  0.],</span>
+<span class="sd">               [ 1.,  0.],</span>
+<span class="sd">               [ 1.,  1.],</span>
+<span class="sd">               [ 0.,  1.]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="mi">0</span> <span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span> <span class="p">,</span>      <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">])</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span></div>
+        <span class="k">return</span> <span class="n">p</span>
+
+<div class="viewcode-block" id="Rectangle.get_normals"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.get_normals">[docs]</a>    <span class="k">def</span> <span class="nf">get_normals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get normals on the 4 sides</span>
+<span class="sd">        </span>
+<span class="sd">        Get 4 unit vectors pointing away from the four sides.</span>
+<span class="sd">        Start with [0, -1] and rotate it by the angle of the rectangle.</span>
+<span class="sd">        Then rotate it 3 times with a angle pi/4.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array with shape (4, 2) containing 4 unit vectors representing</span>
+<span class="sd">            normals on 4 rectangle sides.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; rec1 = Rectangle(0, 0, 1, 1, 0)</span>
+<span class="sd">        &gt;&gt;&gt; rec1.get_normals()</span>
+<span class="sd">        array([[  0.00000000e+00,  -1.00000000e+00],</span>
+<span class="sd">               [  1.00000000e+00,  -6.12323400e-17],</span>
+<span class="sd">               [  1.22464680e-16,   1.00000000e+00],</span>
+<span class="sd">               [ -1.00000000e+00,   1.83697020e-16]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">]))</span>
+        <span class="n">Rtemp</span> <span class="o">=</span> <span class="n">rotation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Rtemp</span><span class="p">,</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Rtemp</span><span class="p">,</span> <span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">n</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Rtemp</span><span class="p">,</span> <span class="n">n</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:])</span></div>
+        <span class="k">return</span> <span class="n">n</span>
+    
+<div class="viewcode-block" id="Rectangle.project"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.project">[docs]</a>    <span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Project all points of rectangle on an axis given as unit vector</span>
+<span class="sd">        </span>
+<span class="sd">        Use the dot product between the vector from the origin to a corner</span>
+<span class="sd">        point and the given axis unit vector.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axis : numpy.ndarray of floats</span>
+<span class="sd">            Unit vector representing the axis on wich to project the points.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array with shape (4,) containing the projected points with the</span>
+<span class="sd">            origin as reference.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">        Project simple square on x-axis.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; rec1 = Rectangle(0, 0, 1, 1, 0)</span>
+<span class="sd">        &gt;&gt;&gt; rec1.project(np.array([1, 0]))</span>
+<span class="sd">        array([ 0.,  1.,  1.,  0.])</span>
+<span class="sd">        </span>
+<span class="sd">        Project the same square on diagonal axis.</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; rec1.project(np.array([0.70710678, 0.70710678]))</span>
+<span class="sd">        array([ 0.        ,  0.70710678,  1.41421356,  0.70710678])</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="Rectangle.is_in_collision"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.is_in_collision">[docs]</a>    <span class="k">def</span> <span class="nf">is_in_collision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rect2</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Check if it collides with another rectangle.</span>
+<span class="sd">        </span>
+<span class="sd">        Use the separating axis theorem.</span>
+<span class="sd">        Project both rectangles along all 8 normals and check overlap.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rect2 : ppr.geometry.Rectangle</span>
+<span class="sd">            The other rectangle to check collision with.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            False if no collision (as soon as a separating axis is found),</span>
+<span class="sd">            True if in collision.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; rec1 = Rectangle(0, 0, 1, 1, 0)</span>
+<span class="sd">        &gt;&gt;&gt; rec2 = Rectangle(0.5, 0, 1, 1, 0.1)</span>
+<span class="sd">        &gt;&gt;&gt; rec3 = Rectangle(1.5, 0.5, 1, 2, -0.2)</span>
+<span class="sd">        &gt;&gt;&gt; rec1.is_in_collision(rec2)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; rec1.is_in_collision(rec3)</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_normals</span><span class="p">()</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="n">rect2</span><span class="o">.</span><span class="n">get_normals</span><span class="p">()</span>
+        <span class="n">n_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+        <span class="c1"># assume collision until proven otherwise</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">col</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="n">pr1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">n_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">pr2</span> <span class="o">=</span> <span class="n">rect2</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">n_all</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="p">((</span> <span class="nb">max</span><span class="p">(</span><span class="n">pr1</span><span class="p">)</span> <span class="o">+</span> <span class="n">tol</span> <span class="o">&lt;</span> <span class="nb">min</span><span class="p">(</span><span class="n">pr2</span><span class="p">)</span> <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="n">pr1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">pr2</span><span class="p">)</span> <span class="o">+</span> <span class="n">tol</span> <span class="p">)):</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+</div>
+        <span class="k">return</span> <span class="n">col</span>
+    
+<div class="viewcode-block" id="Rectangle.get_matrix_form"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.get_matrix_form">[docs]</a>    <span class="k">def</span> <span class="nf">get_matrix_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the matrix representation of the rectanlge</span>
+<span class="sd">        </span>
+<span class="sd">        A rectangle is described by four linear inequalities.</span>
+<span class="sd">        If whe write these inequalities in matrix form we get</span>
+<span class="sd">        A * x &lt;= b</span>
+<span class="sd">        </span>
+<span class="sd">        x is the vector of all possible x and y coordinates [x; y]</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A : numpy.ndarray of floats</span>
+<span class="sd">            Array with shape (4, 2), every rows contains the coefficient of</span>
+<span class="sd">            on of the inequalities.</span>
+<span class="sd">        b : numpy.ndarray fo floats</span>
+<span class="sd">            Vector of length 4 containing the right hand side of the</span>
+<span class="sd">            inequalities.</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        </span>
+<span class="sd">        Show the inequalities for a trivial case.</span>
+<span class="sd">        For a 1x2 rectange at the origin whe whould expect:</span>
+<span class="sd">        -y &lt;= 0</span>
+<span class="sd">        x &lt;= 1</span>
+<span class="sd">        y &lt;= 2</span>
+<span class="sd">        -x &lt;= 0</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; rec1 = Rectangle(0, 0, 1, 2, 0)</span>
+<span class="sd">        &gt;&gt;&gt; A1, b1 = rec1.get_matrix_form()</span>
+<span class="sd">        &gt;&gt;&gt; A1</span>
+<span class="sd">        array([[  0.00000000e+00,  -1.00000000e+00],</span>
+<span class="sd">               [  1.00000000e+00,  -6.12323400e-17],</span>
+<span class="sd">               [  1.22464680e-16,   1.00000000e+00],</span>
+<span class="sd">               [ -1.00000000e+00,   1.83697020e-16]])</span>
+<span class="sd">        &gt;&gt;&gt; b1</span>
+<span class="sd">        array([  0.00000000e+00,   1.00000000e+00,   2.00000000e+00,</span>
+<span class="sd">                 3.67394040e-16])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_normals</span><span class="p">()</span>
+        <span class="c1"># row wise dot product</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span>
+
+<div class="viewcode-block" id="Rectangle.plot"><a class="viewcode-back" href="../../ppr.html#ppr.geometry.Rectangle.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></div></div>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">p</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jeroen De Maeyer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -2,7 +2,7 @@
 
 %{
     #define SWIG_FILE_WITH_INIT
-    #include "graph.h"
+    #include "include/graph.h"
 %}
 
 %include "numpy.i"
@@ -20,4 +20,4 @@
 
 %ignore Node;
 %ignore sort_function(Node*, Node*);
-%include "graph.h"
+%include "include/graph.h"

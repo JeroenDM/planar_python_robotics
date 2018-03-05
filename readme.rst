@@ -3,9 +3,10 @@ Planar Python Robotics
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
 
 By only using Python 3.6 (from the Anaconda_ distribution) and SciPy_ I hope to have a robust framework that will work on any system for the next three years.
-I also started using NetworkX_, will see if I get into version trouble in the future...
 
 The main drawback is that I have to write a lot of stuff myself. This is why I start with planar robotics. I'm not sure if it is usefull to do this. But it will be fun and I will learn a buch.
+
+In addition, for performance reasons, I add some c++ code wrapped using SWIG_.
 
 General interface
 =================
@@ -22,15 +23,16 @@ For the robot I some kind of adapted Denavit-Hartenberg convention in 2D. I will
 
 The inverse kinematics is where it get's interesting. The basic assumtion is to only use analytic inverse kinematics to achieve a reasobanle speed. The idea is that for a more than 3 dof robot, *fixed joints* will have to be specified. The *discrete inverse kinematics* function will automaticly sample these joints in there interval of joint limits and return all possible inverse kinematics solutions. The is a method that could quickly explode of not used carefully, having complexilty samples_per_dof^(ndof - 3) Only to be used for rude sampling of possible path.
 
-The planner
------------
+Sampling based path following
+------------------------------
 The planner should give an esimate of the required calculation time, to warn the user if the required planning problem is sampled to fine. A planning graph is construced and the shorted path is found.
 
-The optimizer
--------------
+Optimisation based path following
+---------------------------------
 After a course path plan is formulated, the trajectory should be furter optimized. An optimization problem if formulated including a dynamic model of the robot and while respecting torque limits.
 
 .. _Anaconda: https://www.anaconda.com/download/
 .. _SciPy:    https://www.scipy.org/
+.. _SWIG:     http://www.swig.org/
 .. _NetworkX: https://networkx.github.io/
 .. _Descartes package: http://wiki.ros.org/descartes
