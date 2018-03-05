@@ -8,6 +8,8 @@ doc:
   - pip install sphinx
   - cd docs
   - make html
+  tags:
+  - docker
 
 test:
   script:
