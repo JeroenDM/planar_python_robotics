@@ -246,6 +246,28 @@
             <span class="c1"># fixed link length</span></div>
             <span class="k">return</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ll</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">phii</span><span class="p">)</span>
     
+<div class="viewcode-block" id="Robot.check_collision"><a class="viewcode-back" href="../../ppr.html#ppr.robot.Robot.check_collision">[docs]</a>    <span class="k">def</span> <span class="nf">check_collision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">scene</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Check for collision between the robot other_rectangles</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        q : list or numpy.ndarray of float</span>
+<span class="sd">            Joint position</span>
+<span class="sd">        scene : list of ppr.geometry.Rectangle</span>
+<span class="sd">            A list with collision shapes.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if one of the robot links collides with one of the collision</span>
+<span class="sd">            shapes. False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">recti</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_shapes</span><span class="p">(</span><span class="n">q</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">rectj</span> <span class="ow">in</span> <span class="n">scene</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">recti</span><span class="o">.</span><span class="n">is_in_collision</span><span class="p">(</span><span class="n">rectj</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span> <span class="c1"># exit if a collision is found</span></div>
+        <span class="k">return</span> <span class="kc">False</span>
+    
 <div class="viewcode-block" id="Robot.plot_kinematics"><a class="viewcode-back" href="../../ppr.html#ppr.robot.Robot.plot_kinematics">[docs]</a>    <span class="k">def</span> <span class="nf">plot_kinematics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes_handle</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">karg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Plot robot using lines and dots</span>
 <span class="sd">        </span>
@@ -347,6 +369,10 @@
 <span class="sd">            reachable and a key &#39;q&#39; reporting the different joint solutions</span>
 <span class="sd">            as a list of numpy arrays.</span>
 <span class="sd">            If &#39;success&#39; is False, a key &#39;info&#39; containts extra info.</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Joint limits have to be added.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># tol = tolerance needed for boundary cases</span>
         <span class="c1"># base transform only translation for now TODO</span>
@@ -358,8 +384,8 @@
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         
         <span class="c1"># initialize output</span>
-        <span class="n">q_up</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">q_do</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">q_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">q_do</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">reachable</span> <span class="o">=</span> <span class="kc">False</span>
         
         <span class="c1"># start calculations</span>
@@ -405,6 +431,48 @@
         <span class="k">else</span><span class="p">:</span></div></div>
             <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="s2">&quot;unreachable&quot;</span><span class="p">}</span>
 
+<div class="viewcode-block" id="Robot_2P"><a class="viewcode-back" href="../../ppr.html#ppr.robot.Robot_2P">[docs]</a><span class="k">class</span> <span class="nc">Robot_2P</span><span class="p">(</span><span class="n">Robot</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Wrapper class for base robot class for 2P robot.</span>
+<span class="sd">    </span>
+<span class="sd">    A simple cartesian robot with inverse kinematics.</span>
+<span class="sd">    First joint along x-axis, second joint along y-axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Simplified constructor for this 2P robot</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        link_length : list or np.array of floats</span>
+<span class="sd">            The lengths for the two links.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">link_length</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;This robot has 2 links, not: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">link_length</span><span class="p">)))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">([</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">],</span> <span class="n">link_length</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">])</span>
+    
+<div class="viewcode-block" id="Robot_2P.ik"><a class="viewcode-back" href="../../ppr.html#ppr.robot.Robot_2P.ik">[docs]</a>    <span class="k">def</span> <span class="nf">ik</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Inverse kinematics for 2R robot, ignoring orientation.</span>
+<span class="sd">        </span>
+<span class="sd">        Joint limits not implemented yet.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : list or np.ndarray of floats</span>
+<span class="sd">            End-effector pose (x, y, angle)</span>
+<span class="sd">            Angle (orientation) not used but included for consistency.</span>
+<span class="sd">        tol : float</span>
+<span class="sd">            Tolerance when a result is assumed zero. (default = 1e-12)</span>
+<span class="sd">            Not used but included for consistency.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary with a key &#39;success&#39; reporting True if the pose is</span>
+<span class="sd">            reachable and a key &#39;q&#39; reporting the different joint solutions</span>
+<span class="sd">            as a list of numpy arrays.</span>
+<span class="sd">            If &#39;success&#39; is False, a key &#39;info&#39; containts extra info.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;success&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;q&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]])]}</span>
+        
 
 
 
