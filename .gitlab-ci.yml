@@ -1,8 +1,5 @@
 image: python:latest
 
-- tags:
-   - docker
-
 before_script:
   - python -V
 
@@ -11,3 +8,5 @@ test:
   - pip install -U pytest
   - pip install pytest-cov
   - python -m pytest --doctest-modules --cov
+  tags:
+  - docker
