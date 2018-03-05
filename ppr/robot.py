@@ -302,6 +302,126 @@ class Robot:
         for i, qi in enumerate(qp):
             for rect in self.get_shapes(qi):
                 rect.plot(axes_handle, color=(0.1, 0.2, 0.5, alpha[i]))
+    
+    #=============================================================================
+    # THE FOLLOWING METHODS ARE NOT TESTED YET AND ALMOST NO DOCUMENTATION
+    #=============================================================================
+    def set_link_inertia(self, mass, cg_position, Icg):
+        self.m = mass
+        self.c = cg_position
+        self.I = Icg
+    
+    def euler_newton(self, q, dq, ddq):
+        """ Euler-Netwon recursive algorithm from book Sicilliano """
+        ndof = self.ndof
+        lq = [len(vec) for vec in [q, dq, ddq]]
+        if not np.all(np.array(lq) == ndof):
+            raise ValueError("Input vectors must have same length, not: " + str(lq))
+        
+        # initialize vectors for solution (base at index 0)
+        # i = 0 -> base
+        # i = ndof+1 - > last link
+        # assume base is not moving TODO
+        W  = np.zeros(ndof + 1) # link angular velocity
+        dW = np.zeros(ndof + 1) # link angular acceleration
+        A  = np.zeros((ndof + 1, 2)) # frame acceleration
+        Ac = np.zeros((ndof + 1, 2)) # link cg acceleration
+        
+        # forward recursion for speed and acceleration
+        for k in range(1, ndof+1):
+            i = k-1 # link index in robot parameters
+            W[k], dW[k], A[k], Ac[k] = self._fw_prop(i, q[i], dq[i], ddq[i],
+                                                     W[k-1], dW[k-1], A[k-1])
+        
+        # initialize some more vectors (OTHER INDEX DEFINITION than W, dW, ...)
+        # i = ndof+1 -> end effector
+        # i = 0 - > first link
+        # assume no end effector force or torque
+        F   = np.zeros((ndof + 1, 2))
+        M   = np.zeros(ndof + 1)
+        tau = np.zeros(ndof) # joint force or torque
+        
+        # backward recursion for forces and torques
+        for k in np.flip(np.arange(ndof), 0):
+            i = k # link index in robot parameters
+            F[k], M[k], tau[k] = self._bw_prop(i, q[i],
+                                             F[k+1], M[k+1],
+                                             dW[k+1], Ac[k+1])
+        return tau
+    
+    def _fw_prop(self, ib, qb, dqb, ddqb, wa, dwa, aa):
+        """ Forward propagation of speed and velocity from link i to i+1 """
+        
+        cb = self.c[ib]
+        if self.jt[ib] == 'r':
+            db    = self.d[ib]
+            arel  = [-(wa + dqb)**2 * db, (dwa + ddqb)*db]
+            acrel = [-(wa + dqb)**2 * cb, (dwa + ddqb)*cb]
+            wb    = wa  + dqb
+            dwb   = dwa + ddqb
+            R = self._R_link(ib, qb).T
+        elif self.jt[ib] == 'p':
+            db    = qb
+            arel  = [-wa**2 * db + ddqb, dwa*db + 2*wa*dqb]
+            acrel = [-wa**2 * cb + ddqb, dwa*cb + 2*wa*dqb]
+            wb    = wa
+            dwb   = dwa
+            R = self._R_link(ib, self.a[ib]).T
+        else:
+            raise ValueError("wrong joint type: " + self.jt[ib])
+        
+        ab = np.dot(R, aa) + np.array(arel)
+        ac = np.dot(R, aa) + np.array(acrel)
+        return wb, dwb, ab, ac
+    
+    def _bw_prop(self, ia, qb, Fb, Mb, dwa, aca):
+        """ Backward force and torque propagation from i+1 to i """
+        
+        if self.jt[ia] == 'r':
+            # transforme Fb to frame of link a (given in frame b)
+            R = self._R_link(ia+1, qb)
+            Fbt = np.dot(R, Fb)
+            # calculate Fa and Ma
+            Fa = Fbt + self.m[ia] * aca
+            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma += (self.d[ia] - self.c[ia]) * Fb[1]
+            Ma += self.I[ia] * dwa
+            # joint torque
+            taua = Ma
+        elif self.jt[ia] == 'p':
+            # transforme Fb to frame of link a (given in frame b)
+            R = self._R_link(ia+1, self.a[ia+1])
+            Fbt = np.dot(R, Fb)
+            # calculate Fa and Ma
+            Fa = Fbt + self.m[ia] * aca
+            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma += (qb - self.c[ia]) * Fb[1]
+            Ma += self.I[ia] * dwa
+            # joint force
+            taua = Fa[0]
+        else:
+            raise ValueError("wrong joint type: " + self.jt[ia])
+        
+        return Fa, Ma, taua
+    
+    def _R_link(self, i, qi):
+        """ rotation matrix of link i relative to link i-1 """
+        if (i+1) >= self.ndof:
+            # frame i is the end effector frame
+            # end effector pose not implemented
+            return np.eye(2)
+        else:
+            if self.jt[i] == 'r':
+                a = qi
+            elif self.jt[i] == 'p':
+                a = self.a[i]
+            else:
+                raise ValueError("wrong joint type: " + self.jt[i])
+            
+            ca = np.cos(a)
+            sa = np.sin(a)
+            R = np.array([[ca, -sa], [sa, ca]])
+            return R
 
 class Robot_3R(Robot):
     """ Wrapper class for base robot class for 3R robot.
