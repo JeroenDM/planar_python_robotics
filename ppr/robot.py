@@ -571,6 +571,13 @@ class Robot_2P3R(Robot):
     """ A 3R robot mounted on a 2P cartesian robot
     
     This is the first robot with kinematic redundancy!
+    
+    Attributes
+    ----------
+    ik_sample : int
+            How many samples should be taken in the range of the first two
+            joints. Resulting in n_sample * n_sample times the normal number
+            of solutions for a 3R robot.
     """
     def __init__(self, link_length):
         """ Simplified constructor for this 2P3R robot
@@ -590,8 +597,9 @@ class Robot_2P3R(Robot):
                          [np.pi / 2, -np.pi / 2, 0, 0, 0])
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
+        self.ik_samples = 5
 
-    def ik(self, p, n_sample = 5):
+    def ik(self, p):
         """ Discretised / sampled inverse kinematics
         
         This robots has redundance (ndof = 5) compared to the task (3) and
@@ -602,10 +610,6 @@ class Robot_2P3R(Robot):
         ----------
         p : list or np.ndarray of floats
             End-effector pose (x, y, angle)
-        n_sample : int
-            How many samples should be taken in the range of the first two
-            joints. Resulting in n_sample * n_sample times the normal number
-            of solutions for a 3R robot.
         
         Returns
         -------
@@ -615,8 +619,8 @@ class Robot_2P3R(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
-        q1 = TolerancedNumber(0.5, 0, 1.5, samples=n_sample)
-        q2 = TolerancedNumber(0.5, 0, 1.5, samples=n_sample)
+        q1 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples)
+        q2 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples)
         grid = np.meshgrid(q1.range, q2.range)
         grid = [ grid[i].flatten() for i in range(2) ]
         grid = np.array(grid).T
