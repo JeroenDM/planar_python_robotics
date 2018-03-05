@@ -1,0 +1,10 @@
+image: python:latest
+
+before_script:
+  - python -V
+
+test:
+  script:
+  - pip install -U pytest
+  - pip install pytest-cov
+  - python -m pytest --doctest-modules --cov
