@@ -1,3 +1,7 @@
+[![pipeline status](https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/badges/master/pipeline.svg)](https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/commits/master)
+
+[![coverage report](https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/badges/master/coverage.svg)](https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/commits/master)
+
 Planar Python Robotics
 ======================
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
