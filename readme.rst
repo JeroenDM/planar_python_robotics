@@ -1,3 +1,5 @@
+For a quick overview of what the code can do, have a look the notebook "example_3R_robot".
+
 Planar Python Robotics
 ======================
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
