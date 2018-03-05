@@ -6,7 +6,6 @@ before_script:
 test:
   script:
   - pip install -r requirements.txt
-  - export DISPLAY=:0.0
   - python -m pytest --doctest-modules --cov
   tags:
   - docker
