@@ -200,6 +200,52 @@ class Rectangle:
 
         return col
     
+    def distance(self, rect2, tol=1e-9):
+        """ Check if it collides with another rectangle.
+        
+        Use the separating axis theorem.
+        Project both rectangles along all 8 normals and check overlap.
+        
+        Parameters
+        ----------
+        rect2 : ppr.geometry.Rectangle
+            The other rectangle to calculate the separating distance with.
+        
+        Returns
+        -------
+        float
+            Distance between the two rectangles. Negative penetration depth
+            if in collision
+        
+        Examples
+        --------
+        >>> rec1 = Rectangle(0, 0, 1, 1, 0)
+        >>> rec2 = Rectangle(0.5, 0, 1, 1, 0.1)
+        >>> rec3 = Rectangle(1.5, 0.5, 1, 2, -0.2)
+        >>> rec1.distance(rec2)
+        -0.59733549928584095
+        >>> rec1.distance(rec3)
+        0.5
+        """
+        n1 = self.get_normals()
+        n2 = rect2.get_normals()
+        n_all = np.vstack((n1, n2))
+        # assume collision until proven otherwise
+        col = True
+        dist = 0.0
+        i = 0
+        while col and i < 8:
+            pr1 = self.project(n_all[i])
+            pr2 = rect2.project(n_all[i])
+            d1 = min(pr2) - max(pr1)
+            d2 = min(pr1) - max(pr2)
+            if (d1 > tol or d2 > tol):
+                col = False
+            dist = max(d1, d2)
+            i += 1
+            
+        return dist
+    
     def get_matrix_form(self):
         """ Get the matrix representation of the rectanlge
         

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from ppr.optim import q_derivatives
+from ppr.optim import q_derivatives, collision_ieq_con
 from numpy.testing import assert_almost_equal
 import numpy as np
+from ppr.robot import Robot_3R
+from ppr.geometry import Rectangle
 
 def test_q_derivatives():
     q = np.array([[0, 0],
@@ -35,3 +37,15 @@ def test_q_derivatives_with_known_function():
                                rtol=1, atol=0.01)
     np.testing.assert_allclose(ddx_test[10:40, :], ddx[10:40, :],
                                rtol=1, atol=0.01)
+
+class TestConstraints():
+    def test_collision_ieq_con(self):
+        robot = Robot_3R([2.1, 3.0, 1.8])
+        rects = [Rectangle(0, 0, 1, 1, 0),
+                 Rectangle(5, 0, 1, 2, 0.3)]
+        q_test = [np.array([np.pi/4, -np.pi/4, 0.0])]
+        actual = collision_ieq_con(q_test, robot, rects)
+        desired = np.array([-1.0353553,  1.7665554, 
+                            0.4849242,  0.0384695, 
+                            0.4849242, -1.0532455])
+        assert_almost_equal(actual, desired)

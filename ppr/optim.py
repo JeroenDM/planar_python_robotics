@@ -12,6 +12,7 @@ from scipy.optimize import fmin_slsqp
 # Main functions to run the problem
 #=============================================================================
 def get_optimal_trajectory(robot, path, q_path_init,
+                           check_collision=False, scene=None,
                            w={'joint_motion': 1.0,
                                'path_error'  : 0.0,
                                'torque'      : 0.0}):
@@ -29,6 +30,11 @@ def get_optimal_trajectory(robot, path, q_path_init,
     tuple of numpy.ndarray
         Joint position, velocity and acceleration
     """
+    # input validation
+    if check_collision:
+        if scene == None:
+            raise ValueError("scene is needed for collision checking")
+    
     n_path = len(path)
     q_init = np.array(q_path_init).flatten()
 
@@ -56,9 +62,16 @@ def get_optimal_trajectory(robot, path, q_path_init,
         raise ValueError("This type of objective is not implemented yet.")
 
     # setup inequality constraints
-    def ieq_con(x):
-        n_path, qp = reshape_path_vector(x, n_dof=robot.ndof)
-        return path_ieq_con(qp, robot, path)
+    if check_collision:
+        def ieq_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=robot.ndof)
+            pc = path_ieq_con(qp, robot, path)
+            cc = collision_ieq_con(qp, robot, scene)
+            return np.hstack((pc, cc))
+    else:
+        def ieq_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=robot.ndof)
+            return path_ieq_con(qp, robot, path)
 
     # Solve problem
     sol = fmin_slsqp(obj,
@@ -126,6 +139,16 @@ def path_ieq_con(q_path, robot, path, tol=1e-6):
             else:
                 con.append(-pfk[i] + tp.p[i] + tol)
                 con.append( pfk[i] - tp.p[i] - tol)
+    return np.array(con)
+
+def collision_ieq_con(q_path, robot, scene):
+    con = []
+    for qi in q_path:
+        robot_shapes = robot.get_shapes(qi)
+        for s1 in robot_shapes:
+            for s2 in scene:
+                con.append(s1.distance(s2))
+    
     return np.array(con)
 
 #=============================================================================
