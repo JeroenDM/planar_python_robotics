@@ -1,5 +1,8 @@
 image: python:latest
 
+- tags:
+   - docker
+
 before_script:
   - python -V
 
