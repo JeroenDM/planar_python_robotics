@@ -3,6 +3,7 @@
 
 import numpy as np
 from .geometry import Rectangle, rotation
+from .path import TolerancedNumber
 
 class Robot:
     """ Base class for a serial manipulator
@@ -481,34 +482,39 @@ class Robot_3R(Robot):
             # coordinates of end point second link (w)
             pwx = x - l3 * np.cos(phi)
             pwy = y - l3 * np.sin(phi)
-            rws = pwx**2 + pwy**2
+            rws = pwx**2 + pwy**2 # squared distance to second joint
             if (l1 + l2) >= np.sqrt(rws):
-                reachable = True
-                # calculate q2
+                # calculate cosine q2
                 c2 = (rws - l1**2 - l2**2) / (2*l1*l2)
-                # if c2 exactly 1, it can be a little bit bigger at this point
-                # because of numerical error, then rescale
-                # TODO far from all edge cases are catched
-                if abs(c2 - 1) < tol:
-                    c2 = np.sign(c2) * 1.0
-                    s2 = 0.0
-                    q_up[1] = np.arctan2(0, c2) # elbow up
-                    q_do[1] = -np.arctan2(0, c2) # elbow down
-                else:
-                    s2 = np.sqrt(1 - c2**2)
-                    q_up[1] = np.arctan2(s2, c2) # elbow up
-                    q_do[1] = np.arctan2(-s2, c2) # elbow down
-                # calculate q1
-                temp = (l1 + l2 * c2)
-                s1_up = (temp * pwy - l2 * s2 * pwx) / rws
-                c1_up = (temp * pwx + l2 * s2 * pwy) / rws
-                s1_do = (temp * pwy + l2 * s2 * pwx) / rws
-                c1_do = (temp * pwx - l2 * s2 * pwy) / rws
-                q_up[0] = np.arctan2(s1_up, c1_up)
-                q_do[0] = np.arctan2(s1_do, c1_do)
-                # finally q3
-                q_up[2] = phi - q_up[0] - q_up[1]
-                q_do[2] = phi - q_do[0] - q_do[1]
+                # c2 is already guaranteed to be < 1
+                # but it can still be smaller than -1
+                # for example points close the the robot base that are
+                # not reachable
+                if c2 > -1:
+                    reachable = True
+                    # if c2 exactly 1, it can be a little bit bigger at this point
+                    # because of numerical error, then rescale
+                    # TODO far from all edge cases are catched
+                    if abs(c2 - 1) < tol:
+                        c2 = np.sign(c2) * 1.0
+                        s2 = 0.0
+                        q_up[1] = np.arctan2(0, c2) # elbow up
+                        q_do[1] = -np.arctan2(0, c2) # elbow down
+                    else:
+                        s2 = np.sqrt(1 - c2**2)
+                        q_up[1] = np.arctan2(s2, c2) # elbow up
+                        q_do[1] = np.arctan2(-s2, c2) # elbow down
+                    # calculate q1
+                    temp = (l1 + l2 * c2)
+                    s1_up = (temp * pwy - l2 * s2 * pwx) / rws
+                    c1_up = (temp * pwx + l2 * s2 * pwy) / rws
+                    s1_do = (temp * pwy + l2 * s2 * pwx) / rws
+                    c1_do = (temp * pwx - l2 * s2 * pwy) / rws
+                    q_up[0] = np.arctan2(s1_up, c1_up)
+                    q_do[0] = np.arctan2(s1_do, c1_do)
+                    # finally q3
+                    q_up[2] = phi - q_up[0] - q_up[1]
+                    q_do[2] = phi - q_do[0] - q_do[1]
 
         if reachable:
             # check if we have to identical solutions
@@ -560,7 +566,97 @@ class Robot_2P(Robot):
             If 'success' is False, a key 'info' containts extra info.
         """
         return {'success': True, 'q': [np.array([p[0], p[1]])]}
+
+class Robot_2P3R(Robot):
+    """ A 3R robot mounted on a 2P cartesian robot
+    
+    This is the first robot with kinematic redundancy!
+    """
+    def __init__(self, link_length):
+        """ Simplified constructor for this 2P3R robot
         
+        Add a helper robot to self.sub_robot to reuse the inverse kinematics
+        implementation of the 3R robot.
+        
+        Parameters
+        ----------
+        link_length : list or np.array of floats
+            The lengths for the two links.
+        """
+        if not (len(link_length) == 5):
+            raise ValueError("This robot has 5 links, not: " + str(len(link_length)))
+        super().__init__(['p', 'p', 'r', 'r', 'r'],
+                         link_length,
+                         [np.pi / 2, -np.pi / 2, 0, 0, 0])
+        # create 3R robot for inverse kinematics
+        self.sub_robot = Robot_3R(link_length[2:])
 
-
-
+    def ik(self, p, n_sample = 5):
+        """ Discretised / sampled inverse kinematics
+        
+        This robots has redundance (ndof = 5) compared to the task (3) and
+        therefore two joints are sampled in a range to return a sampled
+        subset of the infinite solutions that exists for the given pose.
+        
+        Parameters
+        ----------
+        p : list or np.ndarray of floats
+            End-effector pose (x, y, angle)
+        n_sample : int
+            How many samples should be taken in the range of the first two
+            joints. Resulting in n_sample * n_sample times the normal number
+            of solutions for a 3R robot.
+        
+        Returns
+        -------
+        dict
+            A dictionary with a key 'success' reporting True if the pose is
+            reachable and a key 'q' reporting the different joint solutions
+            as a list of numpy arrays.
+            If 'success' is False, a key 'info' containts extra info.
+        """
+        q1 = TolerancedNumber(0.5, 0, 1.5, samples=n_sample)
+        q2 = TolerancedNumber(0.5, 0, 1.5, samples=n_sample)
+        grid = np.meshgrid(q1.range, q2.range)
+        grid = [ grid[i].flatten() for i in range(2) ]
+        grid = np.array(grid).T
+        
+        q_sol = []
+        for qf in grid:
+            s = self.ik_fixed_joints(p, q_fixed=qf)
+            if s['success']:
+                for qi in s['q']:
+                    q_sol.append(qi)
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
+        else:
+            return {'success' : False, 'info': "unreachable"}
+    
+    def ik_fixed_joints(self, p, q_fixed = [0, 0]):
+        """ wrapper function to solve the ik for the last three joints.
+        
+        The joint solution of the 3R robot is extended with the joint values
+        for the fixed joints.
+        
+        Parameters
+        ----------
+        p : list or np.ndarray of floats
+            End-effector pose (x, y, angle) 
+        dict
+            A dictionary with a key 'success' reporting True if the pose is
+            reachable and a key 'q' reporting the different joint solutions
+            as a list of numpy arrays.
+            If 'success' is False, a key 'info' containts extra info.
+        """
+        q_base = [0, 0, 0]
+        q_base[0] = q_fixed[1]
+        q_base[1] = q_fixed[0]
+        self.sub_robot.base = q_base
+        sub_sol = self.sub_robot.ik(p)
+        if sub_sol['success']:
+            # add fixed joints to solution
+            q_sol = []
+            for qi in sub_sol['q']:
+                q_sol.append([*q_fixed, *qi])
+            sub_sol['q'] = q_sol
+        return sub_sol

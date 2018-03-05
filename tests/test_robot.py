@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.testing import assert_almost_equal, assert_
 import pytest
-from ppr.robot import Robot, Robot_3R, Robot_2P
+from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
 
 class TestRobot():
     def test_get_shapes(self):
@@ -131,4 +131,35 @@ class TestRobot_2P():
             ik_sol = robot2p.ik(p)
             q_sol = ik_sol['q']
             actual = [np.allclose(qj, qi) for qj in q_sol]
+            assert_(np.any(actual))
+
+class TestRobot_2P3R():
+    def test_init_function(self):
+        robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
+    
+    def test_init_input_error(self):
+        with pytest.raises(ValueError) as info:
+            robot2p3r = Robot_2P3R([1.5, 1.0])
+        msg = "This robot has 5 links, not: 2"
+        assert(msg in str(info))
+    
+    def test_unreachable_inverse_kinematics(self):
+        robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
+        desired = {'success': False, 'info': "unreachable"}
+        p_unreachable = np.array([99.0, 5.0, 3.0])
+        actual = robot2p3r.ik(p_unreachable)
+        assert_(actual == desired)
+    
+    def test_random_inverse_kinematics(self):
+        np.random.seed(42)
+        q_test = np.random.rand(10, 5)
+        q_test = q_test * 2 * np.pi - np.pi
+        q_test[:, :2] = 0
+        robot = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
+        for qi in q_test:
+            p = robot.fk(qi)
+            ik_sol = robot.ik(p)
+            q_sol = ik_sol['q']
+            actual = [np.allclose(qj, qi) for qj in q_sol]
+            #assert_almost_equal(actual, [True, True])
             assert_(np.any(actual))
