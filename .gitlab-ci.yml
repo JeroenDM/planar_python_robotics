@@ -5,8 +5,7 @@ before_script:
 
 test:
   script:
-  - pip install -U pytest
-  - pip install pytest-cov
+  - pip install -r requirements.txt
   - python -m pytest --doctest-modules --cov
   tags:
   - docker
