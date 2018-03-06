@@ -19,9 +19,11 @@ pages:
 ##before_script:
 ##  - python -V
 
-##test:
-##  script:
-##  - pip install -r requirements.txt
-##  - python -m pytest --doctest-modules --cov
-##  tags:
-##  - docker
+test:
+  script:
+  - pip install -r requirements.txt
+  - python -m pytest --doctest-modules --cov
+  tags:
+  - docker
+  only:
+  - master
