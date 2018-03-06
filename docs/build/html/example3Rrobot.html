@@ -198,6 +198,8 @@ points</p>
 </pre></div>
 </div>
 <img alt="_images/output_28_0.png" src="_images/output_28_0.png" />
+<div class="section" id="repeat-but-with-collision-checking">
+<h2>Repeat, but with collision checking<a class="headerlink" href="#repeat-but-with-collision-checking" title="Permalink to this headline">¶</a></h2>
 <p>Notice the upper part of the path changes.</p>
 <div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">weights</span> <span class="o">=</span> <span class="n">w</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;joint_motion&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;path_error&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;torque&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
 <span class="n">q_opt2</span><span class="p">,</span> <span class="n">dq_opt</span><span class="p">,</span> <span class="n">ddq_opt</span> <span class="o">=</span> <span class="n">get_optimal_trajectory</span><span class="p">(</span><span class="n">robot1</span><span class="p">,</span> <span class="n">path1</span><span class="p">,</span> <span class="n">q_init</span><span class="p">,</span>
@@ -221,6 +223,7 @@ points</p>
 </pre></div>
 </div>
 <img alt="_images/output_31_0.png" src="_images/output_31_0.png" />
+</div>
 <div class="section" id="untested-minimal-torque-objective">
 <h2>Untested minimal torque objective<a class="headerlink" href="#untested-minimal-torque-objective" title="Permalink to this headline">¶</a></h2>
 <div class="code ipython3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">robot1</span><span class="o">.</span><span class="n">set_link_inertia</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">])</span>
@@ -267,6 +270,7 @@ points</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#optimisation-based-path-following">Optimisation based path following</a><ul>
+<li><a class="reference internal" href="#repeat-but-with-collision-checking">Repeat, but with collision checking</a></li>
 <li><a class="reference internal" href="#untested-minimal-torque-objective">Untested minimal torque objective</a></li>
 </ul>
 </li>

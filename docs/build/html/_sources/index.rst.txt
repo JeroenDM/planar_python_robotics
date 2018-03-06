@@ -9,7 +9,7 @@ Welcome to Planar Python Robotics's documentation!
 This package contains building blocks to test robot path planning algorithms in 2D.
 I'm writing this code during my PhD to learn all the basics and as a basis to test new stuff in a simple 2D environment.
 
-For a quick overview of what the code can do, have a look at this example_.
+For a **quick overview** of what the code can do, have a look at this example_.
 
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
 
@@ -18,6 +18,31 @@ By only using Python 3.6 (from the Anaconda_ distribution) and SciPy_ I hope to 
 The main drawback is that I have to write a lot of stuff myself. This is why I start with planar robotics. I'm not sure if it is usefull to do this. But it will be fun and I will learn a buch.
 
 In addition, for performance reasons, I add some c++ code wrapped using SWIG_.
+
+Installation
+------------
+
+It is not a python package on PyPi, yet ...
+
+Cloning the repository should be enough to use it from inside the cloned directory.
+
+.. code-block:: bash
+
+   git clone git@gitlab.mech.kuleuven.be:u0100037/planar_python_robotics.git
+
+To run swig and recompile the c++ modules, run the bash script ``setup.bash`` in the directory ``ppr/cpp/``.
+
+.. code-block:: bash
+
+   cd ppr/cpp
+   bash setup.bash
+
+The documentation is build in the ``docs`` directory.
+
+.. code-block:: bash
+
+   cd docs
+   make html
 
 General interface
 =================
@@ -54,7 +79,7 @@ After a global path plan is formulated, the trajectory should be furter optimise
    :caption: Contents:
    
    modules.rst
-   example3Rrobot.py.rst
+   example3Rrobot.rst
 
 Important TODO's
 ================

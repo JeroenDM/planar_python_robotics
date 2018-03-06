@@ -34,11 +34,29 @@
 <h1>Welcome to Planar Python Robotics’s documentation!<a class="headerlink" href="#welcome-to-planar-python-robotics-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>This package contains building blocks to test robot path planning algorithms in 2D.
 I’m writing this code during my PhD to learn all the basics and as a basis to test new stuff in a simple 2D environment.</p>
-<p>For a quick overview of what the code can do, have a look at this <a class="reference external" href="example3Rrobot.html">example</a>.</p>
+<p>For a <strong>quick overview</strong> of what the code can do, have a look at this <a class="reference external" href="example3Rrobot.html">example</a>.</p>
 <p>The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.</p>
 <p>By only using Python 3.6 (from the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda</a> distribution) and <a class="reference external" href="https://www.scipy.org/">SciPy</a> I hope to have a robust framework that will work on any system for the next three years.</p>
 <p>The main drawback is that I have to write a lot of stuff myself. This is why I start with planar robotics. I’m not sure if it is usefull to do this. But it will be fun and I will learn a buch.</p>
 <p>In addition, for performance reasons, I add some c++ code wrapped using <a class="reference external" href="http://www.swig.org/">SWIG</a>.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>It is not a python package on PyPi, yet …</p>
+<p>Cloning the repository should be enough to use it from inside the cloned directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@gitlab.mech.kuleuven.be:u0100037/planar_python_robotics.git
+</pre></div>
+</div>
+<p>To run swig and recompile the c++ modules, run the bash script <code class="docutils literal notranslate"><span class="pre">setup.bash</span></code> in the directory <code class="docutils literal notranslate"><span class="pre">ppr/cpp/</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ppr/cpp
+bash setup.bash
+</pre></div>
+</div>
+<p>The documentation is build in the <code class="docutils literal notranslate"><span class="pre">docs</span></code> directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> docs
+make html
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="general-interface">
 <h1>General interface<a class="headerlink" href="#general-interface" title="Permalink to this headline">¶</a></h1>
@@ -65,6 +83,22 @@ A <em>toleranced value</em> has an lower bound, upper bound and nominal value. T
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">ppr</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ppr.html">ppr package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example3Rrobot.html">Example for a three link revolute robot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#create-a-path-for-the-robot-to-follow">Create a path for the robot to follow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#create-a-robot-to-follow-the-path">Create a robot to follow the path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#create-rectangle-collision-objects-around-the-robot">Create rectangle collision objects around the robot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example3Rrobot.html#sampling-based-motion-planning">Sampling based motion planning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#now-discretise-the-problem">Now discretise the problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#graph-search">Graph search</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example3Rrobot.html#optimisation-based-path-following">Optimisation based path following</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#repeat-but-with-collision-checking">Repeat, but with collision checking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example3Rrobot.html#untested-minimal-torque-objective">Untested minimal torque objective</a></li>
 </ul>
 </li>
 </ul>
@@ -96,7 +130,10 @@ A <em>toleranced value</em> has an lower bound, upper bound and nominal value. T
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to Planar Python Robotics’s documentation!</a></li>
+<li><a class="reference internal" href="#">Welcome to Planar Python Robotics’s documentation!</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#general-interface">General interface</a><ul>
 <li><a class="reference internal" href="#the-path">The path</a></li>
 <li><a class="reference internal" href="#the-robot">The robot</a></li>

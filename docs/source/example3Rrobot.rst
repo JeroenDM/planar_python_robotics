@@ -229,7 +229,7 @@ points
 
 
 Repeat, but with collision checking
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------
 
 Notice the upper part of the path changes.
 
