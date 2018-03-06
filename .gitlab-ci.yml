@@ -16,13 +16,11 @@ pages:
   only:
   - master
 
-##before_script:
-##  - python -V
-
 test:
   script:
   - pip install -r requirements.txt
-  - echo "backend: Agg" > ~/.config/matplotlib/matplotlibrc
+  - touch matplotlibrc
+  - echo "backend: Agg" > matplotlibrc
   - python -m pytest --doctest-modules --cov
   tags:
   - docker
