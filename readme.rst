@@ -1,4 +1,5 @@
-image:https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/badges/master/pipeline.svg[link="https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/commits/master",title="pipeline status"]
+..image:: https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/badges/master/pipeline.svg
+    :alt: pipeline status
 
 For a quick overview of what the code can do, have a look the notebook "example_3R_robot".
 
