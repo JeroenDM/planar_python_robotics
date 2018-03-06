@@ -1,7 +1,7 @@
 ##image: alpine
 
-##image: python:latest
-image: alpine
+image: python:latest
+##image: alpine
 
 pages:
   script:
