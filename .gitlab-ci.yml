@@ -5,11 +5,9 @@ image: python:latest
 
 pages:
   script:
-  - apk --no-cache add py2-pip python-dev
   - pip install scipy
   - pip install numpy
   - pip install sphinx
-  - apk --no-cache add make
   - cd docs
   - make html
   - mv build/html/ ../public/
