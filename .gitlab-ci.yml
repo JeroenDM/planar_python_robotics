@@ -1,7 +1,4 @@
-##image: alpine
-
-image: python:latest
-##image: alpine
+##image: python:latest
 
 pages:
   script:
@@ -10,7 +7,7 @@ pages:
   - pip install sphinx
   - cd docs
   - make html
-  - mv build/html/ ../public/
+  - mv ./build/html/ ../public/
   tags:
   - docker
   artifacts:
