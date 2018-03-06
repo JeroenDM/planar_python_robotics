@@ -1,19 +1,21 @@
-image: python:latest
+##image: python:latest
+image: alpine
 
 before_script:
   - python -V
 
-doc:
+pages:
   script:
   - pip install sphinx
   - cd docs
   - make html
+  - mv build/html/ public/
   tags:
   - docker
 
-test:
-  script:
-  - pip install -r requirements.txt
-  - python -m pytest --doctest-modules --cov
-  tags:
-  - docker
+##test:
+##  script:
+##  - pip install -r requirements.txt
+##  - python -m pytest --doctest-modules --cov
+##  tags:
+##  - docker
