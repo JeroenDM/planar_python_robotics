@@ -19,7 +19,8 @@ pages:
 test:
   script:
   - pip install -r requirements.txt
-  - python -m pytest --doctest-modules --cov
+  - python -m pytest --cov
+##  - python -m pytest --doctest-modules --cov
   tags:
   - docker
   only:
