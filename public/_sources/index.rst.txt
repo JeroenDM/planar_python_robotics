@@ -6,16 +6,62 @@
 Welcome to Planar Python Robotics's documentation!
 ==================================================
 
-This package building blocks to test robot path planning algorithms in 2D.
+This package contains building blocks to test robot path planning algorithms in 2D.
 I'm writing this code during my PhD to learn all the basics and as a basis to test new stuff in a simple 2D environment.
+
+For a quick overview of what the code can do, have a look at this example_.
+
+The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
+
+By only using Python 3.6 (from the Anaconda_ distribution) and SciPy_ I hope to have a robust framework that will work on any system for the next three years.
+
+The main drawback is that I have to write a lot of stuff myself. This is why I start with planar robotics. I'm not sure if it is usefull to do this. But it will be fun and I will learn a buch.
+
+In addition, for performance reasons, I add some c++ code wrapped using SWIG_.
+
+General interface
+=================
+I try to get simple high level commands to set up a path following problem in 2D. The idea of toleranced trajectory points and the structure of the plannning graph comes from the `Descartes package`_. A big thing missing there is easy handling of inverse kinematics. I ty to come up with a good high level interface to handle redundant inverse kinematics.
+
+The path
+--------
+A path is given as a list of *trajectory points*. Each trajectory point specifies three values: x-position, y-position and orientation. Each of these three values can have tolerances. This is achieved by passing a *toleranced value* instead of a number when creating a trajectory points.
+A *toleranced value* has an lower bound, upper bound and nominal value. The nominal value is supposed to be the desired value. It will be used to minimize the deviation from this value when planning. It does not have to be the middle of the interval.
+
+The robot
+---------
+For the robot I some kind of adapted Denavit-Hartenberg convention in 2D. This convention is explained on the wiki of this repository.
+
+The inverse kinematics is where it get's interesting. The basic assumtion is to only use analytic inverse kinematics to achieve a reasonable speed. The idea is that for a more than 3 dof robot, *fixed joints* will have to be specified. The *inverse kinematics* function will automaticly sample these joints in there interval of joint limits and return all possible inverse kinematics solutions. The is a method that could quickly explode of not used carefully, having complexilty samples^(ndof - 3) Only to be used for rude sampling of possible path.
+
+Sampling based path following
+------------------------------
+The planner should give an esimate of the required calculation time, to warn the user if the required planning problem is sampled to fine. A planning graph is construced and the shorted path is found.
+
+Optimisation based path following
+---------------------------------
+After a global path plan is formulated, the trajectory should be furter optimised locally. An optimisation problem if formulated including a dynamic model of the robot and while respecting torque limits.
+
+.. _example:  example3Rrobot.html
+.. _Anaconda: https://www.anaconda.com/download/
+.. _SciPy:    https://www.scipy.org/
+.. _SWIG:     http://www.swig.org/
+.. _NetworkX: https://networkx.github.io/
+.. _Descartes package: http://wiki.ros.org/descartes
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
    modules.rst
+   example3Rrobot.py.rst
 
+Important TODO's
+================
 
+- Add joint limits to robot.
+- Add torque limits to robot and optimisation problem
+- Add some speed and acceleration limits to sampling based planning
 
 Indices and tables
 ==================

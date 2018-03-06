@@ -57,6 +57,37 @@ with the point at the (x, y) position. The array has shape (4, 2).</p>
 </pre></div>
 </div>
 <dl class="method">
+<dt id="ppr.geometry.Rectangle.distance">
+<code class="descname">distance</code><span class="sig-paren">(</span><em>rect2</em>, <em>tol=1e-09</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if it collides with another rectangle.</p>
+<p>Use the separating axis theorem.
+Project both rectangles along all 8 normals and check overlap.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rect2</strong> (<a class="reference internal" href="#ppr.geometry.Rectangle" title="ppr.geometry.Rectangle"><em>ppr.geometry.Rectangle</em></a>) – The other rectangle to calculate the separating distance with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Distance between the two rectangles. Negative penetration depth
+if in collision</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec2</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec3</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">rec2</span><span class="p">)</span>
+<span class="go">-0.59733549928584095</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">rec3</span><span class="p">)</span>
+<span class="go">0.5</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="ppr.geometry.Rectangle.get_matrix_form">
 <code class="descname">get_matrix_form</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.get_matrix_form"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.get_matrix_form" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the matrix representation of the rectanlge</p>
@@ -337,6 +368,12 @@ shapes. False otherwise.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="ppr.robot.Robot.euler_newton">
+<code class="descname">euler_newton</code><span class="sig-paren">(</span><em>q</em>, <em>dq</em>, <em>ddq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.euler_newton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.euler_newton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Euler-Netwon recursive algorithm from book Sicilliano</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="ppr.robot.Robot.fk">
 <code class="descname">fk</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.fk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.fk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate forward kinematics</p>
@@ -540,6 +577,11 @@ ndof is the number of robot joints.</li>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="ppr.robot.Robot.set_link_inertia">
+<code class="descname">set_link_inertia</code><span class="sig-paren">(</span><em>mass</em>, <em>cg_position</em>, <em>Icg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.set_link_inertia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.set_link_inertia" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -573,6 +615,69 @@ If ‘success’ is False, a key ‘info’ containts extra info.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ppr.robot.Robot_2P3R">
+<em class="property">class </em><code class="descclassname">ppr.robot.</code><code class="descname">Robot_2P3R</code><span class="sig-paren">(</span><em>link_length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_2P3R"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_2P3R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ppr.robot.Robot" title="ppr.robot.Robot"><code class="xref py py-class docutils literal notranslate"><span class="pre">ppr.robot.Robot</span></code></a></p>
+<p>A 3R robot mounted on a 2P cartesian robot</p>
+<p>This is the first robot with kinematic redundancy!</p>
+<dl class="attribute">
+<dt id="ppr.robot.Robot_2P3R.ik_sample">
+<code class="descname">ik_sample</code><a class="headerlink" href="#ppr.robot.Robot_2P3R.ik_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – How many samples should be taken in the range of the first two
+joints. Resulting in n_sample * n_sample times the normal number
+of solutions for a 3R robot.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot_2P3R.ik">
+<code class="descname">ik</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_2P3R.ik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_2P3R.ik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discretised / sampled inverse kinematics</p>
+<p>This robots has redundance (ndof = 5) compared to the task (3) and
+therefore two joints are sampled in a range to return a sampled
+subset of the infinite solutions that exists for the given pose.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>p</strong> (<em>list</em><em> or </em><em>np.ndarray of floats</em>) – End-effector pose (x, y, angle)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary with a key ‘success’ reporting True if the pose is
+reachable and a key ‘q’ reporting the different joint solutions
+as a list of numpy arrays.
+If ‘success’ is False, a key ‘info’ containts extra info.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot_2P3R.ik_fixed_joints">
+<code class="descname">ik_fixed_joints</code><span class="sig-paren">(</span><em>p, q_fixed=[0, 0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_2P3R.ik_fixed_joints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_2P3R.ik_fixed_joints" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper function to solve the ik for the last three joints.</p>
+<p>The joint solution of the 3R robot is extended with the joint values
+for the fixed joints.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>p</strong> (<em>list</em><em> or </em><em>np.ndarray of floats</em>) – End-effector pose (x, y, angle)</li>
+<li><strong>dict</strong> – A dictionary with a key ‘success’ reporting True if the pose is
+reachable and a key ‘q’ reporting the different joint solutions
+as a list of numpy arrays.
+If ‘success’ is False, a key ‘info’ containts extra info.</li>
+</ul>
 </td>
 </tr>
 </tbody>
