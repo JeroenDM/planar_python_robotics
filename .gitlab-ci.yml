@@ -1,12 +1,10 @@
-##image: python:latest
-image: alpine
+image: python:latest
+##image: alpine
 
 pages:
   script:
-  - apk --no-cache add py2-pip python-dev
   - pip install sphinx
   - cd docs
-  - apk --no-cache add make
   - make html
   - mv build/html/ public/
  artifacts:
