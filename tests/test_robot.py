@@ -111,6 +111,10 @@ class TestRobot_3R():
             actual = [np.allclose(qj, qi) for qj in q_sol]
             assert_(np.any(actual))
 
+class TestRobotDynamics():
+    def test_fw_prop(self):
+        
+
 class TestRobot_2P():
     def test_init_function(self):
         robot2p = Robot_2P([1, 1])

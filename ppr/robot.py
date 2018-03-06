@@ -406,7 +406,24 @@ class Robot:
         return Fa, Ma, taua
     
     def _R_link(self, i, qi):
-        """ rotation matrix of link i relative to link i-1 """
+        """ rotation matrix of link i relative to link i-1
+        
+        Add check for if i == 0?
+        
+        Parameters
+        ----------
+        i : int
+            link index, numbered from 0 to ndof
+        qi : float
+            joint value for joint i, numered from 0 to ndof, correspond
+            to the link with the same index.
+        
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (2, 2), a 2D rotation matrix representing link i
+            relative to link i-1
+        """
         if (i+1) >= self.ndof:
             # frame i is the end effector frame
             # end effector pose not implemented
