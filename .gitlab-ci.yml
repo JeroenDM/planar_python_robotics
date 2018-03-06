@@ -8,12 +8,12 @@ pages:
   - make html
   - mv build/html/ public/
  artifacts:
-    paths:
-    - public
-  only:
-    - master
-  tags:
-  - docker
+   paths:
+   - public
+ only:
+ - master
+ tags:
+ - docker
 
 ##before_script:
 ##  - python -V
