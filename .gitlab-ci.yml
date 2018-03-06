@@ -1,17 +1,24 @@
 ##image: python:latest
 image: alpine
 
-before_script:
-  - python -V
-
 pages:
   script:
+  - apk --no-cache add py2-pip python-dev
   - pip install sphinx
   - cd docs
+  - apk --no-cache add make
   - make html
   - mv build/html/ public/
+ artifacts:
+    paths:
+    - public
+  only:
+  - master
   tags:
   - docker
+
+##before_script:
+##  - python -V
 
 ##test:
 ##  script:
