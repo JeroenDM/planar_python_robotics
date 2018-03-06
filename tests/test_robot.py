@@ -113,7 +113,7 @@ class TestRobot_3R():
 
 class TestRobotDynamics():
     def test_fw_prop(self):
-        
+        pass
 
 class TestRobot_2P():
     def test_init_function(self):
