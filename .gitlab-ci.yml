@@ -22,6 +22,7 @@ pages:
 test:
   script:
   - pip install -r requirements.txt
+  - echo "backend: Agg" > ~/.config/matplotlib/matplotlibrc
   - python -m pytest --doctest-modules --cov
   tags:
   - docker
