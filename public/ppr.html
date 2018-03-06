@@ -1,0 +1,965 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ppr package &#8212; Planar Python Robotics 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="ppr" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ppr-package">
+<h1>ppr package<a class="headerlink" href="#ppr-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ppr.geometry">
+<span id="ppr-geometry-module"></span><h2>ppr.geometry module<a class="headerlink" href="#module-ppr.geometry" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ppr.geometry.Rectangle">
+<em class="property">class </em><code class="descclassname">ppr.geometry.</code><code class="descname">Rectangle</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>dx</em>, <em>dy</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Rectangle plotting, handling and collision detection</p>
+<dl class="attribute">
+<dt id="ppr.geometry.Rectangle.p">
+<code class="descname">p</code><a class="headerlink" href="#ppr.geometry.Rectangle.p" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy.ndarray</em> – The four corner points of the rectangle, counter-clockwise, starting
+with the point at the (x, y) position. The array has shape (4, 2).</p>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rect</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.6</span><span class="p">,</span> <span class="mf">2.7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rect</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.get_matrix_form">
+<code class="descname">get_matrix_form</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.get_matrix_form"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.get_matrix_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the matrix representation of the rectanlge</p>
+<p>A rectangle is described by four linear inequalities.
+If whe write these inequalities in matrix form we get
+A * x &lt;= b</p>
+<p>x is the vector of all possible x and y coordinates [x; y]</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><ul class="simple">
+<li><strong>A</strong> (<em>numpy.ndarray of floats</em>) – Array with shape (4, 2), every rows contains the coefficient of
+on of the inequalities.</li>
+<li><strong>b</strong> (<em>numpy.ndarray fo floats</em>) – Vector of length 4 containing the right hand side of the
+inequalities.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Show the inequalities for a trivial case.
+For a 1x2 rectange at the origin whe whould expect:
+-y &lt;= 0
+x &lt;= 1
+y &lt;= 2
+-x &lt;= 0</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A1</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">rec1</span><span class="o">.</span><span class="n">get_matrix_form</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A1</span>
+<span class="go">array([[  0.00000000e+00,  -1.00000000e+00],</span>
+<span class="go">       [  1.00000000e+00,  -6.12323400e-17],</span>
+<span class="go">       [  1.22464680e-16,   1.00000000e+00],</span>
+<span class="go">       [ -1.00000000e+00,   1.83697020e-16]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b1</span>
+<span class="go">array([  0.00000000e+00,   1.00000000e+00,   2.00000000e+00,</span>
+<span class="go">         3.67394040e-16])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.get_normals">
+<code class="descname">get_normals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.get_normals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.get_normals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get normals on the 4 sides</p>
+<p>Get 4 unit vectors pointing away from the four sides.
+Start with [0, -1] and rotate it by the angle of the rectangle.
+Then rotate it 3 times with a angle pi/4.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Array with shape (4, 2) containing 4 unit vectors representing
+normals on 4 rectangle sides.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">get_normals</span><span class="p">()</span>
+<span class="go">array([[  0.00000000e+00,  -1.00000000e+00],</span>
+<span class="go">       [  1.00000000e+00,  -6.12323400e-17],</span>
+<span class="go">       [  1.22464680e-16,   1.00000000e+00],</span>
+<span class="go">       [ -1.00000000e+00,   1.83697020e-16]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.get_vertices">
+<code class="descname">get_vertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.get_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.get_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get 4 corner points of rectangles</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Array with shape (4, 2) containing the x and y coordinates of
+the 4 corners of the rectangle.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">()</span>
+<span class="go">array([[ 0.,  0.],</span>
+<span class="go">       [ 1.,  0.],</span>
+<span class="go">       [ 1.,  1.],</span>
+<span class="go">       [ 0.,  1.]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.is_in_collision">
+<code class="descname">is_in_collision</code><span class="sig-paren">(</span><em>rect2</em>, <em>tol=1e-09</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.is_in_collision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.is_in_collision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if it collides with another rectangle.</p>
+<p>Use the separating axis theorem.
+Project both rectangles along all 8 normals and check overlap.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rect2</strong> (<a class="reference internal" href="#ppr.geometry.Rectangle" title="ppr.geometry.Rectangle"><em>ppr.geometry.Rectangle</em></a>) – The other rectangle to check collision with.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">False if no collision (as soon as a separating axis is found),
+True if in collision.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec2</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec3</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">is_in_collision</span><span class="p">(</span><span class="n">rec2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">is_in_collision</span><span class="p">(</span><span class="n">rec3</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>ax</em>, <em>*arg</em>, <em>**karg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ppr.geometry.Rectangle.project">
+<code class="descname">project</code><span class="sig-paren">(</span><em>axis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#Rectangle.project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.Rectangle.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project all points of rectangle on an axis given as unit vector</p>
+<p>Use the dot product between the vector from the origin to a corner
+point and the given axis unit vector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>axis</strong> (<em>numpy.ndarray of floats</em>) – Unit vector representing the axis on wich to project the points.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array with shape (4,) containing the projected points with the
+origin as reference.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Project simple square on x-axis.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="go">array([ 0.,  1.,  1.,  0.])</span>
+</pre></div>
+</div>
+<p>Project the same square on diagonal axis.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rec1</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.70710678</span><span class="p">,</span> <span class="mf">0.70710678</span><span class="p">]))</span>
+<span class="go">array([ 0.        ,  0.70710678,  1.41421356,  0.70710678])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ppr.geometry.rotation">
+<code class="descclassname">ppr.geometry.</code><code class="descname">rotation</code><span class="sig-paren">(</span><em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/geometry.html#rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.geometry.rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create 2x2 rotation matrix from angle</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>anlge</strong> (<em>float</em>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Rotation matrix as a numpy array</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rotation</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">array([[ 1., -0.],</span>
+<span class="go">       [ 0.,  1.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rotation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">array([[  6.12323400e-17,  -1.00000000e+00],</span>
+<span class="go">       [  1.00000000e+00,   6.12323400e-17]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ppr.robot">
+<span id="ppr-robot-module"></span><h2>ppr.robot module<a class="headerlink" href="#module-ppr.robot" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ppr.robot.Robot">
+<em class="property">class </em><code class="descclassname">ppr.robot.</code><code class="descname">Robot</code><span class="sig-paren">(</span><em>joint_type</em>, <em>j_offset</em>, <em>j_angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for a serial manipulator</p>
+<dl class="attribute">
+<dt id="ppr.robot.Robot.ndof">
+<code class="descname">ndof</code><a class="headerlink" href="#ppr.robot.Robot.ndof" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – Number of degrees of freedom, equal to the number of links.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.jt">
+<code class="descname">jt</code><a class="headerlink" href="#ppr.robot.Robot.jt" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of char</em> – List of joint type for every joint, ‘r’ or ‘p’.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.d">
+<code class="descname">d</code><a class="headerlink" href="#ppr.robot.Robot.d" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of float</em> – Link length for links with revolute joint.
+Initial joint length when link has prismatic joint.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.a">
+<code class="descname">a</code><a class="headerlink" href="#ppr.robot.Robot.a" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Link angle relative to previous link for prismatic joint.</em> – Initial joint angle for links with revolute joint.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.lw">
+<code class="descname">lw</code><a class="headerlink" href="#ppr.robot.Robot.lw" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of float</em> – Link width.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.ll">
+<code class="descname">ll</code><a class="headerlink" href="#ppr.robot.Robot.ll" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of float</em> – Link length. In case of a prismatic joint, this is de initial length.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.adapt_ll">
+<code class="descname">adapt_ll</code><a class="headerlink" href="#ppr.robot.Robot.adapt_ll" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> – When their are prismatic joints, the length of those links can change
+accroding to the given joint values if set to True. (default is True)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.robot.Robot.base">
+<code class="descname">base</code><a class="headerlink" href="#ppr.robot.Robot.base" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy.ndarray of float</em> – Pose of the robot base (x, y, angle), where the first joint is
+located.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.check_collision">
+<code class="descname">check_collision</code><span class="sig-paren">(</span><em>q</em>, <em>scene</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.check_collision"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.check_collision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for collision between the robot other_rectangles</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>q</strong> (<em>list</em><em> or </em><em>numpy.ndarray of float</em>) – Joint position</li>
+<li><strong>scene</strong> (<em>list of ppr.geometry.Rectangle</em>) – A list with collision shapes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if one of the robot links collides with one of the collision
+shapes. False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.fk">
+<code class="descname">fk</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.fk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.fk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate forward kinematics</p>
+<p>Uses the fk_all_links function because it’s almost the same.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<em>list</em><em> or </em><em>numpy.array of float</em>) – Joint angles</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Example for a simple 2R robot.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robot1</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">([</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot1</span><span class="o">.</span><span class="n">fk</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+<span class="go">array([ 1.,  2.,  0.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.fk_all_links">
+<code class="descname">fk_all_links</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.fk_all_links"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.fk_all_links" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate position of all links, and the end effector</p>
+<p>The end-effector is currently assumed at the end of the last link.
+Usefull for collision detection and visualizing the robot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<em>list</em><em> or </em><em>numpy.array of float</em>) – Joint angles</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array of shape (ndof+1, 3) containing position and orientation
+(x, y, angle) of all links and the end-effector.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Example for a simple 2R robot.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robot1</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">([</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot1</span><span class="o">.</span><span class="n">fk_all_links</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+<span class="go">array([[  0.00000000e+00,   0.00000000e+00,   0.00000000e+00],</span>
+<span class="go">       [  1.22464680e-16,   2.00000000e+00,   1.57079633e+00],</span>
+<span class="go">       [  1.00000000e+00,   2.00000000e+00,   0.00000000e+00]])</span>
+</pre></div>
+</div>
+<p>Example for cartesian x-y robot.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robot2</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">([</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot2</span><span class="o">.</span><span class="n">fk_all_links</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">])</span>
+<span class="go">array([[ 0.        ,  0.        ,  0.        ],</span>
+<span class="go">       [ 0.3       ,  0.        ,  0.        ],</span>
+<span class="go">       [ 0.3       ,  0.6       ,  1.57079633]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.get_link_shape">
+<code class="descname">get_link_shape</code><span class="sig-paren">(</span><em>i</em>, <em>xi</em>, <em>yi</em>, <em>phii</em>, <em>qi</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.get_link_shape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.get_link_shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rectangle representing link i of the robot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>i</strong> (<em>int</em>) – Link index from 0 to ndof.</li>
+<li><strong>xi</strong> (<em>float</em>) – x-position of link origin.</li>
+<li><strong>yi</strong> (<em>float</em>) – y-position of link origin.</li>
+<li><strong>phii</strong> (<em>float</em>) – Absolute angle of link with x-axis.</li>
+<li><strong>qi</strong> (<em>float</em>) – Joint value for the joint of this link, usefull for prismatic
+joints to show variable length.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A rectangle (or in the future a shape) oject representing the
+robot link.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#ppr.geometry.Rectangle" title="ppr.geometry.Rectangle">ppr.geometry.Rectangle</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>Illustrate variable vs fixed prismatic joint length.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">robot2</span> <span class="o">=</span> <span class="n">Robot</span><span class="p">([</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link0</span> <span class="o">=</span> <span class="n">robot2</span><span class="o">.</span><span class="n">get_link_shape</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link0</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">()</span>
+<span class="go">array([[ 0.  ,  0.  ],</span>
+<span class="go">       [ 1.5 ,  0.  ],</span>
+<span class="go">       [ 1.5 ,  0.05],</span>
+<span class="go">       [ 0.  ,  0.05]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot2</span><span class="o">.</span><span class="n">adapt_ll</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link0</span> <span class="o">=</span> <span class="n">robot2</span><span class="o">.</span><span class="n">get_link_shape</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link0</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">()</span>
+<span class="go">array([[ 0.  ,  0.  ],</span>
+<span class="go">       [ 2.  ,  0.  ],</span>
+<span class="go">       [ 2.  ,  0.05],</span>
+<span class="go">       [ 0.  ,  0.05]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.get_shapes">
+<code class="descname">get_shapes</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.get_shapes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.get_shapes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list with rectangles (shapes in the future?) for all
+robot links in position q</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> (<em>list</em><em> or </em><em>numpy.array of float</em>) – Joint angles</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of the link shapes.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list of ppr.geometry.Rectangle</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>axes_handle</em>, <em>q</em>, <em>*arg</em>, <em>**karg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot robot</p>
+<p>Plot robot shape in given joint position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes_handle</strong> (<em>matplotlib.axes.Axes</em>) – Axes handle to draw the robot on.</li>
+<li><strong>q</strong> (<em>np.array</em><em> or </em><em>list of floats</em>) – Joint values</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.plot_kinematics">
+<code class="descname">plot_kinematics</code><span class="sig-paren">(</span><em>axes_handle</em>, <em>q</em>, <em>*arg</em>, <em>**karg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.plot_kinematics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.plot_kinematics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot robot using lines and dots</p>
+<p>Ingnore the (rectanlge) collision shapes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes_handle</strong> (<em>matplotlib.axes.Axes</em>) – Axes handle to draw the robot on.</li>
+<li><strong>q</strong> (<em>np.array</em><em> or </em><em>list of floats</em>) – Joint values</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.plot_path">
+<code class="descname">plot_path</code><span class="sig-paren">(</span><em>axes_handle</em>, <em>qp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.plot_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.plot_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot robot for more than one joint position</p>
+<p>A color gradient is used to from darker to lighter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes_handle</strong> (<em>matplotlib.axes.Axes</em>) – Axes handle to draw all the robots</li>
+<li><strong>qp</strong> (<em>np.array of floats</em>) – Array of shape (N, ndof) representing N different joint positions,
+ndof is the number of robot joints.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ppr.robot.Robot.plot_path_kinematics">
+<code class="descname">plot_path_kinematics</code><span class="sig-paren">(</span><em>axes_handle</em>, <em>qp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot.plot_path_kinematics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot.plot_path_kinematics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot robot for more than one joint position using lines and dots</p>
+<p>A color gradient is used to from darker to lighter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes_handle</strong> (<em>matplotlib.axes.Axes</em>) – Axes handle to draw all the robots</li>
+<li><strong>qp</strong> (<em>np.array of floats</em>) – Array of shape (N, ndof) representing N different joint positions,
+ndof is the number of robot joints.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ppr.robot.Robot_2P">
+<em class="property">class </em><code class="descclassname">ppr.robot.</code><code class="descname">Robot_2P</code><span class="sig-paren">(</span><em>link_length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_2P"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_2P" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ppr.robot.Robot" title="ppr.robot.Robot"><code class="xref py py-class docutils literal notranslate"><span class="pre">ppr.robot.Robot</span></code></a></p>
+<p>Wrapper class for base robot class for 2P robot.</p>
+<p>A simple cartesian robot with inverse kinematics.
+First joint along x-axis, second joint along y-axis.</p>
+<dl class="method">
+<dt id="ppr.robot.Robot_2P.ik">
+<code class="descname">ik</code><span class="sig-paren">(</span><em>p</em>, <em>tol=1e-12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_2P.ik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_2P.ik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverse kinematics for 2R robot, ignoring orientation.</p>
+<p>Joint limits not implemented yet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<em>list</em><em> or </em><em>np.ndarray of floats</em>) – End-effector pose (x, y, angle)
+Angle (orientation) not used but included for consistency.</li>
+<li><strong>tol</strong> (<em>float</em>) – Tolerance when a result is assumed zero. (default = 1e-12)
+Not used but included for consistency.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A dictionary with a key ‘success’ reporting True if the pose is
+reachable and a key ‘q’ reporting the different joint solutions
+as a list of numpy arrays.
+If ‘success’ is False, a key ‘info’ containts extra info.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ppr.robot.Robot_3R">
+<em class="property">class </em><code class="descclassname">ppr.robot.</code><code class="descname">Robot_3R</code><span class="sig-paren">(</span><em>link_length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_3R"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_3R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ppr.robot.Robot" title="ppr.robot.Robot"><code class="xref py py-class docutils literal notranslate"><span class="pre">ppr.robot.Robot</span></code></a></p>
+<p>Wrapper class for base robot class for 3R robot.</p>
+<p>This class adds analytical inverse kinematics for this specific robot.</p>
+<dl class="method">
+<dt id="ppr.robot.Robot_3R.ik">
+<code class="descname">ik</code><span class="sig-paren">(</span><em>p</em>, <em>tol=1e-12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/robot.html#Robot_3R.ik"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.robot.Robot_3R.ik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analytic inverse kinematics for 3 link robot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<em>list</em><em> or </em><em>np.ndarray of floats</em>) – End-effector pose (x, y, angle)</li>
+<li><strong>tol</strong> (<em>float</em>) – Tolerance when a result is assumed zero. (default = 1e-12)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A dictionary with a key ‘success’ reporting True if the pose is
+reachable and a key ‘q’ reporting the different joint solutions
+as a list of numpy arrays.
+If ‘success’ is False, a key ‘info’ containts extra info.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>Joint limits have to be added.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ppr.path">
+<span id="ppr-path-module"></span><h2>ppr.path module<a class="headerlink" href="#module-ppr.path" title="Permalink to this headline">¶</a></h2>
+<p>Function to define and proccess robot end-effector paths.</p>
+<dl class="class">
+<dt id="ppr.path.TolerancedNumber">
+<em class="property">class </em><code class="descclassname">ppr.path.</code><code class="descname">TolerancedNumber</code><span class="sig-paren">(</span><em>nominal</em>, <em>lower_bound</em>, <em>upper_bound</em>, <em>samples=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#TolerancedNumber"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.TolerancedNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A range on the numner line used to define path constraints</p>
+<p>It also has a nominal value in the range which can be used in cost
+functions of some sort in the future. For example, if it is preffered
+that the robot end-effector stays close to an optimal pose, but can
+deviate if needed to avoid collision.</p>
+<dl class="attribute">
+<dt id="ppr.path.TolerancedNumber.n">
+<code class="descname">n</code><a class="headerlink" href="#ppr.path.TolerancedNumber.n" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – Nominal / preffered value for this number</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TolerancedNumber.u">
+<code class="descname">u</code><a class="headerlink" href="#ppr.path.TolerancedNumber.u" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – Upper limit.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TolerancedNumber.l">
+<code class="descname">l</code><a class="headerlink" href="#ppr.path.TolerancedNumber.l" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – lower limit</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TolerancedNumber.s">
+<code class="descname">s</code><a class="headerlink" href="#ppr.path.TolerancedNumber.s" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – Number of samples used to produce descrete version of this number.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TolerancedNumber.range">
+<code class="descname">range</code><a class="headerlink" href="#ppr.path.TolerancedNumber.range" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>numpy.ndarray of float</em> – A sampled version of the range on the number line, including limits.
+The nominal value is not necessary included.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>Sampling for orientation is done uniformly at the moment.
+In 3D this is no good and special sampling techniques for angles should be
+used.
+The sampled range is now an attribute, but memory wise it would be better
+if it is a method. Then it is only descritized when needed.
+But it the number of path points will probably be limited so I preffer this
+simpler implementation for now.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="ppr.path.TrajectoryPt">
+<em class="property">class </em><code class="descclassname">ppr.path.</code><code class="descname">TrajectoryPt</code><span class="sig-paren">(</span><em>pee</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#TrajectoryPt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.TrajectoryPt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Trajectory point for a desired end-effector pose in cartesian space</p>
+<p>This object bundles the constraints on the end-effector for one point
+of a path.</p>
+<dl class="attribute">
+<dt id="ppr.path.TrajectoryPt.dim">
+<code class="descname">dim</code><a class="headerlink" href="#ppr.path.TrajectoryPt.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> – Pose dimensions, 3 for 2D planning, 6 for 3D planning.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TrajectoryPt.p">
+<code class="descname">p</code><a class="headerlink" href="#ppr.path.TrajectoryPt.p" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of numpy.ndarray of float or ppr.path.TolerancedNumber</em> – Pose constraints for the end-effector (x, y, orientation).
+Can be a fixed number (a float) or a TolerancedNumber</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TrajectoryPt.hasTolerance">
+<code class="descname">hasTolerance</code><a class="headerlink" href="#ppr.path.TrajectoryPt.hasTolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of bool</em> – Indicates which elements of the pose are toleranced (True) and
+fixed (False).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TrajectoryPt.p_nominal">
+<code class="descname">p_nominal</code><a class="headerlink" href="#ppr.path.TrajectoryPt.p_nominal" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list of float</em> – Same as p for fixed poses, the nominal value for a TolerancedNumber.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ppr.path.TrajectoryPt.timing">
+<code class="descname">timing</code><a class="headerlink" href="#ppr.path.TrajectoryPt.timing" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> – Time in seconds it should be executed relative to the previous path
+point. Not used in current version.</p>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Create a trajectory point at position (1.5, 3.1) with a symmetric
+tolerance of 0.4 on the x position.
+The robot orientation should be between 0 and pi / 4.
+(No preffered orientation, so assumed in the middle, pi / 8)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">TolerancedNumber</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="mf">3.1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">angle</span> <span class="o">=</span> <span class="n">TolerancedNumber</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tp</span> <span class="o">=</span> <span class="n">TrajectoryPt</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">angle</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tp</span><span class="o">.</span><span class="n">p_nominal</span>
+<span class="go">[1.5, 3.1, 0.39269908169872414]</span>
+</pre></div>
+</div>
+<p>A path is created by putting several trajectory points in a list.
+For example a vertical path with tolerance along the x-axis:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TrajectoryPt</span><span class="p">([</span><span class="n">TolerancedNumber</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TrajectoryPt</span><span class="p">([</span><span class="n">TolerancedNumber</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TrajectoryPt</span><span class="p">([</span><span class="n">TolerancedNumber</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="go">[1.5, 0.0, 0]</span>
+<span class="go">[1.5, 0.5, 0]</span>
+<span class="go">[1.5, 1.0, 0]</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="ppr.path.TrajectoryPt.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>axes_handle</em>, <em>show_tolerance=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#TrajectoryPt.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.TrajectoryPt.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualize the path on given axes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>axes_handle</strong> (<em>matplotlib.axes.Axes</em>) – </li>
+<li><strong>show_tolerance</strong> (<em>bool</em>) – If True, the range for a TolerancedNumber is showed.
+A bar for x or y position, A wedge for orientation tolerance.
+(default True)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ppr.path.cart_to_joint">
+<code class="descclassname">ppr.path.</code><code class="descname">cart_to_joint</code><span class="sig-paren">(</span><em>robot</em>, <em>traj_points</em>, <em>check_collision=False</em>, <em>scene=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#cart_to_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.cart_to_joint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a path to joint space by descretising and ik.</p>
+<p>Every trajectory point in the path is descretised, then for all these
+poses the inverse kinematics are solved.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>robot</strong> (<a class="reference internal" href="#ppr.robot.Robot" title="ppr.robot.Robot"><em>ppr.robot.Robot</em></a>) – </li>
+<li><strong>traj_points</strong> (<em>list of ppr.path.TrajectoryPt</em>) – </li>
+<li><strong>check_collision</strong> (<em>bool</em>) – If True, a joint solution is only accepted if it does not collide
+with the objects in the scene. (default false)
+Self collision is not checked but assumed to be ensured by the joint
+limits.</li>
+<li><strong>scene</strong> (<em>list of ppr.geometry.Rectangle</em>) – A list of objects with which the robot could collide.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of arrays with shape (M, ndof) representing possible joint
+positions for every trajectory point.
+The arrays in this list could be very big!</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of numpy.ndarray of floats</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ppr.path.create_grid">
+<code class="descclassname">ppr.path.</code><code class="descname">create_grid</code><span class="sig-paren">(</span><em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#create_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.create_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an N dimensional grid from N arrays</p>
+<p>Based on N lists of numbers we create an N dimensional grid containing
+all possible combinations of the numbers in the different lists.
+An array can also be a single float if their is now tolerance range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>r</strong> (<em>list of numpy.ndarray of float</em>) – A list containing numpy vectors (1D arrays) representing a sampled
+version of a range along an axis.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array with shape (M, N) where N is the number of input arrays and
+M the number of different combinations of the data in the input arrays.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="mi">99</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">create_grid</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">array([[ 0,  1, 99],</span>
+<span class="go">       [ 1,  1, 99],</span>
+<span class="go">       [ 0,  2, 99],</span>
+<span class="go">       [ 1,  2, 99],</span>
+<span class="go">       [ 0,  3, 99],</span>
+<span class="go">       [ 1,  3, 99]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ppr.path.discretise">
+<code class="descclassname">ppr.path.</code><code class="descname">discretise</code><span class="sig-paren">(</span><em>pt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#discretise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.discretise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a discrete version of the range of a trajectory point</p>
+<p>Based on the sampled range in the Toleranced Numbers, a 3 dimensional grid
+representing end-effector poses that obey the trajectory point constraints.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pt</strong> (<a class="reference internal" href="#ppr.path.TrajectoryPt" title="ppr.path.TrajectoryPt"><em>ppr.path.TrajectoryPt</em></a>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Array with shape (M, 3) containing M possible poses for the robot
+end-effector that  obey the trajectory point constraints.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.ndarray</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">TolerancedNumber</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">TolerancedNumber</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pt</span> <span class="o">=</span> <span class="n">TrajectoryPt</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discretise</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span>
+<span class="go">array([[ 0.5, -1. ,  0. ],</span>
+<span class="go">       [ 1. , -1. ,  0. ],</span>
+<span class="go">       [ 1.5, -1. ,  0. ],</span>
+<span class="go">       [ 0.5,  1. ,  0. ],</span>
+<span class="go">       [ 1. ,  1. ,  0. ],</span>
+<span class="go">       [ 1.5,  1. ,  0. ]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="ppr.path.get_shortest_path">
+<code class="descclassname">ppr.path.</code><code class="descname">get_shortest_path</code><span class="sig-paren">(</span><em>Q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ppr/path.html#get_shortest_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ppr.path.get_shortest_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the shortest path from joint space data</p>
+<p>When the path with trajectory points is converted to joint space,
+this data can be used to construct a graph and look for the shortest path.
+The current distance metrix is the l1-norm of joint position difference
+between two points.</p>
+<p>I still have to implement maximum joint movement and acceleration limits.
+So technically this will always find a shortest path for now.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>Q</strong> (<em>list of nympy.ndarrays of float</em>) – A list with the possible joint positions for every trajectory point
+along a path.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dictionary with a key ‘success’ to indicate whether a path was found.
+If success is True, then the key ‘path’ contains a list with the joint
+position for every trajectory point that gives the shortest path.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>I have a problem with swig type conversions. Therefore the type of the
+input data is checked and changed from float64 to float32.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ppr">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ppr" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ppr package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ppr.geometry">ppr.geometry module</a></li>
+<li><a class="reference internal" href="#module-ppr.robot">ppr.robot module</a></li>
+<li><a class="reference internal" href="#module-ppr.path">ppr.path module</a></li>
+<li><a class="reference internal" href="#module-ppr">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">ppr</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">ppr</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ppr.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Jeroen De Maeyer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/ppr.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
