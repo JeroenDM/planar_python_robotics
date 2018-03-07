@@ -53,6 +53,7 @@ class Graph {
     void               visit(Node* node);
     std::vector<Node*> get_neighbors(Node* node);
     std::vector<Node*> get_path_nodes();
+    float              get_path_cost(std::vector<Node*>& path);
     int                dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V);
     int                bfs_core(std::vector<Node*>& U);
     void               single_source_dijkstra(Node* start_node);

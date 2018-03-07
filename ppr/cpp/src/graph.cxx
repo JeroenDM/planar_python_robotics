@@ -216,6 +216,10 @@ std::vector<Node*> Graph::get_path_nodes() {
     }
 }
 
+float get_path_cost(std::vector<Node*>& path) {
+    return 0.0;
+}
+
 // ===========================================================
 // puplic graph fucntions
 // ===========================================================
@@ -244,6 +248,9 @@ void Graph::init_dijkstra() {
 void Graph::run_dijkstra() {
     std::cout << "Running dijkstra's algorithm" << std::endl;
     single_source_dijkstra(&na[0][0]);
+    std::vector<Node*> path = get_path_nodes();
+    float cost = get_path_cost(path);
+    std::cout << "Path found with cost: " << cost << std::endl;
     //bfs(&na[0][0]);
 }
 
@@ -252,7 +259,7 @@ void Graph::get_path(int* vec, int n) {
         std::vector<Node*> path;
         path = get_path_nodes();
         if (n != path.size()) {
-            std::cout << "Wrong path length" << std::endl;
+            std::cout << "Wrong path nodes length" << std::endl;
         }
         else {
             for (int i = 0; i<n; ++i) {
