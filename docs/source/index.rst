@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/image/corridor_planning.png
+   :alt: corridor planning problem
+
 Welcome to Planar Python Robotics's documentation!
 ==================================================
 
@@ -10,11 +13,6 @@ This package contains building blocks to test robot path planning algorithms in 
 I'm writing this code during my PhD to learn all the basics and as a basis to test new stuff in a simple 2D environment.
 
 For a **quick overview** of what the code can do, have a look at this example_.
-
-The main is to find robust methods (maybe a little bit slower) to solve more complex motion planning problems.
-
-.. image:: https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/image/corridor_planning.png
-   :alt: corridor planning problem
 
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
 
