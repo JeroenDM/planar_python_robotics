@@ -62,7 +62,7 @@ class TolerancedNumber:
         >>> a.range
         array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ])
         """
-        if nominal <= lower_bound or nominal >= upper_bound:
+        if nominal < lower_bound or nominal > upper_bound:
             raise ValueError("nominal value must respect the bounds")
         self.n = nominal
         self.u = upper_bound

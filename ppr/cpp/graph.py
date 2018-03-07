@@ -118,6 +118,9 @@ class Graph(_object):
     def print_graph(self):
         return _graph.Graph_print_graph(self)
 
+    def set_graph_data(self, data):
+        return _graph.Graph_set_graph_data(self, data)
+
     def __init__(self):
         this = _graph.new_Graph()
         try:
@@ -128,6 +131,8 @@ class Graph(_object):
     __del__ = lambda self: None
 Graph_swigregister = _graph.Graph_swigregister
 Graph_swigregister(Graph)
+cvar = _graph.cvar
+INF = cvar.INF
 
 # This file is compatible with both classic and new-style classes.
 

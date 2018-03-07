@@ -40,6 +40,12 @@ def get_optimal_trajectory(robot, path, q_path_init,
 
     # setup the correct objective
     wb = [w[key] for key in w]
+    # if torque objectives, check dynamics
+    if wb[2] > 0:
+      if not hasattr(robot, 'c'):
+        msg = "Specify robot dynamic parameter s"
+        msg += "using the Robot.set_link_inertia() method"
+        raise ValueError(msg)
     if wb[0] > 0 and wb[1] == 0 and wb[2] == 0:
         def obj(x):
             n_path, qp = reshape_path_vector(x, n_dof=robot.ndof)
