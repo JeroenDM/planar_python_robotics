@@ -1,13 +1,9 @@
 #include <iostream>
 #include <algorithm>
-#include <limits> // infinity()
 #include "graph.h"
 
 // dummy node to initialize parent nodes
 Node DUMMY_NODE;
-
-// to initialize distances for dijkstra
-const float INF = std::numeric_limits<float>::infinity();
 
 // sort function for dijkstra unvisited list
 bool sort_function(Node* n1, Node* n2) {
@@ -143,6 +139,15 @@ void Graph::graph_data_to_node_array() {
         }
 }
 
+void Graph::reset_node_array() {
+    for (int i=0; i < na.size(); ++i) {
+        for (int j=0; j < na[i].size(); ++j) {
+            na[i][j].dist = INF;
+            na[i][j].parent = &DUMMY_NODE;
+        }
+    }
+}
+
 void Graph::init_unvisited(std::vector<Node*>& uv) {
     // do not add fist column (start at i=1)
     // start node in first column cannot reached the other nodes there
@@ -216,8 +221,12 @@ std::vector<Node*> Graph::get_path_nodes() {
     }
 }
 
-float get_path_cost(std::vector<Node*>& path) {
-    return 0.0;
+float Graph::get_path_cost(std::vector<Node*>& path) {
+    float cost = 0.0;
+    for (int i=0; i < path.size()-1; ++i) {
+        cost += cost_function(*path[i], *path[i+1]);
+    }
+    return cost;
 }
 
 // ===========================================================
@@ -247,11 +256,31 @@ void Graph::init_dijkstra() {
 
 void Graph::run_dijkstra() {
     std::cout << "Running dijkstra's algorithm" << std::endl;
-    single_source_dijkstra(&na[0][0]);
-    std::vector<Node*> path = get_path_nodes();
-    float cost = get_path_cost(path);
-    std::cout << "Path found with cost: " << cost << std::endl;
-    //bfs(&na[0][0]);
+
+    // single_source_dijkstra(&na[0][0]);
+    // std::vector<Node*> path = get_path_nodes();
+    // float new_cost = get_path_cost(path);
+    // if (new_cost < shortest_path_cost) {
+    //     shortest_path = path;
+    //     shortest_path_cost = new_cost;
+    // }
+
+    for (int i=0; i < na[0].size(); ++i) {
+        path_found = false;
+        reset_node_array();
+        single_source_dijkstra(&na[0][i]);
+
+        std::vector<Node*> path = get_path_nodes();
+        if (path_found) {
+            float new_cost = get_path_cost(path);
+            if (new_cost < shortest_path_cost) {
+                shortest_path = path;
+                shortest_path_cost = new_cost;
+            }
+        std::cout << "Intermediate cost: " << new_cost << std::endl;
+        }
+    }
+    std::cout << "Path found with cost: " << shortest_path_cost << std::endl;
 }
 
 void Graph::get_path(int* vec, int n) {
@@ -329,4 +358,8 @@ void Graph::print_graph() {
     for (auto& p : na) {
         print_nodes(p);
     }
+}
+
+void Graph::set_graph_data(graph_data data) {
+    gd = data;
 }

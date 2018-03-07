@@ -3133,6 +3133,16 @@ namespace swig {
 #include <complex> 
 
 
+  #define SWIG_From_double   PyFloat_FromDouble 
+
+
+SWIGINTERNINLINE PyObject *
+SWIG_From_float  (float value)
+{    
+  return SWIG_From_double  (value);
+}
+
+
 #if NPY_API_VERSION < 0x00000007
 #define NPY_ARRAY_DEFAULT NPY_DEFAULT
 #define NPY_ARRAY_FARRAY  NPY_FARRAY
@@ -3756,6 +3766,20 @@ SWIG_AsVal_int (PyObject * obj, int *val)
 #ifdef __cplusplus
 extern "C" {
 #endif
+SWIGINTERN int Swig_var_INF_set(PyObject *) {
+  SWIG_Error(SWIG_AttributeError,"Variable INF is read-only.");
+  return 1;
+}
+
+
+SWIGINTERN PyObject *Swig_var_INF_get(void) {
+  PyObject *pyobj = 0;
+  
+  pyobj = SWIG_From_float(static_cast< float >(INF));
+  return pyobj;
+}
+
+
 SWIGINTERN PyObject *_wrap_Graph_add_data_column(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Graph *arg1 = (Graph *) 0 ;
@@ -3956,6 +3980,44 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Graph_set_graph_data(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Graph *arg1 = (Graph *) 0 ;
+  graph_data arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:Graph_set_graph_data",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Graph, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Graph_set_graph_data" "', argument " "1"" of type '" "Graph *""'"); 
+  }
+  arg1 = reinterpret_cast< Graph * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_std__vectorT_std__vectorT_std__vectorT_float_t_t_t,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Graph_set_graph_data" "', argument " "2"" of type '" "graph_data""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "Graph_set_graph_data" "', argument " "2"" of type '" "graph_data""'");
+    } else {
+      graph_data * temp = reinterpret_cast< graph_data * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  (arg1)->set_graph_data(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_Graph(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Graph *result = 0 ;
@@ -4006,6 +4068,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Graph_get_path", _wrap_Graph_get_path, METH_VARARGS, NULL},
 	 { (char *)"Graph_print_path", _wrap_Graph_print_path, METH_VARARGS, NULL},
 	 { (char *)"Graph_print_graph", _wrap_Graph_print_graph, METH_VARARGS, NULL},
+	 { (char *)"Graph_set_graph_data", _wrap_Graph_set_graph_data, METH_VARARGS, NULL},
 	 { (char *)"new_Graph", _wrap_new_Graph, METH_VARARGS, NULL},
 	 { (char *)"delete_Graph", _wrap_delete_Graph, METH_VARARGS, NULL},
 	 { (char *)"Graph_swigregister", Graph_swigregister, METH_VARARGS, NULL},
@@ -4742,6 +4805,8 @@ SWIG_init(void) {
   
   import_array();
   
+  PyDict_SetItemString(md,(char*)"cvar", SWIG_globals());
+  SWIG_addvarlink(SWIG_globals(),(char*)"INF",Swig_var_INF_get, Swig_var_INF_set);
 #if PY_VERSION_HEX >= 0x03000000
   return m;
 #else

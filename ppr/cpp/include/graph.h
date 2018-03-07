@@ -2,6 +2,10 @@
 #define _GRAPH_H_
 
 #include <vector>
+#include <limits> // infinity()
+
+// to initialize distances for dijkstra
+const float INF = std::numeric_limits<float>::infinity();
 
 /**
  *  Container for a joint position. 
@@ -46,8 +50,11 @@ class Graph {
     node_array na;
     int MAX_ITER = 10000;
     bool path_found = false;
+    std::vector<Node*> shortest_path;
+    float shortest_path_cost = INF;
 
     void               graph_data_to_node_array();
+    void               reset_node_array();
     void               init_unvisited(std::vector<Node*>& uv);
     float              cost_function(Node n1, Node n2);
     void               visit(Node* node);
@@ -71,6 +78,7 @@ public:
     void get_path(int* vec, int n);
     void print_path();
     void print_graph();
+    void set_graph_data(graph_data data);
 };
 
 #endif
