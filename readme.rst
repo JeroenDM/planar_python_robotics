@@ -5,6 +5,9 @@
 
 For a quick overview of what the code can do, have a look the notebook "example_3R_robot".
 
+.. image:: https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/image/corridor_planning.png
+   :alt: corridor planning problem
+
 Planar Python Robotics
 ======================
 The main goal is to test robotic algorithms using only numpy and vanilla python. There are great libraries for robot simulation and related task, but installing them is always a hassle and very dependent on operating system and python version.
