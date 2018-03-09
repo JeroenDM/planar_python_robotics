@@ -265,6 +265,7 @@ void Graph::run_dijkstra() {
     //     shortest_path_cost = new_cost;
     // }
 
+    int best_start_i = 0;
     for (int i=0; i < na[0].size(); ++i) {
         path_found = false;
         reset_node_array();
@@ -276,10 +277,16 @@ void Graph::run_dijkstra() {
             if (new_cost < shortest_path_cost) {
                 shortest_path = path;
                 shortest_path_cost = new_cost;
+                best_start_i = i;
             }
         std::cout << "Intermediate cost: " << new_cost << std::endl;
         }
     }
+    // rerun dijkstra with the best starting node to get the right path out of it
+    // TODO there are obvious faster ways to remember the shortest path
+    path_found = false;
+    reset_node_array();
+    single_source_dijkstra(&na[0][best_start_i]);
     std::cout << "Path found with cost: " << shortest_path_cost << std::endl;
 }
 
