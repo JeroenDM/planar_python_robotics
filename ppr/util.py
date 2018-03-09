@@ -92,7 +92,6 @@ class VirtualJointSolutions():
   
   Currently implemented for the 2P 3R robot
   Calculated on the fly.
-  Add collision in later statium.
   
   Main problem: joint configuration.
   Should I check it or can a joint configuration index result in a different
