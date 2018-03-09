@@ -213,3 +213,57 @@ class GASolver():
       Array of shape (n_path, ndof) containing a discrete path in joint space.
     """
     return np.array([self.Q[i][c[i]] for i in range(self.n_path)])
+
+class LazyGASolver(GASolver):
+    """ GA sovler that uses VirtualJointSolutions instead of real ones.
+    """
+    def create_chromosome(self):
+        """ Tries to generate a joint path from chromosomes.
+        
+        Parameters
+        ----------
+        ch : numpy.ndarray of int
+        path : numpy.ndarray of float
+        """
+        max_iter = 100
+        found_ch = False
+        while (not found_ch) and (max_iter > 0):
+            ch = np.array([randint(0, self.Q_size[i]) for i in range(self.n_path)])
+            sols = [self.Q[i][ch[i]] for i in range(self.n_path)]
+            success = [sol['success'] for sol in sols]
+            if np.all(success):
+                path = [sol['q'] for sol in sols]
+                found_ch = True
+        if max_iter == 0:
+            msg = "Maximum number of iterations reached"
+            msg += "when creating a chromosome"
+            raise RuntimeError(msg)
+        return np.array(ch), np.array(path)
+    
+    def create_population(self):
+        """ Create a array with a chromosome on every row
+        
+        Parameters
+        ----------
+        size : int
+          Population size, the number of chromosomes in the array.
+        
+        Returns
+        -------
+        numpy.ndarray of int
+          Array with shape (size, n_path) containing a chromosome on every row.
+        """
+        pop = []
+        paths = []
+        for i in range(self.pop_size):
+            ch, path = self.create_chromosome()
+            pop.append(ch)
+            paths.append(path)
+        self.path_cache = paths
+        return np.array(pop)
+    
+    def fitness(self, c):
+        """ evalutate path cost
+        """
+        pass
+         
