@@ -214,6 +214,16 @@ class GASolver():
     """
     return np.array([self.Q[i][c[i]] for i in range(self.n_path)])
 
+class Chromosome():
+    def __init__(self, ch, path):
+        self.ch = ch
+        self.path = path
+        self.fitness = self.fitness(path)
+    
+    def fitness(self, path):
+        dp   = np.diff(path, axis=0)
+        return -np.sum(np.abs(dp))
+
 class LazyGASolver(GASolver):
     """ GA sovler that uses VirtualJointSolutions instead of real ones.
     """
@@ -226,19 +236,19 @@ class LazyGASolver(GASolver):
         path : numpy.ndarray of float
         """
         max_iter = 100
-        found_ch = False
-        while (not found_ch) and (max_iter > 0):
+        
+        while max_iter > 0:
             ch = np.array([randint(0, self.Q_size[i]) for i in range(self.n_path)])
             sols = [self.Q[i][ch[i]] for i in range(self.n_path)]
             success = [sol['success'] for sol in sols]
             if np.all(success):
                 path = [sol['q'] for sol in sols]
-                found_ch = True
+                return (np.array(ch), np.array(path))
+        
         if max_iter == 0:
             msg = "Maximum number of iterations reached"
             msg += "when creating a chromosome"
             raise RuntimeError(msg)
-        return np.array(ch), np.array(path)
     
     def create_population(self):
         """ Create a array with a chromosome on every row
@@ -253,17 +263,40 @@ class LazyGASolver(GASolver):
         numpy.ndarray of int
           Array with shape (size, n_path) containing a chromosome on every row.
         """
-        pop = []
-        paths = []
-        for i in range(self.pop_size):
-            ch, path = self.create_chromosome()
-            pop.append(ch)
-            paths.append(path)
-        self.path_cache = paths
-        return np.array(pop)
+        pop = [self.create_chromosome() for i in range(self.pop_size)]
+        return pop
     
     def fitness(self, c):
         """ evalutate path cost
         """
-        pass
+        path = c[1]
+        dp   = np.diff(path, axis=0)
+        return -np.sum(np.abs(dp))
+    
+    def new_generation(self, pop):
+        """ Create a new population based on the previous one.
+        """
+        p_size = len(pop) # if an odd number, the next pop will have size+1
+        current_size = 0
+        new_pop = []
+        while(current_size < p_size):
+            # select couple
+            # better one of the first elemens in pop, because they are ordered
+            # based on fitness
+            prob = np.linspace(1, 0, p_size)
+            prob = prob / np.sum(prob)
+            prob = list(prob)
+            couple = choice(p_size, 2, p = prob)
+            # mate couple (could be the same, is this ok?)
+            c1[0], c2[0] = self.crossover(pop[couple[0]][0],
+                                    pop[couple[1]][0],
+                                    self.cross_rate)
+            # mutate children
+            c1[0] = self.mutate(c1[0], self.mut_rate)
+            c2[0] = self.mutate(c2[0], self.mut_rate)
+            # add children to new population
+            new_pop.append(c1)
+            new_pop.append(c2)
+            current_size += 2
+        return np.array(new_pop)
          
