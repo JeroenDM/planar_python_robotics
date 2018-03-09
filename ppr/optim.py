@@ -9,6 +9,86 @@ import numpy as np
 from scipy.optimize import fmin_slsqp
 
 #=============================================================================
+# Use general minimize interface and implement object oriented
+#=============================================================================
+
+class Solver():
+    """ Setup and solve an optimal robot motion planning problem
+    
+    No dual variables implemented at the moment. Look in branch old-master
+    optimize.py to see how this can be added.
+    """
+    def __init__(self, robot, path, scene, w=None):
+        self.robot = robot
+        self.path = path
+        self.scene = scene
+        
+        # set default weights
+        if w == None:
+            self.w = {'joint_motion': 1.0,'path_error': 0.0, 'torque': 0.0}
+        else:
+            self.w = w
+            
+        self.bnds = []
+        self.cons = []
+    
+    def create_objective(self):
+        ndof = self.robot.ndof
+            
+        # put weights in list
+        wb = [w[key] for key in self.w]
+        
+        # if torque objectives, check dynamics
+        if wb[2] > 0:
+          if not hasattr(robot, 'c'):
+            msg = "Specify robot dynamic parameter s"
+            msg += "using the Robot.set_link_inertia() method"
+            raise ValueError(msg)
+        
+        # setup the desired objective
+        if wb[0] > 0 and wb[1] == 0 and wb[2] == 0:
+            def obj(x):
+                n_path, qp = reshape_path_vector(x, n_dof=ndof)
+                return joint_motion_obj(qp)
+        elif wb[1] > 0 and wb[2] == 0:
+            def obj(x):
+                n_path, qp = reshape_path_vector(x, n_dof=ndof)
+                return path_error_obj(qp, robot, self.path)
+        elif wb[2] > 0:
+            def obj(x):
+                n_path, qp = reshape_path_vector(x, n_dof=ndof)
+                return torque_obj(qp, robot)
+        elif wb[0] > 0 and wb[1] > 0 and wb[2] == 0:
+            def obj(x):
+                n_path, qp = reshape_path_vector(x, n_dof=ndof)
+                res =  wb[0] * joint_motion_obj(qp)
+                res += wb[1] * path_error_obj(qp, self.robot, self.path)
+                return res
+        else:
+            raise ValueError("This type of objective is not implemented yet.")
+        
+        return obj
+    
+    def add_path_constraints(self):
+        def path_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
+            return path_ieq_con(qp, self.robot, self.path)
+        self.cons.append({'type': 'ineq', 'fun': path_con})
+    
+    def add_collision_constaints(self):
+        def cc_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
+            return collision_ieq_con(qp, self.robot, self.scene)
+        self.cons.append({'type': 'ineq', 'fun': cc_con})
+    
+    def run(self, q_init):
+        obj  = self.create_objective()
+        return minimize(obj, q_init, method='SLSQP', 
+                        constraints=self.cons,
+                        bounds = self.bnds)
+
+
+#=============================================================================
 # Main functions to run the problem
 #=============================================================================
 def get_optimal_trajectory(robot, path, q_path_init,

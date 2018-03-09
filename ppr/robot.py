@@ -64,11 +64,27 @@ class Robot:
       Joint limits are not in the default init function because it would
       become to clumsy and a lot can be done without them.
       
-      joint_limits : list of list of float
+      joint_limits : list of tuple of float
         A list with for every link the lower and upper joint limit, given as
-        a another list of length 2.
+        a tuple of length 2. For example [(-1, 1), (0, 2)]
       """
       self.jl = joint_limits
+    
+    def set_link_inertia(self, mass, cg_position, Icg):
+        """ Set mass, position of center of gravity and Inertia for links.
+        
+        Paramters
+        ---------
+        mass : list of float
+            List with masses for every link.
+        cg_position : list of float
+            Position of center of gravety along link.
+        Icg : list of float
+            Mass moment of inertia of link around center of gravity.
+        """
+        self.m = mass
+        self.c = cg_position
+        self.I = Icg
     
     def fk(self, q):
         """ Calculate forward kinematics
@@ -318,12 +334,7 @@ class Robot:
     
     #=============================================================================
     # THE FOLLOWING METHODS ARE NOT TESTED YET AND ALMOST NO DOCUMENTATION
-    #=============================================================================
-    def set_link_inertia(self, mass, cg_position, Icg):
-        self.m = mass
-        self.c = cg_position
-        self.I = Icg
-    
+    #=============================================================================    
     def euler_newton(self, q, dq, ddq):
         """ Euler-Netwon recursive algorithm from book Sicilliano """
         ndof = self.ndof
