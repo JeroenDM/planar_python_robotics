@@ -74,6 +74,14 @@ class TestRobot():
         path = np.random.randn(6, 2)
         robot1.plot_path_kinematics(ax1, path)
         #plt.show()
+    
+    def test_set_joint_limits(self):
+        robot1 = Robot(['r', 'r'], [2, 1], [0, 0])
+        robot1.set_joint_limits([(-1, 2), (-3, 2)])
+    
+    def test_set_link_inertia(self):
+        robot1 = Robot(['r', 'r'], [2, 1], [0, 0])
+        robot1.set_link_inertia([1, 1], [0.5, 0.3], [0.05, 0.03])
 
 class TestRobot_3R():
     def test_init_function(self):
@@ -167,3 +175,13 @@ class TestRobot_2P3R():
             actual = [np.allclose(qj, qi) for qj in q_sol]
             #assert_almost_equal(actual, [True, True])
             assert_(np.any(actual))
+    
+    def test_set_joint_limits(self):
+        robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
+        robot2p3r.set_joint_limits([(0, 5), (0, 5), (), (), ()])
+        desired = {'success': False, 'info': "unreachable"}
+        pose = np.array([3, 3, 3.0])
+        actual = robot2p3r.ik(pose)
+        actual_q = actual['q']
+        # there are 5 joint solutions expected
+        assert_(len(actual_q), 5)

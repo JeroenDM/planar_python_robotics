@@ -665,16 +665,17 @@ class Robot_2P3R(Robot):
             If 'success' is False, a key 'info' containts extra info.
         """
         if hasattr(self, 'jl'):
-          jl1, jl2 = self.jl[0], self.jl[1]
-          # use the middle of the interval as nominal value
-          n1 = (jl1[0] + jl1[1]) / 2
-          n2 = (jl2[0] + jl2[1]) / 2
-          q1 = TolerancedNumber(n1, jl1[0], jl1[1], samples=self.ik_samples[0])
-          q2 = TolerancedNumber(n2, jl2[0], jl2[1], samples=self.ik_samples[1])
+            jl1, jl2 = self.jl[0], self.jl[1]
         else:
-          # use default joint limits
-          q1 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples[0])
-          q2 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples[1])
+          # use the middle of the interval as nominal value
+          jl1, jl2 = (0, 1.5), (0, 1.5)
+        # nominal value in the middle of the limits
+        n1 = (jl1[0] + jl1[1]) / 2
+        n2 = (jl2[0] + jl2[1]) / 2
+        
+        # create sampled values for fixed joints and put them in a grid
+        q1 = TolerancedNumber(n1, jl1[0], jl1[1], samples=self.ik_samples[0])
+        q2 = TolerancedNumber(n2, jl2[0], jl2[1], samples=self.ik_samples[1])
         grid = np.meshgrid(q1.range, q2.range)
         grid = [ grid[i].flatten() for i in range(2) ]
         grid = np.array(grid).T
