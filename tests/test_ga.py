@@ -3,11 +3,11 @@
 
 import numpy as np
 from numpy.testing import assert_almost_equal
-from ppr.ga import GASolver, get_shortest_path_ga, LazyGASolver
+from ppr.ga import GASolver, get_shortest_path_ga#, LazyGASolver
 from ppr.robot import Robot_2P3R
 from ppr.path import TolerancedNumber, TrajectoryPt
 from ppr.geometry import Rectangle
-from ppr.util import VirtualJointSolutions
+#from ppr.util import VirtualJointSolutions
 
 data = [np.array([[0, 0], [0, 1]]),
         np.array([[1, -1], [1, 0], [1, 1]]),
@@ -16,54 +16,54 @@ data_size = [len(q) for q in data]
 
 solver = GASolver(data)
 
-# create trajectory point
-x = TolerancedNumber(2, 1, 3, samples=3)
-y = TolerancedNumber(2.5, 2, 3, samples=4)
-tp = TrajectoryPt([x, y, 0])
-# create robot and collision scene
-robot1 = Robot_2P3R([1, 1, 2, 1.5, 0.5])
-sc1 = [Rectangle(2, 1, 0.5, 0.5, 0)]
+## create trajectory point
+#x = TolerancedNumber(2, 1, 3, samples=3)
+#y = TolerancedNumber(2.5, 2, 3, samples=4)
+#tp = TrajectoryPt([x, y, 0])
+## create robot and collision scene
+#robot1 = Robot_2P3R([1, 1, 2, 1.5, 0.5])
+#sc1 = [Rectangle(2, 1, 0.5, 0.5, 0)]
+#
+## create the object
+#Qv = [VirtualJointSolutions(robot1, tp, sc1),
+#      VirtualJointSolutions(robot1, tp, sc1)]
+#ls = LazyGASolver(Qv)
 
-# create the object
-Qv = [VirtualJointSolutions(robot1, tp, sc1),
-      VirtualJointSolutions(robot1, tp, sc1)]
-ls = LazyGASolver(Qv)
-
-class TestLazyGASolver():
-    def test_create_chromosome(self):
-        (ch1, path1) = ls.create_chromosome()
-        assert len(ch1) == len(Qv)
-        assert ch1[0] in range(len(Qv[0]))
-        assert ch1[1] in range(len(Qv[1]))
-        
-        # the number of samples is 3*4 (path) *5*5 (ik) * 2 (configurations)
-        # = 600
-        assert len(Qv[0]) == 3*4*5*5*2
-        
-        # check path dimensions
-        x, y = path1.shape
-        assert x == len(Qv)
-        assert y == robot1.ndof
-    
-    def test_create_population(self):        
-        ls = LazyGASolver(Qv)
-        c = ls.create_population()
-    
-    def test_fitness(self):
-        c = ls.create_chromosome()
-        f = ls.fitness(c)
-        assert type(f) == np.float64
-        
-        path = np.vstack([data[0][0], data[1][1], data[2][0]])
-        c2 = ([0, 1, 0], path)
-        actual = ls.fitness(c2)
-        desired = -4.0
-        assert_almost_equal(actual, desired)
-    
-    def test_new_generation(self):
-        p1 = ls.create_population()
-        p2 = ls.new_generation(p1)
-        
+#class TestLazyGASolver():
+#    def test_create_chromosome(self):
+#        (ch1, path1) = ls.create_chromosome()
+#        assert len(ch1) == len(Qv)
+#        assert ch1[0] in range(len(Qv[0]))
+#        assert ch1[1] in range(len(Qv[1]))
+#        
+#        # the number of samples is 3*4 (path) *5*5 (ik) * 2 (configurations)
+#        # = 600
+#        assert len(Qv[0]) == 3*4*5*5*2
+#        
+#        # check path dimensions
+#        x, y = path1.shape
+#        assert x == len(Qv)
+#        assert y == robot1.ndof
+#    
+#    def test_create_population(self):        
+#        ls = LazyGASolver(Qv)
+#        c = ls.create_population()
+#    
+#    def test_fitness(self):
+#        c = ls.create_chromosome()
+#        f = ls.fitness(c)
+#        assert type(f) == np.float64
+#        
+#        path = np.vstack([data[0][0], data[1][1], data[2][0]])
+#        c2 = ([0, 1, 0], path)
+#        actual = ls.fitness(c2)
+#        desired = -4.0
+#        assert_almost_equal(actual, desired)
+#    
+#    def test_new_generation(self):
+#        p1 = ls.create_population()
+#        p2 = ls.new_generation(p1)
+#        
 
 class TestGASOlver():
   def test_get_path(self):

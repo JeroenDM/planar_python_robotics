@@ -7,6 +7,7 @@ Function to define and proccess robot end-effector paths.
 import numpy as np
 from matplotlib.patches import Wedge
 from ppr.cpp.graph import Graph
+from multiprocessing import Pool
 
 class TolerancedNumber:
     """ A range on the numner line used to define path constraints
@@ -303,6 +304,53 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
                     else:
                         qi.append(qsol)
         joint_traj.append(np.array(qi))
+    return joint_traj
+
+def cart_to_joint_parallel(robot, traj_points, check_collision = False, scene=None):
+    """ Convert a path to joint space by descretising and ik.
+    
+    Every trajectory point in the path is descretised, then for all these
+    poses the inverse kinematics are solved.
+    
+    Parameters
+    ----------
+    robot : ppr.robot.Robot
+    traj_points : list of ppr.path.TrajectoryPt
+    check_collision : bool
+        If True, a joint solution is only accepted if it does not collide
+        with the objects in the scene. (default false)
+        Self collision is not checked but assumed to be ensured by the joint
+        limits.
+    scene : list of ppr.geometry.Rectangle
+        A list of objects with which the robot could collide.
+    
+    Returns
+    -------
+    list of numpy.ndarray of floats
+        A list of arrays with shape (M, ndof) representing possible joint
+        positions for every trajectory point.
+        The arrays in this list could be very big!
+    """
+    if not check_collision:
+        raise NotImplementedError("not implemented without collision checking")
+    
+    # get discrete version of trajectory points
+    cart_traj = []
+    for pt in traj_points:
+        cart_traj.append(discretise(pt))
+    
+    def check_trajectory_pt_poses(poses):
+            res = []
+            for pi in poses:
+                sol = robot.ik(pi)
+                for qsol in sol['q']:
+                    if not robot.check_collision(qsol, scene):
+                        res.append(qsol)
+            return res
+
+    with Pool() as pool:
+        result = pool.map(check_trajectory_pt_poses, cart_traj)
+    joint_traj = [np.array(qi) for qi in result]
     return joint_traj
 
 def get_shortest_path(Q):
