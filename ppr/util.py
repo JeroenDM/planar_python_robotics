@@ -101,8 +101,8 @@ class VirtualJointSolutions():
     # path tolerances
     ranges = setup_ranges(trajectory_pt)
     # ik redundancy, use default joint limits
-    q1 = np.linspace(0, 1, robot.ik_samples)
-    q2 = np.linspace(0, 1, robot.ik_samples)
+    q1 = np.linspace(0, 1, robot.ik_samples[0])
+    q2 = np.linspace(0, 1, robot.ik_samples[1])
     ranges.append(q1)
     ranges.append(q2)
     # robot configurations
