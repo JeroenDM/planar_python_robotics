@@ -8,7 +8,7 @@ Author-email: jeroen.demaeyer@kuleuven.be
 License: UNKNOWN
 Download-URL: https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/dist/ppr-0.1.0.tar.gz
 Description-Content-Type: UNKNOWN
-Description: UNKNOWN
+Description: Software tool to experiment with 2D motion planning problemsfor robot manipulators.
 Keywords: robotics,motion planning
 Platform: UNKNOWN
 Requires-Python: >=3

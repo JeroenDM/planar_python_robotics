@@ -1,3 +1,4 @@
+README.rst
 setup.py
 ppr/__init__.py
 ppr/ga.py

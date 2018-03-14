@@ -1,10 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name = 'ppr',
     version = '0.1.0',
     packages = ['ppr'],
     description = 'Planar Python Robotics',
+    long_description=('Software tool to experiment with 2D motion planning problems' +
+    'for robot manipulators.'),
     author = 'Jeroen De Maeyer',
     author_email = 'jeroen.demaeyer@kuleuven.be',
     url = 'https://u0100037.pages.mech.kuleuven.be/planar_python_robotics/',
