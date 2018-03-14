@@ -11,4 +11,6 @@ setup(
     download_url = 'https://www.dropbox.com/s/xmatlsnfo1wkvdm/planar_python_robotics-0.1.0-c73194204d7e0b21aba03f56808c07e268b1d887.tar.gz?dl=0',
     keywords = ['robotics', 'motion planning'],
     classifiers = [],
+    install_requires=['scipy', 'matplotlib'],
+    python_requires='>=3',
 )
