@@ -8,7 +8,7 @@ setup(
     author = 'Jeroen De Maeyer',
     author_email = 'jeroen.demaeyer@kuleuven.be',
     url = 'https://u0100037.pages.mech.kuleuven.be/planar_python_robotics/',
-    download_url = 'https://www.dropbox.com/s/xmatlsnfo1wkvdm/planar_python_robotics-0.1.0-c73194204d7e0b21aba03f56808c07e268b1d887.tar.gz?dl=0',
+    download_url = 'https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/dist/ppr-0.1.0.tar.gz',
     keywords = ['robotics', 'motion planning'],
     classifiers = [],
     install_requires=['scipy', 'matplotlib'],
