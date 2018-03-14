@@ -58,6 +58,34 @@ class Robot:
         # default base pose
         self.base = np.array([0, 0, 0])
     
+    def set_joint_limits(self, joint_limits):
+      """ Set joint limits for inverse kinematics
+      
+      Joint limits are not in the default init function because it would
+      become to clumsy and a lot can be done without them.
+      
+      joint_limits : list of tuple of float
+        A list with for every link the lower and upper joint limit, given as
+        a tuple of length 2. For example [(-1, 1), (0, 2)]
+      """
+      self.jl = joint_limits
+    
+    def set_link_inertia(self, mass, cg_position, Icg):
+        """ Set mass, position of center of gravity and Inertia for links.
+        
+        Paramters
+        ---------
+        mass : list of float
+            List with masses for every link.
+        cg_position : list of float
+            Position of center of gravety along link.
+        Icg : list of float
+            Mass moment of inertia of link around center of gravity.
+        """
+        self.m = mass
+        self.c = cg_position
+        self.I = Icg
+    
     def fk(self, q):
         """ Calculate forward kinematics
         
@@ -306,12 +334,7 @@ class Robot:
     
     #=============================================================================
     # THE FOLLOWING METHODS ARE NOT TESTED YET AND ALMOST NO DOCUMENTATION
-    #=============================================================================
-    def set_link_inertia(self, mass, cg_position, Icg):
-        self.m = mass
-        self.c = cg_position
-        self.I = Icg
-    
+    #=============================================================================    
     def euler_newton(self, q, dq, ddq):
         """ Euler-Netwon recursive algorithm from book Sicilliano """
         ndof = self.ndof
@@ -461,6 +484,9 @@ class Robot_3R(Robot):
     def ik(self, p, tol=1e-12):
         """ Analytic inverse kinematics for 3 link robot
         
+        Joint limits [-pi, pi] are implied by the way the solution is
+        calculated. This should be fixed.  
+        
         Parameters
         ----------
         p : list or np.ndarray of floats
@@ -596,7 +622,7 @@ class Robot_2P3R(Robot):
             joints. Resulting in n_sample * n_sample times the normal number
             of solutions for a 3R robot.
     """
-    def __init__(self, link_length):
+    def __init__(self, link_length, ik_samples=[5, 5]):
         """ Simplified constructor for this 2P3R robot
         
         Add a helper robot to self.sub_robot to reuse the inverse kinematics
@@ -606,6 +632,8 @@ class Robot_2P3R(Robot):
         ----------
         link_length : list or np.array of floats
             The lengths for the two links.
+        ik_samples : list of int
+          Number of samples that should be taken for the two fixed joints.
         """
         if not (len(link_length) == 5):
             raise ValueError("This robot has 5 links, not: " + str(len(link_length)))
@@ -614,7 +642,7 @@ class Robot_2P3R(Robot):
                          [np.pi / 2, -np.pi / 2, 0, 0, 0])
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
-        self.ik_samples = 5
+        self.ik_samples = ik_samples
 
     def ik(self, p):
         """ Discretised / sampled inverse kinematics
@@ -636,8 +664,18 @@ class Robot_2P3R(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
-        q1 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples)
-        q2 = TolerancedNumber(0.5, 0, 1.5, samples=self.ik_samples)
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
+        else:
+          # use the middle of the interval as nominal value
+          jl1, jl2 = (0, 1.5), (0, 1.5)
+        # nominal value in the middle of the limits
+        n1 = (jl1[0] + jl1[1]) / 2
+        n2 = (jl2[0] + jl2[1]) / 2
+        
+        # create sampled values for fixed joints and put them in a grid
+        q1 = TolerancedNumber(n1, jl1[0], jl1[1], samples=self.ik_samples[0])
+        q2 = TolerancedNumber(n2, jl2[0], jl2[1], samples=self.ik_samples[1])
         grid = np.meshgrid(q1.range, q2.range)
         grid = [ grid[i].flatten() for i in range(2) ]
         grid = np.array(grid).T
