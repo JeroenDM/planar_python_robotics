@@ -14,7 +14,10 @@ ppr.egg-info/dependency_links.txt
 ppr.egg-info/requires.txt
 ppr.egg-info/top_level.txt
 ppr/cpp/__init__.py
+ppr/cpp/graph.i
 ppr/cpp/graph.py
+ppr/cpp/include/graph.h
+ppr/cpp/src/graph.cxx
 tests/__init__.py
 tests/test_ga.py
 tests/test_geometry.py

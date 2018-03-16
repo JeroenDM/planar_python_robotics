@@ -1,8 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
 setup(
     name = 'ppr',
-    version = '0.1.1',
+    version = '0.1.2',
     packages = find_packages(),
     description = 'Planar Python Robotics',
     long_description=('Software tool to experiment with 2D motion planning problems' +
@@ -15,4 +15,9 @@ setup(
     classifiers = [],
     install_requires=['scipy', 'matplotlib'],
     python_requires='>=3',
+    ext_package='ppr.cpp',
+    ext_modules=[Extension('ppr.cpp', ['ppr/cpp/graph.i',
+                                       'ppr/cpp/include/graph.h',
+                                       'ppr/cpp/src/graph.cxx'],
+                            swig_opts=['-c++', 'python', '-Ippr/cpp/include'])],
 )
