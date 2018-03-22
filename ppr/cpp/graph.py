@@ -109,6 +109,9 @@ class Graph(_object):
     def run_dijkstra(self):
         return _graph.Graph_run_dijkstra(self)
 
+    def run_bfs(self):
+        return _graph.Graph_run_bfs(self)
+
     def get_path(self, vec):
         return _graph.Graph_get_path(self, vec)
 

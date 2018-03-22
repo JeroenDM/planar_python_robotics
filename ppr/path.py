@@ -347,7 +347,8 @@ def get_shortest_path(Q):
     g.init_dijkstra()
 
     # run shortest path algorithm
-    g.run_dijkstra()
+    #g.run_dijkstra()
+    g.run_bfs()
 
     # print result
     # g.print_graph()

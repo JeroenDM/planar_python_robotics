@@ -32,6 +32,7 @@ struct Node {
     joint_value* jv;
     float dist;
     Node* parent;
+    bool visited;
 };
 
 /**
@@ -62,9 +63,10 @@ class Graph {
     std::vector<Node*> get_path_nodes();
     float              get_path_cost(std::vector<Node*>& path);
     int                dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V);
-    int                bfs_core(std::vector<Node*>& U);
+    int                bfs_core(Node* start);
     void               single_source_dijkstra(Node* start_node);
     void               bfs(Node* start_node);
+    void               multi_source_bfs();
 
     void print_node(Node n);
     void print_nodes(std::vector<Node*> nodes);
@@ -75,6 +77,7 @@ public:
     void print_graph_data();
     void init_dijkstra();
     void run_dijkstra();
+    void run_bfs();
     void get_path(int* vec, int n);
     void print_path();
     void print_graph();

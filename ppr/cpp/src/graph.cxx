@@ -1,8 +1,10 @@
 #include <iostream>
 #include <algorithm>
+#include <queue>
 #include "graph.h"
 
 // dummy node to initialize parent nodes
+// TODO accessing this nodes parent can lead to segmentation faults
 Node DUMMY_NODE;
 
 // sort function for dijkstra unvisited list
@@ -43,33 +45,91 @@ int Graph::dijkstra_core(std::vector<Node*>& U, std::vector<Node*>& V) {
     }
 }
 
-int Graph::bfs_core(std::vector<Node*>& U) {
-    for (Node* n : U) {
-        visit(n);
+int Graph::bfs_core(Node* start) {
+    std::queue<Node*> Q;
+    Node* current;
+    std::vector<Node*> neighbors;
+
+    (*start).visited = true;
+    Q.push(start);
+    //int path_index;
+
+    while(!Q.empty()) {
+        // get the next node in line
+        current = Q.front();
+        Q.pop();
+
+        neighbors = get_neighbors(current);
+        for (Node* nb : neighbors) {
+            // update neighbors distance
+            float dist = (*current).dist + cost_function(*nb, *current);
+            if (dist < (*nb).dist) {
+                (*nb).dist = dist;
+                (*nb).parent = current;
+            }
+            // add to queue if not yet visited
+            if (!(*nb).visited) {
+                Q.push(nb);
+                (*nb).visited = true;
+            }
+        }
     }
+
+    //if (path_index != gd.size()-1) {
+    //    return -1;
+    //} else {
     return 1;
+    //}
+}
+
+void Graph::multi_source_bfs() {
+    std::queue<Node*> Q;
+    Node* current;
+    std::vector<Node*> neighbors;
+
+    // add dummy parent node before all start nodes
+    // with distance zero to all the start nodes
+    for (Node& sn : na[0]) {
+        sn.dist = 0;
+        sn.parent = &DUMMY_NODE;
+        sn.visited = true;
+        Q.push(&sn);
+    }
+
+    std::cout << "dummy colums setup" << std::endl;
+    //print_node(DUMMY_NODE);
+    //print_nodes(na[0]);
+
+    while(!Q.empty()) {
+        // get the next node in line
+        current = Q.front();
+        Q.pop();
+
+        neighbors = get_neighbors(current);
+        for (Node* nb : neighbors) {
+            // update neighbors distance
+            float dist = (*current).dist + cost_function(*nb, *current);
+            if (dist < (*nb).dist) {
+                (*nb).dist = dist;
+                (*nb).parent = current;
+            }
+            // add to queue if not yet visited
+            if (!(*nb).visited) {
+                Q.push(nb);
+                (*nb).visited = true;
+            }
+        }
+    }
 }
 
 void Graph::bfs(Node* start_node) {
     using namespace std;
-    // sorting the whole unvisited set is inefficient
-    vector<Node*> unvisited;
-
-    // add pointers to all notes to unvisited
-    // nodes of first column that are not added
-    init_unvisited(unvisited);
-
-    // start node stuff
-    (*start_node).dist = 0;
-    unvisited.push_back(start_node);
-
-    // DEBUG stuff
-    // cout << "Before dijkstra" << endl;
-    // print_nodes(unvisited);
-    // print_nodes(visited);
+    //(*start_node).dist = 0;
 
     // run the actual algorithm
-    int stat = bfs_core(unvisited);
+    //int stat = bfs_core(start_node);
+    int stat = 1;
+    multi_source_bfs();
 
     if (stat == 1) {
         cout << "BFS finished" << endl;
@@ -133,7 +193,7 @@ void Graph::graph_data_to_node_array() {
             std::vector<Node> new_column;
             na.push_back(new_column);
             for (int j = 0; j < gd[i].size(); ++j) {
-                Node new_node = {i, j, &gd[i][j], INF, &DUMMY_NODE};
+                Node new_node = {i, j, &gd[i][j], INF, &DUMMY_NODE, false};
                 na[i].push_back(new_node);
             }
         }
@@ -144,6 +204,7 @@ void Graph::reset_node_array() {
         for (int j=0; j < na[i].size(); ++j) {
             na[i][j].dist = INF;
             na[i][j].parent = &DUMMY_NODE;
+            na[i][j].visited = false;
         }
     }
 }
@@ -183,7 +244,6 @@ std::vector<Node*> Graph::get_neighbors(Node* node) {
     std::vector<Node*> result;
     // check if we are at the end of the graph
     if ((*node).path_index == (na.size()-1)) {
-        std::vector<Node*> empty;
         return result; // empty vector
     } else {
         for (Node& n : na[(*node).path_index + 1]) {
@@ -288,6 +348,13 @@ void Graph::run_dijkstra() {
     reset_node_array();
     single_source_dijkstra(&na[0][best_start_i]);
     std::cout << "Path found with cost: " << shortest_path_cost << std::endl;
+}
+
+void Graph::run_bfs(){
+    bfs(&na[0][1]);
+    std::vector<Node*> path = get_path_nodes();
+    float cost = get_path_cost(path);
+    std::cout << "Path found with cost: " << cost << std::endl;
 }
 
 void Graph::get_path(int* vec, int n) {

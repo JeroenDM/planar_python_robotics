@@ -6,6 +6,7 @@ using namespace std;
 
 void test_graph_creation();
 void test_sort_function();
+void test_bfs();
 
 int main() {
     cout << "============================\n";
@@ -20,6 +21,10 @@ int main() {
     cout << "------------------------------\n";
     cout << "test_graph_creation\n";
     test_graph_creation();
+
+    cout << "------------------------------\n";
+    cout << " test bfs\n";
+    test_bfs();
     cout << endl;
 
     return 0;
@@ -32,9 +37,22 @@ void test_graph_creation() {
 
     Graph g;
     g.set_graph_data(data);
-    g.print_graph_data();
+    //g.print_graph_data();
     g.init_dijkstra();
     g.run_dijkstra();
+    g.print_path();
+}
+
+void test_bfs() {
+    graph_data data = {{{0, 0}, {0, 1}},
+                        {{1, -1}, {1, 0}, {1, 1}},
+                        {{0, 2}, {2, 2}} };
+
+    Graph g;
+    g.set_graph_data(data);
+    //g.print_graph_data();
+    g.init_dijkstra();
+    g.run_bfs();
     g.print_path();
 }
 
