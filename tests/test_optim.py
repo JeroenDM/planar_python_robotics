@@ -48,4 +48,4 @@ class TestConstraints():
         desired = np.array([-1.0353553,  1.7665554, 
                             0.4849242,  0.0384695, 
                             0.4849242, -1.0532455])
-        assert_almost_equal(actual, desired)
+        assert_almost_equal(actual, desired, decimal=5)

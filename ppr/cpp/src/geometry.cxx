@@ -3,14 +3,14 @@
 #include <math.h>
 #include <iostream>
 
-rmatrix rotation(float angle) {
+rmatrix rotation(double angle) {
     rmatrix R;
     R << cos(angle), -sin(angle),
          sin(angle),  cos(angle);
     return R;
 }
 
-Rectangle::Rectangle(float px, float py, float dx, float dy, float a) {
+Rectangle::Rectangle(double px, double py, double dx, double dy, double a) {
   // TODO turn around other point than left bottom corner
   width = dx;
   height = dy;
@@ -21,7 +21,7 @@ Rectangle::Rectangle(float px, float py, float dx, float dy, float a) {
   tolerance = 1e-6;
 }
 
-void Rectangle::set_tolerance(float new_tolerance) {
+void Rectangle::set_tolerance(double new_tolerance) {
     tolerance = new_tolerance;
 }
 
@@ -51,10 +51,10 @@ std::vector<point> Rectangle::_get_normals() {
     return normals;
 }
 
-std::vector<float> Rectangle::get_projection(point direction) {
-    float angle = -atan2(direction[1], direction[0]);
+std::vector<double> Rectangle::get_projection(point direction) {
+    double angle = -atan2(direction[1], direction[0]);
     rmatrix Rtemp = rotation(angle);
-    std::vector<float> proj;
+    std::vector<double> proj;
     for (int i=0; i<4; ++i) {
         point ptemp = Rtemp * p[i];
         proj.push_back(ptemp[0]);
@@ -70,9 +70,9 @@ bool Rectangle::is_in_collision(Rectangle other) {
     bool col = true;
     int i = 0;
     while (col and i < 8) {
-        std::vector<float> proj1 = get_projection(n1[i]);
-        std::vector<float> proj2 = other.get_projection(n1[i]);
-        float max1, max2, min1, min2;
+        std::vector<double> proj1 = get_projection(n1[i]);
+        std::vector<double> proj2 = other.get_projection(n1[i]);
+        double max1, max2, min1, min2;
         // calculate min and max
         max1 = *std::max_element(proj1.begin(), proj1.end());
         max2 = *std::max_element(proj2.begin(), proj2.end());

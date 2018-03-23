@@ -90,6 +90,10 @@ except AttributeError:
     _newclass = 0
 
 
+
+def rotation(arg1):
+    return _geometry.rotation(arg1)
+rotation = _geometry.rotation
 class Rectangle(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Rectangle, name, value)

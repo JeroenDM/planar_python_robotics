@@ -3135,33 +3135,6 @@ namespace swig {
   #define SWIG_From_double   PyFloat_FromDouble 
 
 
-#include <float.h>
-
-
-#include <math.h>
-
-
-/* Getting isfinite working pre C99 across multiple platforms is non-trivial. Users can provide SWIG_isfinite on older platforms. */
-#ifndef SWIG_isfinite
-# if defined(isfinite)
-#  define SWIG_isfinite(X) (isfinite(X))
-# elif defined(_MSC_VER)
-#  define SWIG_isfinite(X) (_finite(X))
-# elif defined(__sun) && defined(__SVR4)
-#  include <ieeefp.h>
-#  define SWIG_isfinite(X) (finite(X))
-# endif
-#endif
-
-
-/* Accept infinite as a valid float value unless we are unable to check if a value is finite */
-#ifdef SWIG_isfinite
-# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX) && SWIG_isfinite(X))
-#else
-# define SWIG_Float_Overflow_Check(X) ((X < -FLT_MAX || X > FLT_MAX))
-#endif
-
-
 SWIGINTERN int
 SWIG_AsVal_double (PyObject *obj, double *val)
 {
@@ -3204,22 +3177,6 @@ SWIG_AsVal_double (PyObject *obj, double *val)
     }
   }
 #endif
-  return res;
-}
-
-
-SWIGINTERN int
-SWIG_AsVal_float (PyObject * obj, float *val)
-{
-  double v;
-  int res = SWIG_AsVal_double (obj, &v);
-  if (SWIG_IsOK(res)) {
-    if (SWIG_Float_Overflow_Check(v)) {
-      return SWIG_OverflowError;
-    } else {
-      if (val) *val = static_cast< float >(v);
-    }
-  }  
   return res;
 }
 
@@ -3287,22 +3244,44 @@ SWIGINTERN PyObject *Swig_var_PI_get(void) {
 }
 
 
+SWIGINTERN PyObject *_wrap_rotation(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  double arg1 ;
+  double val1 ;
+  int ecode1 = 0 ;
+  PyObject * obj0 = 0 ;
+  rmatrix result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:rotation",&obj0)) SWIG_fail;
+  ecode1 = SWIG_AsVal_double(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "rotation" "', argument " "1"" of type '" "double""'");
+  } 
+  arg1 = static_cast< double >(val1);
+  result = rotation(arg1);
+  resultobj = SWIG_NewPointerObj((new rmatrix(static_cast< const rmatrix& >(result))), SWIGTYPE_p_Eigen__Matrix2f, SWIG_POINTER_OWN |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_new_Rectangle(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  float arg1 ;
-  float arg2 ;
-  float arg3 ;
-  float arg4 ;
-  float arg5 ;
-  float val1 ;
+  double arg1 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  double arg5 ;
+  double val1 ;
   int ecode1 = 0 ;
-  float val2 ;
+  double val2 ;
   int ecode2 = 0 ;
-  float val3 ;
+  double val3 ;
   int ecode3 = 0 ;
-  float val4 ;
+  double val4 ;
   int ecode4 = 0 ;
-  float val5 ;
+  double val5 ;
   int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -3312,31 +3291,31 @@ SWIGINTERN PyObject *_wrap_new_Rectangle(PyObject *SWIGUNUSEDPARM(self), PyObjec
   Rectangle *result = 0 ;
   
   if (!PyArg_ParseTuple(args,(char *)"OOOOO:new_Rectangle",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
-  ecode1 = SWIG_AsVal_float(obj0, &val1);
+  ecode1 = SWIG_AsVal_double(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Rectangle" "', argument " "1"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Rectangle" "', argument " "1"" of type '" "double""'");
   } 
-  arg1 = static_cast< float >(val1);
-  ecode2 = SWIG_AsVal_float(obj1, &val2);
+  arg1 = static_cast< double >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_Rectangle" "', argument " "2"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "new_Rectangle" "', argument " "2"" of type '" "double""'");
   } 
-  arg2 = static_cast< float >(val2);
-  ecode3 = SWIG_AsVal_float(obj2, &val3);
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
   if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_Rectangle" "', argument " "3"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "new_Rectangle" "', argument " "3"" of type '" "double""'");
   } 
-  arg3 = static_cast< float >(val3);
-  ecode4 = SWIG_AsVal_float(obj3, &val4);
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
   if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_Rectangle" "', argument " "4"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "new_Rectangle" "', argument " "4"" of type '" "double""'");
   } 
-  arg4 = static_cast< float >(val4);
-  ecode5 = SWIG_AsVal_float(obj4, &val5);
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_double(obj4, &val5);
   if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "new_Rectangle" "', argument " "5"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "new_Rectangle" "', argument " "5"" of type '" "double""'");
   } 
-  arg5 = static_cast< float >(val5);
+  arg5 = static_cast< double >(val5);
   result = (Rectangle *)new Rectangle(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Rectangle, SWIG_POINTER_NEW |  0 );
   return resultobj;
@@ -3348,10 +3327,10 @@ fail:
 SWIGINTERN PyObject *_wrap_Rectangle_set_tolerance(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Rectangle *arg1 = (Rectangle *) 0 ;
-  float arg2 ;
+  double arg2 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  float val2 ;
+  double val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
@@ -3362,11 +3341,11 @@ SWIGINTERN PyObject *_wrap_Rectangle_set_tolerance(PyObject *SWIGUNUSEDPARM(self
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Rectangle_set_tolerance" "', argument " "1"" of type '" "Rectangle *""'"); 
   }
   arg1 = reinterpret_cast< Rectangle * >(argp1);
-  ecode2 = SWIG_AsVal_float(obj1, &val2);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
   if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Rectangle_set_tolerance" "', argument " "2"" of type '" "float""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Rectangle_set_tolerance" "', argument " "2"" of type '" "double""'");
   } 
-  arg2 = static_cast< float >(val2);
+  arg2 = static_cast< double >(val2);
   (arg1)->set_tolerance(arg2);
   resultobj = SWIG_Py_Void();
   return resultobj;
@@ -3512,6 +3491,7 @@ SWIGINTERN PyObject *Rectangle_swigregister(PyObject *SWIGUNUSEDPARM(self), PyOb
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
+	 { (char *)"rotation", _wrap_rotation, METH_VARARGS, NULL},
 	 { (char *)"new_Rectangle", _wrap_new_Rectangle, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_set_tolerance", _wrap_Rectangle_set_tolerance, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_is_in_collision", _wrap_Rectangle_is_in_collision, METH_VARARGS, NULL},
