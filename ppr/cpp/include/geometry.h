@@ -7,7 +7,7 @@
 typedef Eigen::Matrix2f rmatrix;
 typedef Eigen::Vector2f point;
 
-const double PI = 3.14159265358979323846;
+const double PI = 3.141592653589793238462643383279502884L;
 
 rmatrix rotation(float);
 
@@ -16,14 +16,17 @@ class Rectangle {
     rmatrix R;
     std::vector<point> p;
     float tolerance;
+
+    std::vector<point> _get_vertices();
+    std::vector<point> _get_normals();
+    std::vector<float> get_projection(point direction);
+
   public:
     Rectangle(float, float, float, float, float);
     void set_tolerance(float new_tolerance);
-    std::vector<point> get_coordinates();
-    std::vector<point> get_normals();
-    std::vector<float> get_projection(point direction);
-    bool in_collision(Rectangle other);
+    bool is_in_collision(Rectangle other);
     void get_vertices(double mat[4][2]);
+    void get_normals(double mat[4][2]);
 };
 
 #endif

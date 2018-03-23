@@ -3,7 +3,6 @@
 
 import numpy as np
 from scipy.linalg import norm
-from .cpp.geometry import Rectangle as BaseRec
 
 def rotation(angle):
     """ Create 2x2 rotation matrix from angle
@@ -29,7 +28,7 @@ def rotation(angle):
     return np.array([[np.cos(angle),  -np.sin(angle)],
                       [np.sin(angle),  np.cos(angle)]])
 
-class Rectangle(BaseRec):
+class Rectangle:
     """ Rectangle plotting, handling and collision detection
     
     Attributes
@@ -61,11 +60,70 @@ class Rectangle(BaseRec):
         angle : float
             Angle between x-axis and bottom side of rectangle.
         """
-        super().__init__(x, y, dx, dy, angle)
+        self.x = x
+        self.y = y
+        self.dx = dx
+        self.dy = dy
+        self.a = angle
         self.R = rotation(angle)
         self.p = self.get_vertices()
 
+    def get_vertices(self):
+        """ Get 4 corner points of rectangles
+        
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (4, 2) containing the x and y coordinates of
+            the 4 corners of the rectangle.
+        
+        Examples
+        --------
+        >>> rec1 = Rectangle(0, 0, 1, 1, 0)
+        >>> rec1.get_vertices()
+        array([[ 0.,  0.],
+               [ 1.,  0.],
+               [ 1.,  1.],
+               [ 0.,  1.]])
+        """
+        p = np.zeros((4, 2))
+        p[0, 0] = self.x
+        p[0, 1] = self.y
+        p[1, :] = np.dot(self.R, [self.dx, 0 ]) + p[0, :]
+        p[2, :] = np.dot(self.R, [self.dx, self.dy]) + p[0, :]
+        p[3, :] = np.dot(self.R, [0 ,      self.dy]) + p[0, :]
+        return p
 
+    def get_normals(self):
+        """ Get normals on the 4 sides
+        
+        Get 4 unit vectors pointing away from the four sides.
+        Start with [0, -1] and rotate it by the angle of the rectangle.
+        Then rotate it 3 times with a angle pi/4.
+        
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (4, 2) containing 4 unit vectors representing
+            normals on 4 rectangle sides.
+        
+        Examples
+        --------
+        >>> rec1 = Rectangle(0, 0, 1, 1, 0)
+        >>> rec1.get_normals()
+        array([[  0.00000000e+00,  -1.00000000e+00],
+               [  1.00000000e+00,  -6.12323400e-17],
+               [  1.22464680e-16,   1.00000000e+00],
+               [ -1.00000000e+00,   1.83697020e-16]])
+        """
+        p = self.p
+        n = np.zeros((4, 2))
+        n[0, :] = np.dot(self.R, np.array([0.0, -1.0]))
+        Rtemp = rotation(np.pi/2)
+        n[1, :] = np.dot(Rtemp, n[0, :])
+        n[2, :] = np.dot(Rtemp, n[1, :])
+        n[3, :] = np.dot(Rtemp, n[2, :])
+        return n
     
     def project(self, axis):
         """ Project all points of rectangle on an axis given as unit vector
@@ -99,6 +157,48 @@ class Rectangle(BaseRec):
         array([ 0.        ,  0.70710678,  1.41421356,  0.70710678])
         """
         return np.dot(self.p, axis)
+    
+    def is_in_collision(self, rect2, tol=1e-9):
+        """ Check if it collides with another rectangle.
+        
+        Use the separating axis theorem.
+        Project both rectangles along all 8 normals and check overlap.
+        
+        Parameters
+        ----------
+        rect2 : ppr.geometry.Rectangle
+            The other rectangle to check collision with.
+        
+        Returns
+        -------
+        bool
+            False if no collision (as soon as a separating axis is found),
+            True if in collision.
+        
+        Examples
+        --------
+        >>> rec1 = Rectangle(0, 0, 1, 1, 0)
+        >>> rec2 = Rectangle(0.5, 0, 1, 1, 0.1)
+        >>> rec3 = Rectangle(1.5, 0.5, 1, 2, -0.2)
+        >>> rec1.is_in_collision(rec2)
+        True
+        >>> rec1.is_in_collision(rec3)
+        False
+        """
+        n1 = self.get_normals()
+        n2 = rect2.get_normals()
+        n_all = np.vstack((n1, n2))
+        # assume collision until proven otherwise
+        col = True
+        i = 0
+        while col and i < 8:
+            pr1 = self.project(n_all[i])
+            pr2 = rect2.project(n_all[i])
+            if (( max(pr1) + tol < min(pr2) ) or ( min(pr1) > max(pr2) + tol )):
+                col = False
+            i += 1
+
+        return col
     
     def distance(self, rect2, tol=1e-9):
         """ Check if it collides with another rectangle.

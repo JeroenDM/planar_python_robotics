@@ -1,4 +1,4 @@
-#include "geometry_core.h"
+#include "geometry.h"
 #include <Eigen/Dense>
 #include <math.h>
 #include <iostream>
@@ -17,7 +17,7 @@ Rectangle::Rectangle(float px, float py, float dx, float dy, float a) {
   pos_x = px;
   pos_y = py;
   R = rotation(a);
-  p = get_coordinates();
+  p = _get_vertices();
   tolerance = 1e-6;
 }
 
@@ -25,7 +25,7 @@ void Rectangle::set_tolerance(float new_tolerance) {
     tolerance = new_tolerance;
 }
 
-std::vector<point> Rectangle::get_coordinates() {
+std::vector<point> Rectangle::_get_vertices() {
     // points are ordered counterclockwise
     std::vector<point> points;
     points.push_back(point(pos_x, pos_y));
@@ -35,15 +35,14 @@ std::vector<point> Rectangle::get_coordinates() {
     return points;
 }
 
-std::vector<point> Rectangle::get_normals() {
+std::vector<point> Rectangle::_get_normals() {
     std::vector<point> normals;
     // Outside pointing normal on the first side
     // (counterclockwise)
     point n0;
-    n0[0] =   p[1][1] - p[0][1];
-    n0[1] =   -(p[1][0] - p[0][0]);
-    n0 = n0 / n0.norm();
-    normals.push_back(n0);
+    n0[0] =   0.0;
+    n0[1] =   -1.0;
+    normals.push_back(R * n0);
     // Rotate this n0 3 times for the other normals
     rmatrix Rtemp = rotation(PI/2);
     normals.push_back(Rtemp * normals[0]);
@@ -63,9 +62,9 @@ std::vector<float> Rectangle::get_projection(point direction) {
     return proj;
 }
 
-bool Rectangle::in_collision(Rectangle other) {
-    std::vector<point> n1 = get_normals();
-    std::vector<point> n2 = other.get_normals();
+bool Rectangle::is_in_collision(Rectangle other) {
+    std::vector<point> n1 = _get_normals();
+    std::vector<point> n2 = other._get_normals();
     // concatenate n1 and n2, save in n1
     n1.insert(n1.end(), n2.begin(), n2.end());
     bool col = true;
@@ -88,7 +87,15 @@ bool Rectangle::in_collision(Rectangle other) {
 }
 
 void Rectangle::get_vertices(double mat[4][2]) {
-    std::vector<point> temp = get_coordinates();
+    std::vector<point> temp = _get_vertices();
+    for (int i=0; i < temp.size(); ++i) {
+        mat[i][0] = temp[i][0];
+        mat[i][1] = temp[i][1];
+    }
+}
+
+void Rectangle::get_normals(double mat[4][2]) {
+    std::vector<point> temp = _get_normals();
     for (int i=0; i < temp.size(); ++i) {
         mat[i][0] = temp[i][0];
         mat[i][1] = temp[i][1];

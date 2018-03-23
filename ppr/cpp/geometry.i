@@ -1,8 +1,8 @@
-%module geometry_core
+%module geometry
 
 %{
     #define SWIG_FILE_WITH_INIT
-    #include "include/geometry_core.h"
+    #include "include/geometry.h"
 %}
 
 %include "numpy.i"
@@ -21,4 +21,4 @@
 // %apply (double** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(double** data, int* nrows, int* ncols)}
 
 %ignore rotation(float);
-%include "include/geometry_core.h"
+%include "include/geometry.h"
