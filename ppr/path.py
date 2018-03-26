@@ -290,14 +290,32 @@ class TrajectoryPtLineTol():
         >>> pt.discretise()
         array([[ 4.,  4.,  4.,  4.],
                [ 2.,  3.,  4.,  5.]])
+        
+        >>> angle = TolerancedNumber(0, -0.2, 0.2, samples=3)
+        >>> pt2 = TrajectoryPtLineTol([4, 3, angle], v, np.pi/2)
+        >>> pt.discretise()
+        
         """
-        R =np.array([[np.cos(self.a),  -np.sin(self.a)],
-                      [np.sin(self.a),   np.cos(self.a)]])
-        v_tol = self.tn.range
-        v_tol = np.vstack(( v_tol, np.zeros(len(v_tol)) ))
-        v_tol = np.dot(R, v_tol)
-        p_tol = self.p_nominal[:2, None] + v_tol
-        return p_tol
+        
+        if self.hasTolerance[2]:
+            for ai in self.p[2].range:
+                a_tot = ai + self.a
+                R =np.array([[np.cos(a_tot),  -np.sin(a_tot)],
+                             [np.sin(a_tot),   np.cos(a_tot)]])
+                v_tol = self.tn.range
+                v_tol = np.vstack(( v_tol, np.zeros(len(v_tol)) ))
+                v_tol = np.dot(R, v_tol)
+                p_tol = self.p_nominal[:2, None] + v_tol
+                p_final = np.vstack(( p_tol, self.p_nominal[2] * np.ones(len(v_tol)) ))
+        else:
+            R =np.array([[np.cos(self.a),  -np.sin(self.a)],
+                         [np.sin(self.a),   np.cos(self.a)]])
+            v_tol = self.tn.range
+            v_tol = np.vstack(( v_tol, np.zeros(len(v_tol)) ))
+            v_tol = np.dot(R, v_tol)
+            p_tol = self.p_nominal[:2, None] + v_tol
+            p_final = np.vstack(( p_tol, self.p_nominal[2] * np.ones(len(v_tol)) ))
+        return p_final
     
     def plot(self, axes_handle, show_tolerance=True, wedge_radius=None):
         """ Visualize the path on given axes

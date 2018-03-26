@@ -6,7 +6,7 @@ to robot path following.
 """
 
 import numpy as np
-from scipy.optimize import fmin_slsqp
+from scipy.optimize import fmin_slsqp, minimize
 
 #=============================================================================
 # Use general minimize interface and implement object oriented
@@ -36,7 +36,7 @@ class Solver():
         ndof = self.robot.ndof
             
         # put weights in list
-        wb = [w[key] for key in self.w]
+        wb = [self.w[key] for key in self.w]
         
         # if torque objectives, check dynamics
         if wb[2] > 0:
@@ -74,6 +74,16 @@ class Solver():
             n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
             return path_ieq_con(qp, self.robot, self.path)
         self.cons.append({'type': 'ineq', 'fun': path_con})
+    
+    def add_tube_constraints(self):
+        def ineq_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
+            return tube_ieq_con(qp, self.robot, self.path)
+        def eq_con(x):
+            n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
+            return tube_eq_con(qp, self.robot, self.path)
+        self.cons.append({'type': 'ineq', 'fun': ineq_con})
+        self.cons.append({'type': 'eq', 'fun': eq_con})
     
     def add_collision_constaints(self):
         def cc_con(x):
@@ -235,6 +245,18 @@ def collision_ieq_con(q_path, robot, scene):
             for s2 in scene:
                 con.append(s1.distance(s2))
     
+    return np.array(con)
+
+def tube_ieq_con(q_path, robot, path, tol=1e-6):
+    con = []
+    for i, tp in enumerate(path):
+        pass
+    return np.array(con)
+
+def tube_eq_con(q_path, robot, path, tol=1e-6):
+    con = []
+    for i, tp in enumerate(path):
+        pass
     return np.array(con)
 
 #=============================================================================
