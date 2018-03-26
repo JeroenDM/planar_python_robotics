@@ -149,6 +149,44 @@ class TrajectoryPt:
             List with nominal values for x, y and orientation.
         """
         return str(self.p_nominal)
+    
+    def discretise(self):
+        """ Returns a discrete version of the range of a trajectory point
+        
+        Based on the sampled range in the Toleranced Numbers, a 3 dimensional grid
+        representing end-effector poses that obey the trajectory point constraints.
+        
+        Parameters
+        ----------
+        pt : ppr.path.TrajectoryPt
+        
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (M, 3) containing M possible poses for the robot
+            end-effector that  obey the trajectory point constraints.
+        
+        Examples
+        --------
+        >>> x = TolerancedNumber(1, 0.5, 1.5, samples=3)
+        >>> y = TolerancedNumber(0, -1, 1, samples=2)
+        >>> pt = TrajectoryPt([x, y, 0])
+        >>> pt.discretise()
+        array([[ 0.5, -1. ,  0. ],
+               [ 1. , -1. ,  0. ],
+               [ 1.5, -1. ,  0. ],
+               [ 0.5,  1. ,  0. ],
+               [ 1. ,  1. ,  0. ],
+               [ 1.5,  1. ,  0. ]])
+        """
+        r = []
+        for i in range(self.dim):
+            if self.hasTolerance[i]:
+                r.append(self.p[i].range)
+            else:
+                r.append(self.p[i])
+        grid = create_grid(r)
+        return grid
 
     def plot(self, axes_handle, show_tolerance=True):
         """ Visualize the path on given axes
@@ -177,6 +215,119 @@ class TrajectoryPt:
                 radius = (pn[0] + pn[1]) / 20
                 do = self.p[2].l * 180 / np.pi
                 du = self.p[2].u * 180 / np.pi
+                arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
+                axes_handle.add_patch(arc)
+
+class TrajectoryPtLineTol():
+    """ Modified TrajectoryPt, where the tolerance is given
+    along a line with a specific angle with the x-asis.
+    This way, instead of specifying the x and y tolerance, the discrete points
+    lie on a straigh line (not a box). It can be used to specify a tolerance
+    perpendicular to a path.
+    """
+    def __init__(self, pee, tolerance, angle):
+        """ Create a trajectory point from a given pose
+        
+        [x_position, y_position, angle last joint with x axis]
+        
+        Parameters
+        ----------
+        pee : list or numpy.ndarray of float
+            Desired pose of the end-effector for this path point.
+        tolerance : ppr.path.TolerancedNumber
+            The tolerance along the line making ang angle with the x-axis.
+        angle : float
+            Angle of the line along which the tolerance is applied, given
+            relative to x-axis, in radians.
+        """
+        self.dim = len(pee)
+        self.p = pee
+        # only the last index can have tolerance, so this can be simplified
+        self.hasTolerance = [isinstance(pee[i], TolerancedNumber) for i in range(self.dim)]
+        p_nominal = []
+        for i in range(self.dim):
+            if self.hasTolerance[i]:
+                p_nominal.append(self.p[i].n)
+            else:
+                p_nominal.append(self.p[i])
+        self.p_nominal = np.array(p_nominal)
+        self.tn = tolerance
+        self.a = angle
+        self.timing = 0.1 # with respect to previous point
+    
+    def __str__(self):
+        """ Returns string representation for printing
+        
+        Returns
+        -------
+        string
+            List with nominal values for x, y and orientation.
+        """
+        return str(self.p)
+    
+    def discretise(self):
+        """ Returns a discrete version of the range of a trajectory point
+        
+        Based on the sampled range in the Toleranced Numbers, a 3 dimensional grid
+        representing end-effector poses that obey the trajectory point constraints.
+        
+        Parameters
+        ----------
+        pt : ppr.path.TrajectoryPt
+        
+        Returns
+        -------
+        numpy.ndarray
+            Array with shape (M, 3) containing M possible poses for the robot
+            end-effector that  obey the trajectory point constraints.
+        
+        Examples
+        --------
+        >>> v = TolerancedNumber(0, -1, 2, samples=4)
+        >>> v.range
+        array([-1.,  0.,  1.,  2.])
+        >>> pt = TrajectoryPtLineTol([4, 3, 0], v, np.pi/2)
+        >>> pt.discretise()
+        array([[ 4.,  4.,  4.,  4.],
+               [ 2.,  3.,  4.,  5.]])
+        """
+        R =np.array([[np.cos(self.a),  -np.sin(self.a)],
+                      [np.sin(self.a),   np.cos(self.a)]])
+        v_tol = self.tn.range
+        v_tol = np.vstack(( v_tol, np.zeros(len(v_tol)) ))
+        v_tol = np.dot(R, v_tol)
+        p_tol = self.p_nominal[:2, None] + v_tol
+        return p_tol
+    
+    def plot(self, axes_handle, show_tolerance=True, wedge_radius=None):
+        """ Visualize the path on given axes
+        
+        Parameters
+        ----------
+        axes_handle : matplotlib.axes.Axes
+        show_tolerance : bool
+            If True, the range for a TolerancedNumber is showed.
+            A bar for x or y position, A wedge for orientation tolerance.
+            (default True)
+        """
+        pn = self.p_nominal
+        axes_handle.plot(pn[0], pn[1], 'k*')
+        if show_tolerance:
+            R =np.array([[np.cos(self.a),  -np.sin(self.a)],
+                         [np.sin(self.a),   np.cos(self.a)]])
+            p1 = np.dot( R, np.array([self.tn.l, 0])[:, None] )
+            p2 = np.dot( R, np.array([self.tn.u, 0])[:, None] )
+            p1 = p1 + pn[:2][:, None]
+            p2 = p2 + pn[:2][:, None]
+            axes_handle.plot([p1[0], p2[0]], [p1[1], p2[1]], '*-', color=(0.5, 0.5, 0.5))
+            if self.hasTolerance[2]:
+                # scale radius relative to trajectory point position
+                if wedge_radius == None:
+                    radius = (pn[0] + pn[1]) / 20
+                else:
+                    radius = wedge_radius
+                do = (self.p[2].l + self.a) * 180 / np.pi
+                du = (self.p[2].u + self.a) * 180 / np.pi
                 arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
                 axes_handle.add_patch(arc)
 
@@ -215,44 +366,6 @@ def create_grid(r):
     grid = np.array(grid).T
     return grid
 
-def discretise(pt):
-    """ Returns a discrete version of the range of a trajectory point
-    
-    Based on the sampled range in the Toleranced Numbers, a 3 dimensional grid
-    representing end-effector poses that obey the trajectory point constraints.
-    
-    Parameters
-    ----------
-    pt : ppr.path.TrajectoryPt
-    
-    Returns
-    -------
-    numpy.ndarray
-        Array with shape (M, 3) containing M possible poses for the robot
-        end-effector that  obey the trajectory point constraints.
-    
-    Examples
-    --------
-    >>> x = TolerancedNumber(1, 0.5, 1.5, samples=3)
-    >>> y = TolerancedNumber(0, -1, 1, samples=2)
-    >>> pt = TrajectoryPt([x, y, 0])
-    >>> discretise(pt)
-    array([[ 0.5, -1. ,  0. ],
-           [ 1. , -1. ,  0. ],
-           [ 1.5, -1. ,  0. ],
-           [ 0.5,  1. ,  0. ],
-           [ 1. ,  1. ,  0. ],
-           [ 1.5,  1. ,  0. ]])
-    """
-    r = []
-    for i in range(pt.dim):
-        if pt.hasTolerance[i]:
-            r.append(pt.p[i].range)
-        else:
-            r.append(pt.p[i])
-    grid = create_grid(r)
-    return grid
-
 def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     """ Convert a path to joint space by descretising and ik.
     
@@ -286,7 +399,7 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     # get discrete version of trajectory points
     cart_traj = []
     for pt in traj_points:
-        cart_traj.append(discretise(pt))
+        cart_traj.append(pt.discretise())
 
     # solve inverse kinematics for every samples traj point
     # I could add some print statements to have info on unreachable points
