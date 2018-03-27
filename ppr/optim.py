@@ -40,7 +40,7 @@ class Solver():
         
         # if torque objectives, check dynamics
         if wb[2] > 0:
-          if not hasattr(robot, 'c'):
+          if not hasattr(self.robot, 'c'):
             msg = "Specify robot dynamic parameter s"
             msg += "using the Robot.set_link_inertia() method"
             raise ValueError(msg)
@@ -78,12 +78,12 @@ class Solver():
     def add_tube_constraints(self):
         def ineq_con(x):
             n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
-            return tube_ieq_con(qp, self.robot, self.path)
-        def eq_con(x):
-            n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
-            return tube_eq_con(qp, self.robot, self.path)
+            return tube_ieq_eq_con(qp, self.robot, self.path)
+        #def eq_con(x):
+        #    n_path, qp = reshape_path_vector(x, n_dof=self.robot.ndof)
+        #    return tube_eq_con(qp, self.robot, self.path)
         self.cons.append({'type': 'ineq', 'fun': ineq_con})
-        self.cons.append({'type': 'eq', 'fun': eq_con})
+        #self.cons.append({'type': 'eq', 'fun': eq_con})
     
     def add_collision_constaints(self):
         def cc_con(x):
@@ -248,16 +248,108 @@ def collision_ieq_con(q_path, robot, scene):
     return np.array(con)
 
 def tube_ieq_con(q_path, robot, path, tol=1e-6):
+    """ Tube inequality constraints
+
+    For explanation see notebook "example_different_trajectory_points.py"
+    """
+     # lower and upper bound along the tolerance line
+    l = [tp.tn.l for tp in path]
+    u = [tp.tn.u for tp in path]
+
+    phi = np.array([tp.a for tp in path])
+    pose_a = np.vstack([robot.fk(q) for q in q_path])
+    pose_d = np.vstack([tp.p_nominal for tp in path])
+    pose_e = pose_a - pose_d
+    e_x = pose_e[:, 0]
+    e_y = pose_e[:, 1]
+    e_a = pose_e[:, 2]
+
     con = []
-    for i, tp in enumerate(path):
-        pass
-    return np.array(con)
+    con.append( l * np.cos(phi) + e_x )
+    con.append( u * np.cos(phi) - e_x )
+    con.append( l * np.sin(phi) + e_y )
+    con.append( u * np.sin(phi) - e_y )
+
+    # check for tolerance on orientation
+    # if tolerance, add inequality constraint
+    orientation_con = []
+    a_has_tolerance = [tp.hasTolerance[2] for tp in path]
+    for i, ht in enumerate(a_has_tolerance):
+        if ht:
+            orientation_con.append( -e_a[i] + path[i].p[2].u)
+            orientation_con.append(  e_a[i] + path[i].p[2].l)
+    con.append(np.array(orientation_con))
+
+    return np.hstack(con)
+
+def tube_ieq_eq_con(q_path, robot, path, tol=1e-6):
+    """ Add equalities as a pair of inequalities using the tol
+
+    """
+     # lower and upper bound along the tolerance line
+    l = [tp.tn.l for tp in path]
+    u = [tp.tn.u for tp in path]
+
+    phi = np.array([tp.a for tp in path])
+    pose_a = np.vstack([robot.fk(q) for q in q_path])
+    pose_d = np.vstack([tp.p_nominal for tp in path])
+    pose_e = pose_a - pose_d
+    e_x = pose_e[:, 0]
+    e_y = pose_e[:, 1]
+    e_a = pose_e[:, 2]
+
+    con = []
+    con.append( l * np.cos(phi) + e_x )
+    con.append( u * np.cos(phi) - e_x )
+    con.append( l * np.sin(phi) + e_y )
+    con.append( u * np.sin(phi) - e_y )
+
+    # check for tolerance on orientation
+    # if tolerance, add inequality constraint
+
+    # add equality constraints as 2 inequality constraints
+    con.append( e_x * np.sin(phi) + e_y * np.cos(phi) + tol)
+    con.append( e_x * np.sin(phi) + e_y * np.cos(phi) - tol)
+
+    orientation_con = []
+    a_has_tolerance = [tp.hasTolerance[2] for tp in path]
+    for i, ht in enumerate(a_has_tolerance):
+        if ht:
+            orientation_con.append( -e_a[i] + path[i].p[2].u)
+            orientation_con.append(  e_a[i] + path[i].p[2].l)
+        else:
+            orientation_con.append( e_a[i] + tol)
+            orientation_con.append( e_a[i] - tol)
+    con.append(np.array(orientation_con))
+
+    return np.hstack(con)
 
 def tube_eq_con(q_path, robot, path, tol=1e-6):
+    """ Tube equality constraint
+
+    For explanation see notebook "example_different_trajectory_points.py"
+    """
+    phi = np.array([tp.a for tp in path])
+    pose_a = np.vstack([robot.fk(q) for q in q_path])
+    pose_d = np.vstack([tp.p_nominal for tp in path])
+    pose_e = pose_a - pose_d
+    e_x = pose_e[:, 0]
+    e_y = pose_e[:, 1]
+    e_a = pose_e[:, 2]
+
     con = []
-    for i, tp in enumerate(path):
-        pass
-    return np.array(con)
+    con.append( e_x * np.sin(phi) + e_y * np.cos(phi) )
+
+    # check for tolerance on the orientation
+    # if no tolerance allowed, add equality constraint
+    orientation_con = []
+    a_has_tolerance = [tp.hasTolerance[2] for tp in path]
+    for i, ht in enumerate(a_has_tolerance):
+        if not ht:
+            orientation_con.append( e_a[i] )
+    con.append(np.array(orientation_con))
+
+    return np.hstack(con)
 
 #=============================================================================
 # Utility functions

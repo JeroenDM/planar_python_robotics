@@ -334,8 +334,8 @@ class TrajectoryPtLineTol():
             return get_points_on_line(self.p[0], self.p[1], self.p[2], self.a, self.tn.range)
     
     def plot(self, axes_handle, show_tolerance=True, wedge_radius=None):
-        
         """ Visualize the path on given axes
+        
         Parameters
         ----------
         axes_handle : matplotlib.axes.Axes

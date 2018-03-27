@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from ppr.optim import q_derivatives, collision_ieq_con
 from numpy.testing import assert_almost_equal
 import numpy as np
-from ppr.robot import Robot_3R
-from ppr.geometry import Rectangle
+
+#===================================================================
+# DEFINE  tests for derivation stuff
+#===================================================================
+from ppr.optim import q_derivatives
 
 def test_q_derivatives():
     q = np.array([[0, 0],
@@ -37,6 +39,52 @@ def test_q_derivatives_with_known_function():
                                rtol=1, atol=0.01)
     np.testing.assert_allclose(ddx_test[10:40, :], ddx[10:40, :],
                                rtol=1, atol=0.01)
+#===================================================================
+# SETUP test data for constraints
+#===================================================================
+from ppr.robot import Robot_3R
+from ppr.geometry import Rectangle
+from ppr.path import TolerancedNumber, TrajectoryPt, TrajectoryPtLineTol
+
+# ROBOT
+robot1 = Robot_3R([2, 2, 2])
+
+# PATH
+t = np.linspace(0, np.pi/2, 6)
+R = 3;
+angle = TolerancedNumber(0.0, -np.pi/2, np.pi/2, samples=10)
+
+path1 = []
+for ti in t:
+    xin = R * np.cos(ti)
+    xi = TolerancedNumber(xin, xin-0.5, xin+0.3, samples=6)
+    pi = [xi, R * np.sin(ti), angle]
+    path1.append(TrajectoryPt(pi))
+
+# TUBE PATH
+v = TolerancedNumber(0, -0.5, 0.3, samples=6)
+path2 = []
+for ti in t:
+    pi = [R * np.cos(ti), R * np.sin(ti), angle]
+    path2.append(TrajectoryPtLineTol(pi, v, ti))
+
+# TUBE PATH
+v = TolerancedNumber(0, -0.5, 0.3, samples=6)
+path3 = []
+# give this path a smaller length to make test more robust for typos
+for ti in t[:-1]:
+    pi = [R * np.cos(ti), R * np.sin(ti), 0.3]
+    path3.append(TrajectoryPtLineTol(pi, v, ti))
+
+# COLLISION SCENE
+sc2 = [Rectangle(-2, 1, 1.5, 1, -0.1)]
+sc1 = [Rectangle(3, 1.3, 2, 1, -0.1),
+       Rectangle(3, 0.5, 2, 0.3, 0)]
+
+#===================================================================
+# DEFINITION of tests for constraints
+#===================================================================
+from ppr.optim import collision_ieq_con, tube_eq_con, tube_ieq_con, tube_ieq_eq_con
 
 class TestConstraints():
     def test_collision_ieq_con(self):
@@ -49,3 +97,38 @@ class TestConstraints():
                             0.4849242,  0.0384695, 
                             0.4849242, -1.0532455])
         assert_almost_equal(actual, desired, decimal=5)
+    
+    def test_tube_eq_con(self):
+        q_path = np.zeros((len(path3), 3))
+        actual = tube_eq_con(q_path, robot1, path3)
+        assert len(actual) == 2*len(path3)
+        #desired = 1
+        #assert_almost_equal(actual, desired)
+    
+    def test_tube_ieq_con(self):
+        q_path = np.zeros((len(path3), 3))
+        actual = tube_ieq_con(q_path, robot1, path3)
+        assert len(actual) == 4*len(path3)
+        #desired = np.zeros(1)
+        #assert_almost_equal(actual, desired)
+    
+    def test_tube_eq_con2(self):
+        q_path = np.zeros((len(path2), 3))
+        actual = tube_eq_con(q_path, robot1, path2)
+        assert len(actual) == len(path2)
+        #desired = 1
+        #assert_almost_equal(actual, desired)
+    
+    def test_tube_ieq_con2(self):
+        q_path = np.zeros((len(path2), 3))
+        actual = tube_ieq_con(q_path, robot1, path2)
+        assert len(actual) == 6*len(path2)
+        #desired = np.zeros(1)
+        #assert_almost_equal(actual, desired)
+    
+    def test_tube_ieq_eq_con(self):
+        q_path = np.zeros((len(path3), 3))
+        actual = tube_ieq_eq_con(q_path, robot1, path3)
+        assert len(actual) == 8*len(path3)
+        #desired = np.zeros(1)
+        #assert_almost_equal(actual, desired)
