@@ -719,3 +719,38 @@ class Robot_2P3R(Robot):
                 q_sol.append([*q_fixed, *qi])
             sub_sol['q'] = q_sol
         return sub_sol
+    
+    def ik_redundant(self, p, q_red):
+        """ Discretised / sampled inverse kinematics
+        
+        This robots has redundance (ndof = 5) compared to the task (3) and
+        therefore two joints are sampled in a range to return a sampled
+        subset of the infinite solutions that exists for the given pose.
+        
+        Parameters
+        ----------
+        p : list or np.ndarray of floats
+            End-effector pose (x, y, angle)
+        
+        Returns
+        -------
+        dict
+            A dictionary with a key 'success' reporting True if the pose is
+            reachable and a key 'q' reporting the different joint solutions
+            as a list of numpy arrays.
+            If 'success' is False, a key 'info' containts extra info.
+        """
+        grid = np.meshgrid(q_red[0].range, q_red[1].range)
+        grid = [ grid[i].flatten() for i in range(2) ]
+        grid = np.array(grid).T
+        
+        q_sol = []
+        for qf in grid:
+            s = self.ik_fixed_joints(p, q_fixed=qf)
+            if s['success']:
+                for qi in s['q']:
+                    q_sol.append(qi)
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
+        else:
+            return {'success' : False, 'info': "unreachable"}

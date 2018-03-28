@@ -123,7 +123,7 @@ class Rectangle(BaseRec):
         >>> rec2 = Rectangle(0.5, 0, 1, 1, 0.1)
         >>> rec3 = Rectangle(1.5, 0.5, 1, 2, -0.2)
         >>> rec1.distance(rec2)
-        -0.59733549928584095
+        -0.59733551733202006
         >>> rec1.distance(rec3)
         0.5
         """
@@ -176,14 +176,13 @@ class Rectangle(BaseRec):
         
         >>> rec1 = Rectangle(0, 0, 1, 2, 0)
         >>> A1, b1 = rec1.get_matrix_form()
-        >>> A1
-        array([[  0.00000000e+00,  -1.00000000e+00],
-               [  1.00000000e+00,  -6.12323400e-17],
-               [  1.22464680e-16,   1.00000000e+00],
-               [ -1.00000000e+00,   1.83697020e-16]])
-        >>> b1
-        array([  0.00000000e+00,   1.00000000e+00,   2.00000000e+00,
-                 3.67394040e-16])
+        >>> np.round(A1, 15)
+        array([[ 0., -1.],
+               [ 1., -0.],
+               [ 0.,  1.],
+               [-1.,  0.]])
+        >>> np.round(b1, 15)
+        array([ 0.,  1.,  2.,  0.])
         """
         A = self.get_normals()
         # row wise dot product
