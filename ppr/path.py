@@ -8,6 +8,10 @@ import numpy as np
 from matplotlib.patches import Wedge
 from ppr.cpp.graph import Graph
 
+#=============================================================================
+# Classes
+#=============================================================================
+
 class TolerancedNumber:
     """ A range on the numner line used to define path constraints
     
@@ -365,6 +369,10 @@ class TrajectoryPtLineTol():
                 arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
                 axes_handle.add_patch(arc)
 
+#=============================================================================
+# Utile functions
+#=============================================================================
+
 def get_points_on_line(x, y, rel_o, a, r):
     """ Get points on line segment
 
@@ -438,6 +446,72 @@ def create_grid(r):
     grid = np.array(grid).T
     return grid
 
+def get_new_bounds(l, u, m, red=4):
+    """ create new interval smaller than the old one (l, u)
+    reduced in length by a factor red.
+    m is the value around wich the new interval should be centered
+    the new interval may not go outside the old bounds
+    """
+    delta = abs(u - l) / red
+    l_new = max(m - delta, l)
+    u_new = min(m + delta, u)
+    return l_new, u_new
+
+def resample_trajectory_point(tp, pfk, *arg, **kwarg):
+    """ create a new trajectory point with smaller bounds,
+    but same sample number
+    use the value from the forward kinematics pfk as the center
+    of the new interval
+    """
+    p_new = []
+    for i, val in enumerate(tp.p):
+        if tp.hasTolerance[i]:
+            # check for rounding errors on pfk
+            if pfk[i] < val.l:
+                pfk[i] = val.l
+            if pfk[i] > val.u:
+                pfk[i] = val.u
+            l, u = get_new_bounds(val.l, val.u, pfk[i], *arg, **kwarg)
+            val_new = TolerancedNumber(pfk[i], l, u, samples=val.s)
+        else:
+            val_new = val
+        p_new.append(val_new)
+    return TrajectoryPt(p_new)
+
+def resample_path(path, q_sol, robot, *arg, **kwarg):
+    poses = [robot.fk(q) for q in q_sol]
+    path_new = []
+    for i, tp in enumerate(path1):
+        path_new.append(resample_trajectory_point(tp, poses[i], *arg, **kwarg))
+    
+    return path_new
+
+def _check_dtype(Q):
+    """ Change type if necessary to float32
+    
+    Due to an unresolved issue with swig and numpy, I have to convert the type.
+    
+    Parameters
+    ----------
+    Q : list of nympy.ndarrays of float
+        A list with the possible joint positions for every trajectory point
+        along a path.
+    
+    Returns
+    -------
+    list of nympy.ndarrays of float32
+    """
+    if Q[0].dtype != 'float32':
+        print("converting type of Q")
+        for i in range(len(Q)):
+            Q[i] = Q[i].astype('float32')
+    
+    return Q
+
+#=============================================================================
+# main functions
+#=============================================================================
+
 def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     """ Convert a path to joint space by descretising and ik.
     
@@ -490,7 +564,41 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
         joint_traj.append(np.array(qi))
     return joint_traj
 
-def get_shortest_path(Q):
+def get_shortest_path(Q, method='bfs'):
+    """ Calculate the shortest path from joint space data
+    
+    When the path with trajectory points is converted to joint space,
+    this data can be used to construct a graph and look for the shortest path.
+    The current distance metrix is the l1-norm of joint position difference
+    between two points.
+    
+    I still have to implement maximum joint movement and acceleration limits.
+    So technically this will always find a shortest path for now.
+    
+    Parameters
+    ----------
+    Q : list of nympy.ndarrays of float
+        A list with the possible joint positions for every trajectory point
+        along a path.
+    
+    Returns
+    -------
+    dict
+        A dictionary with a key 'success' to indicate whether a path was found.
+        If success is True, then the key 'path' contains a list with the joint
+        position for every trajectory point that gives the shortest path.
+    
+    Notes
+    -----
+    I have a problem with swig type conversions. Therefore the type of the
+    input data is checked and changed from float64 to float32.
+    """
+    if method == 'bfs':
+        return _get_shortest_path_bfs(Q)
+    else:
+        raise NotImplementedError("The method " + method + " is not implented yet.")
+
+def _get_shortest_path_bfs(Q):
     """ Calculate the shortest path from joint space data
     
     When the path with trajectory points is converted to joint space,
@@ -554,25 +662,3 @@ def get_shortest_path(Q):
             res.append(qki)
         
         return {'success': True, 'path': res, 'length': cost}
-
-def _check_dtype(Q):
-    """ Change type if necessary to float32
-    
-    Due to an unresolved issue with swig and numpy, I have to convert the type.
-    
-    Parameters
-    ----------
-    Q : list of nympy.ndarrays of float
-        A list with the possible joint positions for every trajectory point
-        along a path.
-    
-    Returns
-    -------
-    list of nympy.ndarrays of float32
-    """
-    if Q[0].dtype != 'float32':
-        print("converting type of Q")
-        for i in range(len(Q)):
-            Q[i] = Q[i].astype('float32')
-    
-    return Q
