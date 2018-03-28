@@ -481,7 +481,7 @@ def resample_trajectory_point(tp, pfk, *arg, **kwarg):
 def resample_path(path, q_sol, robot, *arg, **kwarg):
     poses = [robot.fk(q) for q in q_sol]
     path_new = []
-    for i, tp in enumerate(path1):
+    for i, tp in enumerate(path):
         path_new.append(resample_trajectory_point(tp, poses[i], *arg, **kwarg))
     
     return path_new

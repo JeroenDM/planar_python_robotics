@@ -667,8 +667,8 @@ class Robot_2P3R(Robot):
         if hasattr(self, 'jl'):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
-          # use the middle of the interval as nominal value
-          jl1, jl2 = (0, 1.5), (0, 1.5)
+            # default joint limits
+            jl1, jl2 = (0, 1.5), (0, 1.5)
         # nominal value in the middle of the limits
         n1 = (jl1[0] + jl1[1]) / 2
         n2 = (jl2[0] + jl2[1]) / 2
