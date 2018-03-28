@@ -54,6 +54,7 @@ void test_bfs() {
     g.init_dijkstra();
     g.run_bfs();
     g.print_path();
+    cout << "Path cost: " << g.get_path_cost() << endl;
 }
 
 void test_sort_function() {

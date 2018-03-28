@@ -3959,6 +3959,28 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Graph_get_path_cost(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Graph *arg1 = (Graph *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  float result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Graph_get_path_cost",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Graph, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Graph_get_path_cost" "', argument " "1"" of type '" "Graph *""'"); 
+  }
+  arg1 = reinterpret_cast< Graph * >(argp1);
+  result = (float)(arg1)->get_path_cost();
+  resultobj = SWIG_From_float(static_cast< float >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Graph_print_path(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Graph *arg1 = (Graph *) 0 ;
@@ -4088,6 +4110,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"Graph_run_dijkstra", _wrap_Graph_run_dijkstra, METH_VARARGS, NULL},
 	 { (char *)"Graph_run_bfs", _wrap_Graph_run_bfs, METH_VARARGS, NULL},
 	 { (char *)"Graph_get_path", _wrap_Graph_get_path, METH_VARARGS, NULL},
+	 { (char *)"Graph_get_path_cost", _wrap_Graph_get_path_cost, METH_VARARGS, NULL},
 	 { (char *)"Graph_print_path", _wrap_Graph_print_path, METH_VARARGS, NULL},
 	 { (char *)"Graph_print_graph", _wrap_Graph_print_graph, METH_VARARGS, NULL},
 	 { (char *)"Graph_set_graph_data", _wrap_Graph_set_graph_data, METH_VARARGS, NULL},

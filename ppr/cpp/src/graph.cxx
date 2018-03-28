@@ -266,6 +266,8 @@ std::vector<Node*> Graph::get_path_nodes() {
             }
         }
 
+        shortest_path_cost = min_dist;
+
         Node* current_node = goal;
         while ((*current_node).path_index > 0) {
             path.push_back(current_node);
@@ -376,6 +378,10 @@ void Graph::get_path(int* vec, int n) {
                 vec[i] = -1;
         }
     }
+}
+
+float Graph::get_path_cost() {
+    return shortest_path_cost;
 }
 
 // ===========================================================

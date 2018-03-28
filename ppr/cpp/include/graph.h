@@ -79,6 +79,7 @@ public:
     void run_dijkstra();
     void run_bfs();
     void get_path(int* vec, int n);
+    float get_path_cost();
     void print_path();
     void print_graph();
     void set_graph_data(graph_data data);

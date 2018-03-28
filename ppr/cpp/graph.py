@@ -115,6 +115,9 @@ class Graph(_object):
     def get_path(self, vec):
         return _graph.Graph_get_path(self, vec)
 
+    def get_path_cost(self):
+        return _graph.Graph_get_path_cost(self)
+
     def print_path(self):
         return _graph.Graph_print_path(self)
 

@@ -542,6 +542,7 @@ def get_shortest_path(Q):
     # get joint values for the shortest path
     p_i = g.get_path(n_path)
     print(p_i)
+    cost = g.get_path_cost()
 
     if p_i[0] == -1:
         return {'success': False}
@@ -552,7 +553,7 @@ def get_shortest_path(Q):
             qki = Q[k][i].astype('float64')
             res.append(qki)
         
-        return {'success': True, 'path': res}
+        return {'success': True, 'path': res, 'length': cost}
 
 def _check_dtype(Q):
     """ Change type if necessary to float32
