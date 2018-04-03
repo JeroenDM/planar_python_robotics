@@ -3244,22 +3244,22 @@ SWIGINTERN PyObject *Swig_var_PI_get(void) {
 }
 
 
-SWIGINTERN PyObject *_wrap_rotation(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_create_rotation_matrix(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   double arg1 ;
   double val1 ;
   int ecode1 = 0 ;
   PyObject * obj0 = 0 ;
-  rmatrix result;
+  RotationMatrix result;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:rotation",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:create_rotation_matrix",&obj0)) SWIG_fail;
   ecode1 = SWIG_AsVal_double(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "rotation" "', argument " "1"" of type '" "double""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "create_rotation_matrix" "', argument " "1"" of type '" "double""'");
   } 
   arg1 = static_cast< double >(val1);
-  result = rotation(arg1);
-  resultobj = SWIG_NewPointerObj((new rmatrix(static_cast< const rmatrix& >(result))), SWIGTYPE_p_Eigen__Matrix2f, SWIG_POINTER_OWN |  0 );
+  result = create_rotation_matrix(arg1);
+  resultobj = SWIG_NewPointerObj((new RotationMatrix(static_cast< const RotationMatrix& >(result))), SWIGTYPE_p_Eigen__Matrix2f, SWIG_POINTER_OWN |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -3491,7 +3491,7 @@ SWIGINTERN PyObject *Rectangle_swigregister(PyObject *SWIGUNUSEDPARM(self), PyOb
 
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
-	 { (char *)"rotation", _wrap_rotation, METH_VARARGS, NULL},
+	 { (char *)"create_rotation_matrix", _wrap_create_rotation_matrix, METH_VARARGS, NULL},
 	 { (char *)"new_Rectangle", _wrap_new_Rectangle, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_set_tolerance", _wrap_Rectangle_set_tolerance, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_is_in_collision", _wrap_Rectangle_is_in_collision, METH_VARARGS, NULL},
@@ -3505,8 +3505,8 @@ static PyMethodDef SwigMethods[] = {
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
-static swig_type_info _swigt__p_Eigen__Matrix2f = {"_p_Eigen__Matrix2f", "rmatrix *|Eigen::Matrix2f *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_Eigen__Vector2f = {"_p_Eigen__Vector2f", "Eigen::Vector2f *|point *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Eigen__Matrix2f = {"_p_Eigen__Matrix2f", "RotationMatrix *|Eigen::Matrix2f *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_Eigen__Vector2f = {"_p_Eigen__Vector2f", "Eigen::Vector2f *|Vector2D *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Rectangle = {"_p_Rectangle", "Rectangle *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_a_2__double = {"_p_a_2__double", "double (*)[2]", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};

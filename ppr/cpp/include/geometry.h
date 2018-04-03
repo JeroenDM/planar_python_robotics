@@ -1,25 +1,31 @@
 #ifndef _GEOMETRY_H_
 #define _GEOMETRY_H_
 
-#include <vector>
 #include <Eigen/Dense>
+#include <vector>
 
-typedef Eigen::Matrix2f rmatrix;
-typedef Eigen::Vector2f point;
+typedef Eigen::Matrix2f RotationMatrix;
+typedef Eigen::Vector2f Vector2D;
 
 const double PI = 3.141592653589793238462643383279502884L;
 
-rmatrix rotation(double);
+/** Create 2D rotation matrix from given angle.
+*/
+RotationMatrix create_rotation_matrix(double angle);
 
+/** Rectanlge representation and collision checking
+ */
 class Rectangle {
-    double width, height, pos_x, pos_y;
-    rmatrix R;
-    std::vector<point> p;
-    double tolerance;
+    double width_, height_, pos_x_, pos_y_; /**< size and position */
+    double tolerance_;                      /**< minimum distance for collision checking */
+    RotationMatrix rotation_matrix_;        /**< orientation of rectangle, rotation around corner */
+    std::vector<Vector2D> vertices_;        /**< The 4 vertices */
 
-    std::vector<point> _get_vertices();
-    std::vector<point> _get_normals();
-    std::vector<double> get_projection(point direction);
+    std::vector<Vector2D> _get_vertices();
+    std::vector<Vector2D> _get_normals();
+    /** Project vertices on axis perpendicular to given direction
+     * */
+    std::vector<double> get_projection(Vector2D direction);
 
   public:
     Rectangle(double, double, double, double, double);

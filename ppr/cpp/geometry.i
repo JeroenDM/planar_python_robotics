@@ -21,5 +21,5 @@
 //%apply(int* ARGOUT_ARRAY1, int DIM1) {(int* rangevec, int n)}
 // %apply (double** ARGOUTVIEWM_ARRAY2, int* DIM1, int* DIM2) {(double** data, int* nrows, int* ncols)}
 
-%ignore rotation(float);
+%ignore create_rotation_matrix(float);
 %include "include/geometry.h"
