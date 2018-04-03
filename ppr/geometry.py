@@ -150,7 +150,7 @@ class Rectangle(BaseRec):
         """ Get the matrix representation of the rectanlge
         
         A rectangle is described by four linear inequalities.
-        If whe write these inequalities in matrix form we get
+        If we write these inequalities in matrix form we get
         A * x <= b
         
         x is the vector of all possible x and y coordinates [x; y]
