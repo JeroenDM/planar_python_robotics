@@ -6,6 +6,129 @@ Module for sampling based motion planning for path following.
 
 import numpy as np
 from .cpp.graph import Graph
+from .path import TolerancedNumber, TrajectoryPt
+
+class SolutionPoint:
+    """ class to save intermediate solution info for trajectory point
+    """
+    def __init__(self, tp):
+        self.tp_init = tp
+        self.tp_current = tp
+        self.q_best = []
+        self.jl = []
+    
+    def get_joint_solutions(self, robot, check_collision = False, scene=None):
+        """ Convert a cartesian trajectory point to joint space """
+        
+        # input validation
+        if check_collision:
+            if scene == None:
+                raise ValueError("scene is needed for collision checking")
+        
+        # use different joint limits for redundant joints
+        if robot.ndof > 3:
+            # save origanal joint limits
+            orig_jl = robot.jl
+            robot.jl = self.jl
+        
+        tp_discrete = self.tp_current.discretise()
+        joint_solutions = []
+        for cart_pt in tp_discrete:
+            sol = robot.ik(cart_pt)
+            if sol['success']:
+                for qsol in sol['q']:
+                    if check_collision:
+                        if not robot.check_collision(qsol, scene):
+                            joint_solutions.append(qsol)
+                    else:
+                        joint_solutions.append(qsol)
+        
+        if robot.ndof > 3:
+            # reset original joint_limits
+            robot.jl = orig_jl 
+        
+        return np.array(joint_solutions)
+    
+    def get_new_bounds(self, l, u, m, red=4):
+        """ create new interval smaller than the old one (l, u)
+        reduced in length by a factor red.
+        m is the value around wich the new interval should be centered
+        the new interval may not go outside the old bounds
+        """
+        delta = abs(u - l) / red
+        l_new = max(m - delta, l)
+        u_new = min(m + delta, u)
+        return l_new, u_new
+    
+    def resample_trajectory_point(self, robot, *arg, **kwarg):
+        """ create a new trajectory point with smaller bounds,
+        but same sample number
+        use the value from the forward kinematics pfk as the center
+        of the new interval
+        """
+        pfk = robot.fk(self.q_best)
+        p_new = []
+        for i, val in enumerate(self.tp_current.p):
+            if self.tp_current.hasTolerance[i]:
+                # check for rounding errors on pfk
+                if pfk[i] < val.l:
+                    pfk[i] = val.l
+                if pfk[i] > val.u:
+                    pfk[i] = val.u
+                l, u = self.get_new_bounds(val.l, val.u, pfk[i], *arg, **kwarg)
+                val_new = TolerancedNumber(pfk[i], l, u, samples=val.s)
+            else:
+                val_new = val
+            p_new.append(val_new)
+        self.tp_current = TrajectoryPt(p_new)
+            
+        
+def iterative_bfs(robot, path, scene, tol=0.001, red=10):
+    """ Iterative graph construction and search """
+    sol_pts = [SolutionPoint(tp) for tp in path]
+    if robot.ndof > 3:
+        for i in range(len(sol_pts)):
+            sol_pts[i].jl = robot.jl
+    costs = []
+    max_iter = 10
+    prev_cost = np.inf
+    success = False
+    for i in range(max_iter):
+        path_js = [sp.get_joint_solutions(robot, check_collision=True, scene=scene) for sp in sol_pts]
+        sol = get_shortest_path(path_js)
+        if sol['success']:
+            costs.append(sol['length'])
+            if abs(prev_cost - sol['length']) < tol:
+                success = True
+                break
+            else:
+                prev_cost = sol['length']
+            for i in range(len(sol_pts)):
+                sol_pts[i].q_best = sol['path'][i]
+                sol_pts[i].resample_trajectory_point(robot, red=red)
+                # if redundant robot, update joint limits
+                # TODO hard coded that the first joints are the redundant ones
+                if robot.ndof > 3:
+                    old_joint_limits = sol_pts[i].jl
+                    new_joint_limits = []
+                    for j in range(len(robot.ik_samples)):
+                        jl = old_joint_limits[j]
+                        qj = sol['path'][i][j]
+                        l, u = sol_pts[i].get_new_bounds(jl[0], jl[1], qj, red=red)
+                        new_joint_limits.append((l, u ))
+                    sol_pts[i].jl = new_joint_limits
+                        
+        else:
+            return {'success': False, 'info': 'stuck when looking for path'}
+    
+    if success:
+        return {'success': True,
+                'path': sol['path'],
+                'length': sol['length'],
+                'length_all_iterations': costs}
+    else:
+        return {'success': False, 'info': 'max_iterations_reached'}
+
 
 def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     """ Convert a path to joint space by descretising and ik.
@@ -59,14 +182,14 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
         joint_traj.append(np.array(qi))
     return joint_traj
 
-def get_shortest_path(Q, method='bfs'):
+def get_shortest_path(Q, method='bfs', path = None, scene = None):
     """ Wrapper function to select the shortest path method
     """
     if method == 'bfs':
         return _get_shortest_path_bfs(Q)
     else:
         raise NotImplementedError("The method " + method + " is not implented yet.")
-
+    
 def _get_shortest_path_bfs(Q):
     """ Calculate the shortest path from joint space data
     
