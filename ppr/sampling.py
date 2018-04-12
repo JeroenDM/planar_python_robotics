@@ -5,6 +5,8 @@ Module for sampling based motion planning for path following.
 """
 
 import numpy as np
+#import multiprocessing as mp
+import pathos.multiprocessing as mp
 from .cpp.graph import Graph
 from .path import TolerancedNumber, TrajectoryPt
 
@@ -82,10 +84,13 @@ class SolutionPoint:
                 val_new = val
             p_new.append(val_new)
         self.tp_current = TrajectoryPt(p_new)
-            
+
+#def calculate_joint_solutions(a):
+#    return a[0].get_joint_solutions(a[1], check_collision=True, scene=a[2])            
         
 def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
     """ Iterative graph construction and search """
+    pool = mp.Pool(processes=4)
     sol_pts = [SolutionPoint(tp) for tp in path]
     if robot.ndof > 3:
         for i in range(len(sol_pts)):
@@ -94,7 +99,13 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
     prev_cost = np.inf
     success = False
     for i in range(max_iter):
-        path_js = [sp.get_joint_solutions(robot, check_collision=True, scene=scene) for sp in sol_pts]
+        # parallel joint solution computation
+        def calculate_joint_solutions(point):
+            return point.get_joint_solutions(robot, check_collision=True, scene=scene)
+        #arg = [[sp, robot, scene] for sp in sol_pts]
+        path_js = list(pool.map(calculate_joint_solutions, sol_pts))
+        #path_js = list(map(calculate_joint_solutions, sol_pts))
+        #path_js = [sp.get_joint_solutions(robot, check_collision=True, scene=scene) for sp in sol_pts]
         sol = get_shortest_path(path_js)
         if sol['success']:
             costs.append(sol['length'])

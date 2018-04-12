@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from .geometry import Rectangle, rotation
+#from .geometry import Rectangle, rotation
+#from .geometry_pure_python import Rectangle, rotation
+from .geometry_pickalable_swig import Rectangle
 from .path import TolerancedNumber
 
 class Robot:
