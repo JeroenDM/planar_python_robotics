@@ -75,6 +75,7 @@ class SolutionPoint:
                     pfk[i] = val.l
                 if pfk[i] > val.u:
                     pfk[i] = val.u
+                # now calculate new bounds with corrected pkf
                 l, u = self.get_new_bounds(val.l, val.u, pfk[i], *arg, **kwarg)
                 val_new = TolerancedNumber(pfk[i], l, u, samples=val.s)
             else:
@@ -83,14 +84,13 @@ class SolutionPoint:
         self.tp_current = TrajectoryPt(p_new)
             
         
-def iterative_bfs(robot, path, scene, tol=0.001, red=10):
+def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
     """ Iterative graph construction and search """
     sol_pts = [SolutionPoint(tp) for tp in path]
     if robot.ndof > 3:
         for i in range(len(sol_pts)):
             sol_pts[i].jl = robot.jl
     costs = []
-    max_iter = 10
     prev_cost = np.inf
     success = False
     for i in range(max_iter):
@@ -114,6 +114,11 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10):
                     for j in range(len(robot.ik_samples)):
                         jl = old_joint_limits[j]
                         qj = sol['path'][i][j]
+                        # check for rounding errors on qj
+                        if qj < jl[0]:
+                            qj = jl[0]
+                        if qj > jl[1]:
+                            qj = jl[1]
                         l, u = sol_pts[i].get_new_bounds(jl[0], jl[1], qj, red=red)
                         new_joint_limits.append((l, u ))
                     sol_pts[i].jl = new_joint_limits
@@ -127,7 +132,11 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10):
                 'length': sol['length'],
                 'length_all_iterations': costs}
     else:
-        return {'success': False, 'info': 'max_iterations_reached'}
+        return {'success': False,
+                'path': sol['path'],
+                'length': sol['length'],
+                'length_all_iterations': costs,
+                'info': 'max_iterations_reached'}
 
 
 def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
