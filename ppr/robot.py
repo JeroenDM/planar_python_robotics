@@ -57,6 +57,9 @@ class Robot:
         
         # default base pose
         self.base = np.array([0, 0, 0])
+        
+        # keep track of most likly links to be in collision
+        self.collision_priority = list(range(self.ndof))
     
     def set_joint_limits(self, joint_limits):
       """ Set joint limits for inverse kinematics
@@ -259,10 +262,15 @@ class Robot:
             True if one of the robot links collides with one of the collision
             shapes. False otherwise.
         """
-        for recti in self.get_shapes(q):
+        shapes = self.get_shapes(q)
+        for i in self.collision_priority:
             for rectj in scene:
-                if recti.is_in_collision(rectj):
-                    return True # exit if a collision is found
+                if shapes[i].is_in_collision(rectj):
+                    # move current index to front of priority list
+                    self.collision_priority.remove(i)
+                    self.collision_priority.insert(0, i)
+                     # return, no need to look for more collisions
+                    return True
         return False
     
     def plot_kinematics(self, axes_handle, q, *arg, **karg):
