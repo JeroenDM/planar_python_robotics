@@ -176,11 +176,9 @@ class Rectangle(BaseRec):
         
         >>> rec1 = Rectangle(0, 0, 1, 2, 0)
         >>> A1, b1 = rec1.get_matrix_form()
-        >>> np.round(A1, 15)
-        array([[ 0., -1.],
-               [ 1., -0.],
-               [ 0.,  1.],
-               [-1.,  0.]])
+        >>> A1_desired = np.array([[0, -1], [1, 0], [0, 1], [-1, 0]])
+        >>> np.allclose(A1, A1_desired)
+        True
         >>> np.round(b1, 15)
         array([ 0.,  1.,  2.,  0.])
         """

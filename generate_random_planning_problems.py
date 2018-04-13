@@ -14,11 +14,11 @@ from ppr.geometry import Rectangle
 
 
 def create_random_scene(n, xlim=[-10, 10], ylim=[-10, 10]):
-    x_pos = rand(nr) * (xlim[1] - xlim[0]) + xlim[0]
-    y_pos = rand(nr) * (ylim[1] - ylim[0]) + ylim[0]
-    dx = rand(nr) * 6 - 3
-    dy = rand(nr) * 6 - 3
-    a = rand(nr) * np.pi - np.pi/2
+    x_pos = rand(n) * (xlim[1] - xlim[0]) + xlim[0]
+    y_pos = rand(n) * (ylim[1] - ylim[0]) + ylim[0]
+    dx = rand(n) * 6 - 3
+    dy = rand(n) * 6 - 3
+    a = rand(n) * np.pi - np.pi/2
     return [Rectangle(x_pos[i], y_pos[i], dx[i], dy[i], a[i]) for i in range(n)]
 
 
