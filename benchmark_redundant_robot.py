@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ppr.robot import Robot, Robot_3R, Robot_2P3R
 from ppr.path import TrajectoryPt, TolerancedNumber
-from ppr.geometry import Rectangle
+#from ppr.geometry import Rectangle
+from ppr.geometry_pickalable_swig import Rectangle
 from ppr.sampling import cart_to_joint
 from ppr.sampling import get_shortest_path
 
