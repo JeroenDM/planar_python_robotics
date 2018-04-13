@@ -66,13 +66,13 @@ std::vector<double> Rectangle::get_projection(Vector2D direction) {
 bool Rectangle::is_in_collision(Rectangle other) {
     std::vector<Vector2D> n1 = _get_normals();
     std::vector<Vector2D> n2 = other._get_normals();
-    // concatenate n1 and n2, save in n1
-    n1.insert(n1.end(), n2.begin(), n2.end());
+    // Only check along two main normals of the two rectangles
+    std::vector<Vector2D> normals_to_check = {n1[0], n1[1], n2[0], n2[1]};
     bool col = true;
     int i = 0;
-    while (col and i < 8) {
-        std::vector<double> proj1 = get_projection(n1[i]);
-        std::vector<double> proj2 = other.get_projection(n1[i]);
+    while (col and i < normals_to_check.size()) {
+        std::vector<double> proj1 = get_projection(normals_to_check[i]);
+        std::vector<double> proj2 = other.get_projection(normals_to_check[i]);
         double max1, max2, min1, min2;
         // calculate min and max
         max1 = *std::max_element(proj1.begin(), proj1.end());
