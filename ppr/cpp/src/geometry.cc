@@ -38,27 +38,25 @@ std::vector<Vector2D> Rectangle::_get_vertices() {
 
 std::vector<Vector2D> Rectangle::_get_normals() {
     std::vector<Vector2D> normals;
-    // Outside pointing normal on the first side
-    // (counterclockwise)
-    Vector2D n0;
-    n0[0] =   0.0;
-    n0[1] =   -1.0;
+    // Outside pointing normal ordered counterclockwise
+    Vector2D n0(0, -1);
+    Vector2D n1(1, 0);
+    Vector2D n2(0, 1);
+    Vector2D n3(-1, 0);
+    // rotate normals to align with actual rectangle
     normals.push_back(rotation_matrix_ * n0);
-    // Rotate this n0 3 times for the other normals
-    RotationMatrix Rtemp = create_rotation_matrix(PI/2);
-    normals.push_back(Rtemp * normals[0]);
-    normals.push_back(Rtemp * normals[1]);
-    normals.push_back(Rtemp * normals[2]);
+    normals.push_back(rotation_matrix_ * n1);
+    normals.push_back(rotation_matrix_ * n2);
+    normals.push_back(rotation_matrix_ * n3);
     return normals;
 }
 
 std::vector<double> Rectangle::get_projection(Vector2D direction) {
-    double angle = -atan2(direction[1], direction[0]);
-    RotationMatrix Rtemp = create_rotation_matrix(angle);
+    // direction is assumed to be a unit vector
+    // therefore projecting is just taking the dot product
     std::vector<double> proj;
     for (int i=0; i<4; ++i) {
-        Vector2D ptemp = Rtemp * vertices_[i];
-        proj.push_back(ptemp[0]);
+        proj.push_back( direction.dot(vertices_[i]) );
     }
     return proj;
 }
