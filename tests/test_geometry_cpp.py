@@ -41,3 +41,10 @@ class TestRectanlge():
         actual = rec1.get_normals()
         desired = np.array([[0, -1], [1, 0], [0, 1], [-1, 0]])
         assert_almost_equal(actual, desired)
+    
+    def test_set_pose(self):
+        rec1 = Rectangle(1, 1, 1, 2, 0)
+        rec1.set_pose(0, 2, np.pi / 2)
+        actual = rec1.get_vertices()
+        desired = np.array([[0, 2], [0, 3], [-2, 3], [-2, 2]])
+        assert_almost_equal(actual, desired)

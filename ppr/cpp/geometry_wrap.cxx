@@ -3272,6 +3272,93 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_Rectangle_set_pose(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Rectangle *arg1 = (Rectangle *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:Rectangle_set_pose",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Rectangle, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Rectangle_set_pose" "', argument " "1"" of type '" "Rectangle *""'"); 
+  }
+  arg1 = reinterpret_cast< Rectangle * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Rectangle_set_pose" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Rectangle_set_pose" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "Rectangle_set_pose" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  (arg1)->set_pose(arg2,arg3,arg4);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Rectangle_set_size(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Rectangle *arg1 = (Rectangle *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Rectangle_set_size",&obj0,&obj1,&obj2)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Rectangle, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Rectangle_set_size" "', argument " "1"" of type '" "Rectangle *""'"); 
+  }
+  arg1 = reinterpret_cast< Rectangle * >(argp1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Rectangle_set_size" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Rectangle_set_size" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  (arg1)->set_size(arg2,arg3);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_Rectangle_is_in_collision(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Rectangle *arg1 = (Rectangle *) 0 ;
@@ -3412,6 +3499,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"create_rotation_matrix", _wrap_create_rotation_matrix, METH_VARARGS, NULL},
 	 { (char *)"new_Rectangle", _wrap_new_Rectangle, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_set_tolerance", _wrap_Rectangle_set_tolerance, METH_VARARGS, NULL},
+	 { (char *)"Rectangle_set_pose", _wrap_Rectangle_set_pose, METH_VARARGS, NULL},
+	 { (char *)"Rectangle_set_size", _wrap_Rectangle_set_size, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_is_in_collision", _wrap_Rectangle_is_in_collision, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_get_vertices", _wrap_Rectangle_get_vertices, METH_VARARGS, NULL},
 	 { (char *)"Rectangle_get_normals", _wrap_Rectangle_get_normals, METH_VARARGS, NULL},

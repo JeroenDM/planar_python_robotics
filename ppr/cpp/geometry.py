@@ -84,6 +84,8 @@ class Rectangle(_object):
         try: self.this.append(this)
         except: self.this = this
     def set_tolerance(self, *args): return _geometry.Rectangle_set_tolerance(self, *args)
+    def set_pose(self, *args): return _geometry.Rectangle_set_pose(self, *args)
+    def set_size(self, *args): return _geometry.Rectangle_set_size(self, *args)
     def is_in_collision(self, *args): return _geometry.Rectangle_is_in_collision(self, *args)
     def get_vertices(self): return _geometry.Rectangle_get_vertices(self)
     def get_normals(self): return _geometry.Rectangle_get_normals(self)
