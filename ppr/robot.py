@@ -60,6 +60,10 @@ class Robot:
         
         # keep track of most likly links to be in collision
         self.collision_priority = list(range(self.ndof))
+        
+        # save collision shapes, only change their pose
+        # initial pose is for all joints = 0
+        self.collision_shapes = self.get_shapes([0]*self.ndof)
     
     def set_joint_limits(self, joint_limits):
       """ Set joint limits for inverse kinematics
@@ -195,6 +199,14 @@ class Robot:
         for i in range(self.ndof):
             shapes.append(self.get_link_shape(i, p[i, 0], p[i, 1], p[i+1, 2], q[i]))
         return shapes
+    
+    def set_shapes_pose(self, q):
+        p = self.fk_all_links(q)
+        for i in range(self.ndof):
+            self.collision_shapes[i].set_pose(p[i, 0], p[i, 1], p[i+1, 2])
+            # also change size for prismatic joints
+            if self.adapt_ll and (self.jt[i] == 'p'):
+                self.collision_shapes[i].set_size(q[i], self.lw[i])
 
     def get_link_shape(self, i, xi, yi, phii, qi):
         """ Get the rectangle representing link i of the robot
@@ -262,7 +274,8 @@ class Robot:
             True if one of the robot links collides with one of the collision
             shapes. False otherwise.
         """
-        shapes = self.get_shapes(q)
+        self.set_shapes_pose(q)
+        shapes = self.collision_shapes
         for i in self.collision_priority:
             for rectj in scene:
                 if shapes[i].is_in_collision(rectj):

@@ -19,8 +19,6 @@ class Rectangle {
     double width_, height_, pos_x_, pos_y_; /**< size and position */
     double tolerance_;                      /**< minimum distance for collision checking */
     RotationMatrix rotation_matrix_;        /**< orientation of rectangle, rotation around corner */
-    std::vector<Vector2D> vertices_;        /**< The 4 vertices */
-
     std::vector<Vector2D> _get_vertices();
     std::vector<Vector2D> _get_normals();
     /** Project vertices on axis perpendicular to given direction
@@ -30,6 +28,8 @@ class Rectangle {
   public:
     Rectangle(double, double, double, double, double);
     void set_tolerance(double new_tolerance);
+    void set_pose(double px, double py, double a);
+    void set_size(double dx, double dy);
     bool is_in_collision(Rectangle other);
     void get_vertices(double mat[4][2]);
     void get_normals(double mat[4][2]);

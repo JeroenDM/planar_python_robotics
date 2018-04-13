@@ -18,12 +18,22 @@ Rectangle::Rectangle(double px, double py, double dx, double dy, double a) {
   pos_x_ = px;
   pos_y_ = py;
   rotation_matrix_ = create_rotation_matrix(a);
-  vertices_ = _get_vertices();
   tolerance_ = 1e-6;
 }
 
 void Rectangle::set_tolerance(double new_tolerance) {
     tolerance_ = new_tolerance;
+}
+
+void Rectangle::set_pose(double px, double py, double a) {
+    pos_x_ = px;
+    pos_y_ = py;
+    rotation_matrix_ = create_rotation_matrix(a);
+}
+
+void Rectangle::set_size(double dx, double dy) {
+    width_ = dx;
+    height_ = dy;
 }
 
 std::vector<Vector2D> Rectangle::_get_vertices() {
@@ -54,9 +64,10 @@ std::vector<Vector2D> Rectangle::_get_normals() {
 std::vector<double> Rectangle::get_projection(Vector2D direction) {
     // direction is assumed to be a unit vector
     // therefore projecting is just taking the dot product
+    std::vector<Vector2D> vert = _get_vertices();
     std::vector<double> proj;
     for (int i=0; i<4; ++i) {
-        proj.push_back( direction.dot(vertices_[i]) );
+        proj.push_back( direction.dot(vert[i]) );
     }
     return proj;
 }
@@ -86,7 +97,7 @@ bool Rectangle::is_in_collision(Rectangle other) {
 }
 
 void Rectangle::get_vertices(double mat[4][2]) {
-    std::vector<Vector2D> temp = vertices_;
+    std::vector<Vector2D> temp = _get_vertices();
     for (int i=0; i < temp.size(); ++i) {
         mat[i][0] = temp[i][0];
         mat[i][1] = temp[i][1];

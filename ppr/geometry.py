@@ -64,6 +64,29 @@ class Rectangle(BaseRec):
         super().__init__(x, y, dx, dy, angle)
         self.R = rotation(angle)
         self.p = self.get_vertices()
+        self.n = self.get_normals()
+    
+    def update_pose(self, x, y, angle):
+        """ ugly duplicate of c++ set_pose function
+        
+        Need this to update attributes in python side of this class.
+        TODO solve this duplicating issue
+        
+        Now the whole initialization I wanted to avoid is copied agian.
+        
+        Parameters
+        ----------
+        x : float
+            x-position of rectangle, one of the four corner points.
+        y : float
+            y-position of rectangle, one of the four corner points.
+        angle : float
+            Angle between x-axis and bottom side of rectangle.
+        """
+        self.set_pose(x, y, angle)
+        self.p = self.get_vertices()
+        self.n = self.get_normals()
+        self.R = rotation(angle)
 
 
     
@@ -182,9 +205,9 @@ class Rectangle(BaseRec):
         >>> np.round(b1, 15)
         array([ 0.,  1.,  2.,  0.])
         """
-        A = self.get_normals()
+        A = self.n
         # row wise dot product
-        b = np.sum(A * self.get_vertices(), axis=1)
+        b = np.sum(A * self.p, axis=1)
         return A, b
 
     def plot(self, ax, *arg, **karg):
