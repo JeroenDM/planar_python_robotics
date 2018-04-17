@@ -8,6 +8,21 @@ import numpy as np
 from matplotlib.patches import Wedge
 from ppr.cpp.graph import Graph
 
+def vdc(n, base=2):
+    vdc, denom = 0,1
+    while n:
+        denom *= base
+        n, remainder = divmod(n, base)
+        vdc += remainder / denom
+    return vdc
+
+def vdc_generator(lower_bnd, upper_bnd):
+    count = 0
+    MAX_ITER = 10000
+    while count < MAX_ITER:
+        count = count + 1
+        yield vdc(count) * (upper_bnd - lower_bnd) + lower_bnd
+
 #=============================================================================
 # Classes
 #=============================================================================
@@ -72,7 +87,16 @@ class TolerancedNumber:
         self.u = upper_bound
         self.l = lower_bound
         self.s = samples
-        self.range = np.linspace(self.l, self.u, self.s)
+        self.sample_generator = vdc_generator(self.l, self.u)
+        self.range = self.get_initial_sampled_range(self.s)
+
+    def get_initial_sampled_range(self, n):
+        r = [self.sample_generator.__next__() for i in range(n)]
+        return np.array(r)
+    
+    def add_samples(self, n):
+        r = [self.sample_generator.__next__() for i in range(n)]
+        self.range = np.append(self.range, r)
 
 class TrajectoryPt:
     """ Trajectory point for a desired end-effector pose in cartesian space

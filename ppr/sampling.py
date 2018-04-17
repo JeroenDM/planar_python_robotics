@@ -250,7 +250,6 @@ def _get_shortest_path_bfs(Q):
 
     # get joint values for the shortest path
     p_i = g.get_path(n_path)
-    print(p_i)
     cost = g.get_path_cost()
 
     if p_i[0] == -1:
