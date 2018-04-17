@@ -45,6 +45,27 @@ def halton_sequence(size, dim):
         seq.append([vdc(i, base) for i in range(size)])
     return np.array(seq).T
 
+class HaltonSampler():
+    def __init__(self, dim):
+        self.dim = dim
+        
+        # setup primes for every dimension
+        prime_factory = next_prime()
+        self.primes = []
+        for i in range(dim):
+            self.primes.append(next(prime_factory))
+        
+        # init counter for van der Corput sampling
+        self.cnt = 1
+    
+    def get_samples(self, n):
+        seq = []
+        for d in range(self.dim):
+            base = self.primes[d]
+            seq.append([vdc(i, base) for i in range(self.cnt, self.cnt+n)])
+        self.cnt += n
+        return np.array(seq).T
+
 #=============================================================================
 # Classes
 #=============================================================================
@@ -190,6 +211,10 @@ class TrajectoryPt:
                 p_nominal.append(self.p[i])
         self.p_nominal = np.array(p_nominal)
         self.timing = 0.1 # with respect to previous point
+        
+        # for use of halton sampling
+        # dimension is the number of toleranced numbers
+        self.hs = HaltonSampler(sum(self.hasTolerance))
     
     def __str__(self):
         """ Returns string representation for printing
@@ -241,8 +266,8 @@ class TrajectoryPt:
     
     def get_samples(self, n):
         sample_dim = sum(self.hasTolerance) # count the number of toleranced numbers
-        r = np.random.rand(n, sample_dim)
-        #r = halton_sequence(n, sample_dim)
+        #r = np.random.rand(n, sample_dim)
+        r = self.hs.get_samples(n)
         
         # arrange in array and rescale the samples
         samples = []
