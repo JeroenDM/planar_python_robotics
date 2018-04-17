@@ -166,15 +166,15 @@ class TestRobot_2P3R():
         np.random.seed(42)
         q_test = np.random.rand(10, 5)
         q_test = q_test * 2 * np.pi - np.pi
-        q_test[:, :2] = 0
+        #q_test[:, :2] = 0
         robot = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
         for qi in q_test:
             p = robot.fk(qi)
-            ik_sol = robot.ik(p)
+            ik_sol = robot.ik_fixed_joints(p, q_fixed=qi[0:2])
             q_sol = ik_sol['q']
             actual = [np.allclose(qj, qi) for qj in q_sol]
             #assert_almost_equal(actual, [True, True])
-            assert_(np.any(actual))
+            assert np.any(actual)
     
     def test_set_joint_limits(self):
         robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])

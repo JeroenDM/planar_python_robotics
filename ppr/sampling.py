@@ -16,10 +16,13 @@ class SolutionPoint:
         self.tp_current = tp
         self.q_best = []
         self.jl = []
-    
-    def get_joint_solutions(self, robot, check_collision = False, scene=None):
-        """ Convert a cartesian trajectory point to joint space """
         
+        self.samples = None
+        self.joint_solutions = np.array([])
+        self.num_js = 0
+    
+    def calc_joint_solutions(self, robot, tp_discrete, check_collision = False, scene=None):
+        """ Convert a cartesian trajectory point to joint space """
         # input validation
         if check_collision:
             if scene == None:
@@ -31,7 +34,7 @@ class SolutionPoint:
             orig_jl = robot.jl
             robot.jl = self.jl
         
-        tp_discrete = self.tp_current.discretise()
+        #tp_discrete = self.tp_current.discretise()
         joint_solutions = []
         for cart_pt in tp_discrete:
             sol = robot.ik(cart_pt)
@@ -49,6 +52,28 @@ class SolutionPoint:
         
         return np.array(joint_solutions)
     
+    def add_joint_solutions(self, robot, N, *arg, **kwarg):
+        # get joint solutions for task space points
+        tp = self.tp_current.get_samples(N)
+        js = self.calc_joint_solutions(robot, tp, *arg, **kwarg)
+        
+        # cache al calculated information so far
+        self.num_js += len(js)
+        if self.samples is None:
+            self.samples = tp
+            self.joint_solutions = js
+        elif len(self.joint_solutions) == 0:
+            self.samples = np.vstack((self.samples, tp))
+            self.joint_solutions = js
+        else:
+            self.samples = np.vstack((self.samples, tp))
+            if len(js) > 0:
+                self.joint_solutions = np.vstack((self.joint_solutions, js))
+    
+    def get_joint_solutions(self):
+        return self.joint_solutions
+        
+    
     def get_new_bounds(self, l, u, m, red=4):
         """ create new interval smaller than the old one (l, u)
         reduced in length by a factor red.
@@ -62,7 +87,7 @@ class SolutionPoint:
     
     def resample_trajectory_point(self, robot, *arg, **kwarg):
         """ create a new trajectory point with smaller bounds,
-        but same sample number
+        but the same number of samples
         use the value from the forward kinematics pfk as the center
         of the new interval
         """
@@ -82,6 +107,9 @@ class SolutionPoint:
                 val_new = val
             p_new.append(val_new)
         self.tp_current = TrajectoryPt(p_new)
+    
+    def add_samples_to_trajectory_pt(self):
+        pass
             
         
 def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):

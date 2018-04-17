@@ -23,6 +23,28 @@ def vdc_generator(lower_bnd, upper_bnd):
         count = count + 1
         yield vdc(count) * (upper_bnd - lower_bnd) + lower_bnd
 
+def next_prime():
+    def is_prime(num):
+        "Checks if num is a prime value"
+        for i in range(2,int(num**0.5)+1):
+            if(num % i)==0: return False
+        return True
+ 
+    prime = 3
+    while(1):
+        if is_prime(prime):
+            yield prime
+        prime += 2
+        
+def halton_sequence(size, dim):
+    seq = []
+    primeGen = next_prime()
+    next(primeGen)
+    for d in range(dim):
+        base = next(primeGen)
+        seq.append([vdc(i, base) for i in range(size)])
+    return np.array(seq).T
+
 #=============================================================================
 # Classes
 #=============================================================================
@@ -216,6 +238,23 @@ class TrajectoryPt:
                 r.append(self.p[i])
         grid = create_grid(r)
         return grid
+    
+    def get_samples(self, n):
+        sample_dim = sum(self.hasTolerance) # count the number of toleranced numbers
+        r = np.random.rand(n, sample_dim)
+        #r = halton_sequence(n, sample_dim)
+        
+        # arrange in array and rescale the samples
+        samples = []
+        cnt = 0
+        for i, val in enumerate(self.p):
+            if self.hasTolerance[i]:
+                samples.append(r[:, cnt] * (val.u - val.l) + val.l)
+                cnt += 1
+            else:
+                samples.append(np.ones(n) * val)
+        
+        return np.vstack(samples).T
 
     def plot(self, axes_handle, show_tolerance=True):
         """ Visualize the path on given axes

@@ -685,6 +685,20 @@ class Robot_2P3R(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
+        q_fixed_samples = self.sample_redundant_joints()
+        #q_fixed_samples = self.sample_redundant_joints_random(n=15)
+        q_sol = []
+        for qf in q_fixed_samples:
+            s = self.ik_fixed_joints(p, q_fixed=qf)
+            if s['success']:
+                for qi in s['q']:
+                    q_sol.append(qi)
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
+        else:
+            return {'success' : False, 'info': "unreachable"}
+    
+    def sample_redundant_joints(self):
         if hasattr(self, 'jl'):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
@@ -700,17 +714,22 @@ class Robot_2P3R(Robot):
         grid = np.meshgrid(q1.range, q2.range)
         grid = [ grid[i].flatten() for i in range(2) ]
         grid = np.array(grid).T
-        
-        q_sol = []
-        for qf in grid:
-            s = self.ik_fixed_joints(p, q_fixed=qf)
-            if s['success']:
-                for qi in s['q']:
-                    q_sol.append(qi)
-        if len(q_sol) > 0:
-            return {'success': True, 'q': q_sol}
+        return grid
+    
+    def sample_redundant_joints_random(self, n=10):
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
         else:
-            return {'success' : False, 'info': "unreachable"}
+            # default joint limits
+            jl1, jl2 = (0, 1.5), (0, 1.5)
+        
+        qs = np.random.rand(n, 2)
+        
+        #rescale
+        qs[:, 0] = qs[:, 0] * (jl1[1] - jl1[0]) + jl1[0]
+        qs[:, 1] = qs[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
+        
+        return qs
     
     def ik_fixed_joints(self, p, q_fixed = [0, 0]):
         """ wrapper function to solve the ik for the last three joints.
