@@ -1,4 +1,5 @@
 {
   "ppr/cpp/geometry.py": true,
-  "ppr/cpp/graph.py": true
+  "ppr/cpp/graph.py": true,
+  "tests/test_robot.py::TestRobotManyDofs": true
 }

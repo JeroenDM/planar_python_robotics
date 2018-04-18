@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.testing import assert_almost_equal, assert_
 import pytest
-from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
+from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R, RobotManyDofs
 
 class TestRobot():
     def test_get_shapes(self):
