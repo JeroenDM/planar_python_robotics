@@ -154,48 +154,84 @@ def path_index_to_path(pi, data):
         res.append(qki)
     return res
 
-def get_shortest_path2(data):
+def get_shortest_path2(data, max_step_cost=5):
     g = Graph(data)
-    g.run_multi_source_bfs(max_cost = 5)
+    g.run_multi_source_bfs(max_cost = max_step_cost)
     pi, cost = g.get_path()
     if pi[0] == -1:
         split_index = g.find_partial_path()
         if split_index is None:
             print("got stuck after first trajectory point, look after this point")
             return {'success': False}
+        
+        # find the first part up to the split index
         pi1, cost1 = g.get_path(target_path_index=split_index)
         path1 = path_index_to_path(pi1, data)
+        
+        # look for a second part of the path starting from split index
+        g.run_multi_source_bfs(max_cost = max_step_cost,
+                             start_path_index=split_index+1)
+        pi2, cost2 = g.get_path()
+        path2 = path_index_to_path(pi2, data[split_index+1:])
         return {'success': False, 'path': path1, 'length': cost1,
-                'i': split_index}
+                'i': split_index, 'path2': path2}
     else:
         path = path_index_to_path(pi, data)
         return {'success': True, 'path': path, 'length': cost}
 
+def get_shortest_path3(data, max_step_cost=5):   
+    # iteratively find shortest path in subset of data, start with ass data
+    current_data = data
+    current_start_index = 0
+    finished = False
+    paths = []
+    path_start_indices = []
+    path_costs = []
+    while(not finished and current_start_index < (len(data)-2)):
+        res = get_shortest_path2(current_data)
+        paths.append(res['path'])
+        path_start_indices.append(current_start_index)
+        path_costs.append(res['length'])
+        
+        if res['success']:
+            finished = True
+        else:
+            current_start_index = res['i'] + 1
+            current_data = data[current_start_index:]
+    
+    if finished:
+        return {'success': True, 'paths': paths,
+                'split_points': path_start_indices,
+                'costs': path_costs}
+    else:
+        return {'success': False, 'paths': paths,
+                'split_points': path_start_indices,
+                'costs': path_costs}
 
     
-data1 = [np.array([[0, 0]]),
-         np.array([[1, -1], [1, 0], [1, 1]]),
-         np.array([[0, 2], [2, 2]]),
-         np.array([[4, 5], [5, 9]]),
-         np.array([[4, 6], [5, 10]]),
-         np.array([[4, 13], [5, 11]])]
-
-#res = get_shortest_path2(data1)
+#data1 = [np.array([[0, 0]]),
+#         np.array([[1, -1], [1, 0], [1, 1]]),
+#         np.array([[0, 2], [2, 2]]),
+#         np.array([[4, 5], [5, 9]]),
+#         np.array([[4, 6], [5, 10]]),
+#         np.array([[4, 13], [5, 11]])]
+#
+#res = get_shortest_path3(data1)
 #print(res)
 
-g = Graph(data1)
-g.run_multi_source_bfs(max_cost = 5)
-res = g.get_path()
-
-ind = g.find_partial_path()
-res1 = g.get_path(target_path_index=ind)
-
-g.run_multi_source_bfs(max_cost=5, start_path_index=ind+1)
-res2 = g.get_path()
-
-print(res)
-print(res1)
-print(res2)
+#g = Graph(data1)
+#g.run_multi_source_bfs(max_cost = 5)
+#res = g.get_path()
+#
+#ind = g.find_partial_path()
+#res1 = g.get_path(target_path_index=ind)
+#
+#g.run_multi_source_bfs(max_cost=5, start_path_index=ind+1)
+#res2 = g.get_path()
+#
+#print(res)
+#print(res1)
+#print(res2)
 
 #    def run_breath_first_search(self, start_node):
 #        Q = Queue()
