@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 """
 Function to define and proccess robot end-effector paths.
+
+source for van der Corput and Halton sampling code
+https://laszukdawid.com/2017/02/04/halton-sequence-in-python/
+
 """
 
 import numpy as np
