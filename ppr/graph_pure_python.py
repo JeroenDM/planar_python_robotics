@@ -1,9 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 18 09:16:40 2018
+Python graph implementation + shortest path algorithms
 
-@author: jeroen
+Try to come up with a good solution structure.
+The solution when a single path if found looks like this
+---------------------------------------------------
+{'success': True, 'q_path': ..., 'total_cost': ..., 'single_path': True}
+---------------------------------------------------
+With types
+    success: bool
+    q_path: list of 2D numpy arrays
+    total_cost: float
+    
+If no path at all if found, we could return
+-------------------------------
+{'success': False, 'info': ...}
+-------------------------------
+With an optional string info to say something about the failure
+
+If more than one path if found, whe could add a list with extra solution
+dictionaries. Where the default path under "path" is the one starting from
+the first trajectory point
+{'success': True, 'q_path': ..., 'total_cost': ..., 'single_path': False,
+ 'extra_segments': [{'success': True, 'q_path': ..., 'total_cost', ...},
+                    {'success': True, 'q_path': ..., 'total_cost', ...}]
+ }
+This does not break compatibility with the previous code where one path
+was the only thing we could get.
+I don't need to worry about compatibility at the moment that much,
+but I also think it is a logical way to structure the solution.
+
+
 """
 import numpy as np
 from queue import Queue
@@ -30,6 +58,7 @@ class Graph:
         self.data = data
         self.node_array = self.data_to_node_array()
         self.path_length = len(data)
+        self.latest_total_cost = np.inf
     
     def data_to_node_array(self):
         na = []
@@ -45,6 +74,7 @@ class Graph:
                 node.dist = np.inf
                 node.parent = None
                 node.visited = False
+        self.latest_total_cost = np.inf
     
     def get_neighbours(self, node):
         next_path_index = node.path_index + 1
@@ -62,6 +92,11 @@ class Graph:
         return rnb
     
     def get_path(self, target_path_index=None):
+        """ Return indices of shortest path nodes
+        
+        Returns [-1] when failed. This is to keep the type of the return object
+        constant, for compatibility with c++ code later on.
+        """
         # set default target path index if not specified
         if target_path_index is None:
             target_path_index = self.path_length-1
@@ -75,8 +110,9 @@ class Graph:
                 closest_node = node
         
         if closest_node is None:
-            return [-1], np.inf
+            return [-1]
         else:
+            self.latest_total_cost = min_dist
             node_sample_index_list = []
             current_node = closest_node
             while(current_node.parent is not None):
@@ -84,7 +120,10 @@ class Graph:
                 current_node = current_node.parent
             
             node_sample_index_list.reverse()
-            return node_sample_index_list, min_dist
+            return node_sample_index_list
+    
+    def get_total_cost(self):
+        return self.latest_total_cost
     
     def find_partial_path(self):
         # start at the back and look where the graph search got
@@ -98,11 +137,13 @@ class Graph:
         if found_shorter_path:
             return current_path_index + 1
         else:
-            return None
+            return -1
             
     
-    def run_multi_source_bfs(self, max_cost = 16, start_path_index=0):
+    def run_multi_source_bfs(self, max_cost = np.inf, start_path_index=0):
+        # reset all node distances and visited status
         self.reset()
+        
         Q = Queue()
         # add dummy before the first column
         # or the column specified by start_path_index
@@ -135,17 +176,6 @@ class Graph:
                 if not node.visited:
                     Q.put(node)
                     node.visited = True
-                
-def get_shortest_path(data):
-    g = Graph(data)
-    g.run_multi_source_bfs()
-    pi, cost = g.get_path()
-    if pi[0] == -1:
-        return {'success': False}
-    else:
-        path = path_index_to_path(pi, data)
-        return {'success': True, 'path': path, 'length': cost}
-
 
 def path_index_to_path(pi, data):
     res = []
@@ -153,34 +183,46 @@ def path_index_to_path(pi, data):
         qki = data[i][pi[i]]
         res.append(qki)
     return res
-
-def get_shortest_path2(data, max_step_cost=5):
+           
+def get_shortest_path(data):
     g = Graph(data)
-    g.run_multi_source_bfs(max_cost = max_step_cost)
-    pi, cost = g.get_path()
+    g.run_multi_source_bfs()
+    pi = g.get_path()
+    cost = g.get_total_cost()
     if pi[0] == -1:
-        split_index = g.find_partial_path()
-        if split_index is None:
-            print("got stuck after first trajectory point, look after this point")
-            return {'success': False}
-        
-        # find the first part up to the split index
-        pi1, cost1 = g.get_path(target_path_index=split_index)
-        path1 = path_index_to_path(pi1, data)
-        
-        # look for a second part of the path starting from split index
-        g.run_multi_source_bfs(max_cost = max_step_cost,
-                             start_path_index=split_index+1)
-        pi2, cost2 = g.get_path()
-        path2 = path_index_to_path(pi2, data[split_index+1:])
-        return {'success': False, 'path': path1, 'length': cost1,
-                'i': split_index, 'path2': path2}
+        return {'success': False}
     else:
         path = path_index_to_path(pi, data)
-        return {'success': True, 'path': path, 'length': cost}
+        return {'success': True,
+                'path': path,
+                'total_cost': cost,
+                'single_path': True}
 
-def get_shortest_path3(data, max_step_cost=5):   
-    # iteratively find shortest path in subset of data, start with ass data
+def get_shortest_partial_path(data, max_step_cost):
+    g = Graph(data)
+    g.run_multi_source_bfs(max_cost=max_step_cost)
+    pi = g.get_path()
+    cost = g.get_total_cost()
+    if pi[0] == -1:
+        split_index = g.find_partial_path()
+        if split_index is -1:
+            # TODO we could look for a path, excluding the first point
+            return {'success': False, 'info': 'Stuck after first trajectory point'}
+        
+        # find the first segment up to the split index
+        pi1 = g.get_path(target_path_index=split_index)
+        cost1 = g.get_total_cost()
+        path1 = path_index_to_path(pi1, data)
+        
+        return {'success': False, 'path': path1, 'total_cost': cost1,
+                'i': split_index}
+    else:
+        # A complete path from start_path_index to finish is found
+        path = path_index_to_path(pi, data)
+        return {'success': True, 'path': path, 'total_cost': cost}
+
+def get_shortest_path_segments(data, max_step_cost):   
+    # iteratively find shortest path in subset of data, start with all data
     current_data = data
     current_start_index = 0
     finished = False
@@ -188,50 +230,49 @@ def get_shortest_path3(data, max_step_cost=5):
     path_start_indices = []
     path_costs = []
     while(not finished and current_start_index < (len(data)-2)):
-        res = get_shortest_path2(current_data)
-        paths.append(res['path'])
-        path_start_indices.append(current_start_index)
-        path_costs.append(res['length'])
-        
+        res = get_shortest_partial_path(current_data, max_step_cost)
         if res['success']:
             finished = True
+            paths.append(res['path'])
+            path_start_indices.append(current_start_index)
+            path_costs.append(res['total_cost'])
         else:
-            current_start_index = res['i'] + 1
-            current_data = data[current_start_index:]
+            if 'i' in res:
+                current_start_index = res['i'] + 1
+                current_data = data[current_start_index:]
+                paths.append(res['path'])
+                path_start_indices.append(current_start_index)
+                path_costs.append(res['total_cost'])
+            else:
+                # got stuck at the first trajectory point
+                # res = {'success': False, 'info': 'Stuck after first trajectory point'}
+                return res
     
     if finished:
-        return {'success': True, 'paths': paths,
-                'split_points': path_start_indices,
-                'costs': path_costs}
+        sol = {'success': True,
+               'path': paths[0],
+               'total_cost': path_costs[0]}
+        
+        # only one solution found
+        if len(paths) == 1:
+            sol['single_path'] = True
+        # Path split in multiple segments
+        else:
+            sol['single_path'] = False
+            sol['split_points'] = path_start_indices
+            sol['extra_segments'] = []
+            for i in range(1, len(paths)):
+                si = {'path': paths[i],
+                      'total_cost': path_costs[i]}
+                sol['extra_segments'].append(si)
     else:
-        return {'success': False, 'paths': paths,
-                'split_points': path_start_indices,
-                'costs': path_costs}
-
+        # TODO return more than only first part
+        sol = {'success': False, 'path': paths[0],
+               'split_points': path_start_indices,
+               'total_cost': path_costs[0],
+               'info': 'Path segments do not reach the end'}
     
-#data1 = [np.array([[0, 0]]),
-#         np.array([[1, -1], [1, 0], [1, 1]]),
-#         np.array([[0, 2], [2, 2]]),
-#         np.array([[4, 5], [5, 9]]),
-#         np.array([[4, 6], [5, 10]]),
-#         np.array([[4, 13], [5, 11]])]
-#
-#res = get_shortest_path3(data1)
-#print(res)
-
-#g = Graph(data1)
-#g.run_multi_source_bfs(max_cost = 5)
-#res = g.get_path()
-#
-#ind = g.find_partial_path()
-#res1 = g.get_path(target_path_index=ind)
-#
-#g.run_multi_source_bfs(max_cost=5, start_path_index=ind+1)
-#res2 = g.get_path()
-#
-#print(res)
-#print(res1)
-#print(res2)
+    return sol
 
 #    def run_breath_first_search(self, start_node):
 #        Q = Queue()
