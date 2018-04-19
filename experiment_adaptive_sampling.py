@@ -62,7 +62,7 @@ from ppr.robot import Robot, Robot_3R, Robot_2P3R
 from ppr.path import TrajectoryPt, TolerancedNumber
 from ppr.geometry import Rectangle
 from ppr.sampling import cart_to_joint, SolutionPoint
-from ppr.sampling import get_shortest_path
+from ppr.sampling import get_shortest_path, cart_to_joint_dynamic
 
 # ROBOT
 robot1 = Robot_2P3R([1, 1, 2, 1.2, 1])
@@ -85,19 +85,21 @@ sc1 = [Rectangle(1, 1, 1, 1.5, 0),
 
 ##path_js = cart_to_joint(robot1, path1, check_collision=True, scene=sc1)
 # GRAPH CREATION
-sol_pts = [SolutionPoint(tp) for tp in path1]
-# inital joint limits
-for sp in sol_pts:
-    sp.jl = robot1.jl
+#sol_pts = [SolutionPoint(tp) for tp in path1]
+## inital joint limits
+#for sp in sol_pts:
+#    sp.jl = robot1.jl
+#
+#for sp  in sol_pts:
+#    max_iters = 50
+#    while (sp.num_js < 100 and max_iters > 0):
+#        sp.add_joint_solutions(robot1, 10, check_collision=True, scene=sc1)
+#        max_iters -= 1
+#    print(max_iters)
+#
+#path_js = [sp.get_joint_solutions() for sp in sol_pts]
 
-for sp  in sol_pts:
-    max_iters = 50
-    while (sp.num_js < 100 and max_iters > 0):
-        sp.add_joint_solutions(robot1, 10, check_collision=True, scene=sc1)
-        max_iters -= 1
-    print(max_iters)
-
-path_js = [sp.get_joint_solutions() for sp in sol_pts]
+path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1)
 print([len(qp) for qp in path_js])
 
 sol = get_shortest_path(path_js)

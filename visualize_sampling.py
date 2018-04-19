@@ -7,6 +7,7 @@ Created on Tue Apr 17 11:20:29 2018
 """
 import numpy as np
 from numpy import cos, sin, pi
+import matplotlib.pyplot as plt
 
 def create_grid(r):
     grid = np.meshgrid(*r)

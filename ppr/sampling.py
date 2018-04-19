@@ -20,6 +20,18 @@ class SolutionPoint:
         self.samples = None
         self.joint_solutions = np.array([])
         self.num_js = 0
+        self.q_fixed_samples = None
+    
+    def add_redundant_joint_samples(self, robot, n=10, method='random'):
+        if method == 'random':
+            new_samples = robot.sample_redundant_joints_random(n=n)
+            if self.q_fixed_samples is None:
+                self.q_fixed_samples = new_samples
+            else:
+                self.q_fixed_samples = np.vstack((self.q_fixed_samples,
+                                                  new_samples))
+        else:
+            raise ValueError("Unkown method: " + method)
     
     def calc_joint_solutions(self, robot, tp_discrete, check_collision = False, scene=None):
         """ Convert a cartesian trajectory point to joint space """
@@ -37,7 +49,7 @@ class SolutionPoint:
         #tp_discrete = self.tp_current.discretise()
         joint_solutions = []
         for cart_pt in tp_discrete:
-            sol = robot.ik(cart_pt)
+            sol = robot.ik(cart_pt, q_fixed_samples=self.q_fixed_samples)
             if sol['success']:
                 for qsol in sol['q']:
                     if check_collision:
@@ -55,6 +67,7 @@ class SolutionPoint:
     def add_joint_solutions(self, robot, N, *arg, **kwarg):
         # get joint solutions for task space points
         tp = self.tp_current.get_samples(N)
+        self.add_redundant_joint_samples(robot, n=10)
         js = self.calc_joint_solutions(robot, tp, *arg, **kwarg)
         
         # cache al calculated information so far
@@ -166,7 +179,6 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
                 'length_all_iterations': costs,
                 'info': 'max_iterations_reached'}
 
-
 def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     """ Convert a path to joint space by descretising and ik.
     
@@ -218,6 +230,29 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
                         qi.append(qsol)
         joint_traj.append(np.array(qi))
     return joint_traj
+
+def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=None,
+                          parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10}):
+    """ Convert a path to joint space by descretising and ik.
+    
+    Try to find a minimum number of joint solutions for every trajectory point
+    """
+    sol_pts = [SolutionPoint(tp) for tp in traj_points]
+    # inital joint limits
+    for sp in sol_pts:
+        sp.jl = robot.jl
+    
+    for sp  in sol_pts:
+        max_iters = parameters['max_iters']
+        while (sp.num_js < parameters['min_js'] and max_iters > 0):
+            sp.add_joint_solutions(robot,
+                                   parameters['js_inc'],
+                                   check_collision=check_collision,
+                                   scene=scene)
+            max_iters -= 1
+        print(max_iters)
+    
+    return [sp.get_joint_solutions() for sp in sol_pts]
 
 def get_shortest_path(Q, method='bfs', path = None, scene = None):
     """ Wrapper function to select the shortest path method
