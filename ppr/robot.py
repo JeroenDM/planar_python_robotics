@@ -513,7 +513,8 @@ class Robot_3R(Robot):
         p : list or np.ndarray of floats
             End-effector pose (x, y, angle)
         tol : float
-            Tolerance when a result is assumed zero. (default = 1e-12)
+            Tolerance when a result is assumed zero. Used for boundary
+            cases in inverse kinematics calculations (default = 1e-12)
         
         Returns
         -------
@@ -527,10 +528,12 @@ class Robot_3R(Robot):
         -----
         Joint limits have to be added.
         """
-        # tol = tolerance needed for boundary cases
-        # base transform only translation for now TODO
+        # transform pose p to local base frame of this robot
         p = np.array(p)
-        p[:2] = p[:2] - self.base[:2]
+        R = rotation(self.base[2])
+        
+        p[:2] = np.dot(R.T, p[:2] - self.base[:2])
+        p[2] = p[2] - self.base[2]
         
         # define variables for readability
         l1, l2, l3 = (self.d[0], self.d[1], self.d[2])
@@ -660,7 +663,7 @@ class Robot_2P3R(Robot):
             raise ValueError("This robot has 5 links, not: " + str(len(link_length)))
         super().__init__(['p', 'p', 'r', 'r', 'r'],
                          link_length,
-                         [np.pi / 2, -np.pi / 2, 0, 0, 0])
+                         [0, np.pi / 2, 0, 0, 0])
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
         self.ik_samples = ik_samples
@@ -728,9 +731,7 @@ class Robot_2P3R(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
-        q_base = [0, 0, 0]
-        q_base[0] = q_fixed[1]
-        q_base[1] = q_fixed[0]
+        q_base = [q_fixed[0], q_fixed[1], np.pi / 2]
         self.sub_robot.base = q_base
         sub_sol = self.sub_robot.ik(p)
         if sub_sol['success']:
