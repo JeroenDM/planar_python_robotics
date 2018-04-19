@@ -93,6 +93,13 @@ class Robot:
         self.c = cg_position
         self.I = Icg
     
+    def set_adapt_ll(self, new_value):
+        """ quick fix method because I need to figure out how to overwrite
+        variables in parent class
+        """
+        self.adapt_ll = new_value
+        self.collision_shapes = self.get_shapes([0]*self.ndof)
+    
     def fk(self, q):
         """ Calculate forward kinematics
         
@@ -664,6 +671,10 @@ class Robot_2P3R(Robot):
         super().__init__(['p', 'p', 'r', 'r', 'r'],
                          link_length,
                          [0, np.pi / 2, 0, 0, 0])
+        
+        # prismatic joint represent fixed objects that do not change in size
+        # use setter function because collision shapes are also changed
+        self.set_adapt_ll(False)
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
         self.ik_samples = ik_samples

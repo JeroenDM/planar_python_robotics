@@ -211,6 +211,6 @@ class Rectangle(BaseRec):
         return A, b
 
     def plot(self, ax, *arg, **karg):
-        p = self.p
+        p = self.get_vertices()
         p = np.vstack((p, p[0]))
         ax.plot(p[:, 0], p[:, 1], *arg, **karg)

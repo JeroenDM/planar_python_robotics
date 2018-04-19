@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
 
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.testing import assert_almost_equal, assert_
 import pytest
-from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
+from numpy.testing import assert_almost_equal, assert_
+
+from ppr.geometry import Rectangle
 
 class TestRobot():
     def test_get_shapes(self):
@@ -186,3 +188,16 @@ class TestRobot_2P3R():
         actual_q = actual['q']
         # there are 5 joint solutions expected
         assert len(actual_q) == 6
+    
+    def test_fixed_link_shape(self):
+        robot1 = Robot_2P3R([1, 1, 0.5, 0.5, 0.3])
+        sc1 = [Rectangle(0.0, 0.4, 0.1, 0.2, -0.3),
+               Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
+        q_collision = [ 0.17, 0.375, -2.02, 1.98, -1.03]
+        robot1.set_shapes_pose(q_collision)
+        shapes = robot1.collision_shapes
+        results = []
+        for recti in shapes:
+            for rectj in sc1:
+                results.append(recti.is_in_collision(rectj))
+        assert np.any(results) == True
