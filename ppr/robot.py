@@ -513,7 +513,8 @@ class Robot_3R(Robot):
         p : list or np.ndarray of floats
             End-effector pose (x, y, angle)
         tol : float
-            Tolerance when a result is assumed zero. (default = 1e-12)
+            Tolerance when a result is assumed zero. Used for boundary
+            cases in inverse kinematics calculations (default = 1e-12)
         
         Returns
         -------
@@ -527,8 +528,6 @@ class Robot_3R(Robot):
         -----
         Joint limits have to be added.
         """
-        # tol = tolerance needed for boundary cases
-        
         # transform pose p to local base frame of this robot
         p = np.array(p)
         R = rotation(self.base[2])
@@ -779,6 +778,40 @@ class Robot_2P3R(Robot):
             return {'success': True, 'q': q_sol}
         else:
             return {'success' : False, 'info': "unreachable"}
+    
+    def sample_redundant_joints(self):
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
+        else:
+            # default joint limits
+            jl1, jl2 = (0, 1.5), (0, 1.5)
+        # nominal value in the middle of the limits
+        n1 = (jl1[0] + jl1[1]) / 2
+        n2 = (jl2[0] + jl2[1]) / 2
+        
+        # create sampled values for fixed joints and put them in a grid
+        q1 = TolerancedNumber(n1, jl1[0], jl1[1], samples=self.ik_samples[0])
+        q2 = TolerancedNumber(n2, jl2[0], jl2[1], samples=self.ik_samples[1])
+        grid = np.meshgrid(q1.range, q2.range)
+        grid = [ grid[i].flatten() for i in range(2) ]
+        grid = np.array(grid).T
+        return grid
+    
+    def sample_redundant_joints_random(self, n=10):
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
+        else:
+            # default joint limits
+            print("Using default joint limits: (0, 1.5), (0, 1.5)")
+            jl1, jl2 = (0, 1.5), (0, 1.5)
+        
+        qs = np.random.rand(n, 2)
+        
+        #rescale
+        qs[:, 0] = qs[:, 0] * (jl1[1] - jl1[0]) + jl1[0]
+        qs[:, 1] = qs[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
+        
+        return qs
 
 class RobotManyDofs(Robot):
     """ Create a kinematic chain of revolution joints with more than 3 dofs
