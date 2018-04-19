@@ -68,8 +68,8 @@ from ppr.sampling import cart_to_joint, SolutionPoint
 from ppr.sampling import get_shortest_path, cart_to_joint_dynamic
 
 # ROBOT
-robot1 = Robot_2P3R([1, 1, 2, 1.2, 1])
-robot1.set_joint_limits([(0.5, 1.0), (2.0, 3.0)])
+robot1 = Robot_2P3R([4, 0.9, 2, 1.2, 1])
+robot1.set_joint_limits([(2.0, 3.0), (0.2, 0.9)])
 robot1.ik_samples = [3, 5]
 
 # PATH

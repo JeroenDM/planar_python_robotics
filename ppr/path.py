@@ -136,14 +136,6 @@ class TolerancedNumber:
         self.s = samples
         self.range = np.linspace(self.l, self.u, self.s)
 
-    def get_initial_sampled_range(self, n):
-        r = [self.sample_generator.__next__() for i in range(n)]
-        return np.array(r)
-    
-    def add_samples(self, n):
-        r = [self.sample_generator.__next__() for i in range(n)]
-        self.range = np.append(self.range, r)
-
 class TrajectoryPt:
     """ Trajectory point for a desired end-effector pose in cartesian space
     

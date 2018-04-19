@@ -38,17 +38,9 @@ class TestTolerancedNumber():
         assert(msg in str(info))
     
     def test_get_initial_sampled_range(self):
-        a = TolerancedNumber(2, 1, 3, samples=10)
+        a = TolerancedNumber(2, 0, 4, samples=5)
         a1 = a.range
-        d1 = [ 2., 1.5, 2.5, 1.25, 2.25, 1.75, 2.75, 1.125, 2.125, 1.625]
-        assert_almost_equal(a1, d1)
-    
-    def test_add_samples(self):
-        a = TolerancedNumber(2, 1, 3, samples=10)
-        a.add_samples(5)
-        a1 = a.range
-        d1 = [ 2., 1.5, 2.5, 1.25, 2.25, 1.75, 2.75, 1.125, 2.125, 1.625,
-              2.625, 1.375, 2.375, 1.875, 2.875]
+        d1 = [ 0, 1, 2, 3, 4]
         assert_almost_equal(a1, d1)
 
 class TestTrajectoryPt():
