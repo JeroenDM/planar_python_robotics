@@ -812,3 +812,91 @@ class Robot_2P3R(Robot):
         qs[:, 1] = qs[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
         
         return qs
+
+class RobotManyDofs(Robot):
+    """ Create a kinematic chain of revolution joints with more than 3 dofs
+    """
+    def __init__(self, num_dof, link_length=0.5, ik_samples=5):
+        if num_dof < 4:
+            raise ValueError("This robot should have more than 3 dofs, not: " + str(num_dof))
+        self.num_dof = num_dof
+        
+        # create input vars for robot
+        joint_types = ['r'] * num_dof
+        link_lenghts = [link_length] * num_dof
+        joint_values_dummy = [0] * num_dof
+        super().__init__(joint_types,
+                         link_lenghts,
+                         joint_values_dummy)
+        
+        # set same default ik_samples for every redundant dof
+        self.ik_samples = [ik_samples] * num_dof
+        
+        # create 3R robot for inverse kinematics
+        self.ik_robot = Robot_3R([link_length]*3)
+        
+        # create robot with the redundant dof for forward kinematics
+        self.redundant_robot = Robot(['r'] * (num_dof - 3),
+                                     [link_length] * (num_dof - 3),
+                                     [0] * (num_dof - 3))
+    
+    def ik_fixed_joints(self, pose, q_fixed):
+        # "move" ik_robot to the end of the redundant robot
+        self.ik_robot.base = self.redundant_robot.fk(q_fixed)
+        
+        # solve ik for ik robot
+        sub_sol = self.ik_robot.ik(pose)
+        
+        # add fixed joints to solution
+        # if sub_sol in not successfull, just return this info
+        if sub_sol['success']:
+            q_sol = []
+            for qi in sub_sol['q']:
+                q_sol.append([*q_fixed, *qi])
+            sub_sol['q'] = q_sol
+        return sub_sol
+    
+    def sample_redundant_joints(self, n):
+        # set default joint limits if not available
+        if not hasattr(self, 'jl'):
+            self.jl = [(-np.pi, np.pi)] * self.num_dof
+        
+        qs = np.random.rand(n, self.num_dof - 3)
+        
+        # rescale random joint values to joint limits
+        jl = self.jl
+        for i in range(self.num_dof - 3):
+            qs[:, i] = qs[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
+        
+        return qs
+    
+    def sample_redundant_joints_random(self, n):
+        # set default joint limits if not available
+        if not hasattr(self, 'jl'):
+            self.jl = [(-np.pi, np.pi)] * self.num_dof
+        
+        qs = np.random.rand(n, self.num_dof - 3)
+        
+        # rescale random joint values to joint limits
+        jl = self.jl
+        for i in range(self.num_dof - 3):
+            qs[:, i] = qs[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
+        
+        return qs
+    
+    def ik(self, pose, n=1000, q_fixed_samples=None):
+        if q_fixed_samples is None:
+            q_fixed_samples = self.sample_redundant_joints(n)
+        q_sol = []
+        for qf in q_fixed_samples:
+            s = self.ik_fixed_joints(pose, q_fixed=qf)
+            if s['success']:
+                for qi in s['q']:
+                    q_sol.append(qi)
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
+        else:
+            return {'success' : False, 'info': "unreachable"}
+
+        
+        

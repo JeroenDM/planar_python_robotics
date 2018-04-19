@@ -68,13 +68,13 @@ class SolutionPoint:
         
         return np.array(joint_solutions)
     
-    def add_joint_solutions(self, robot, N, *arg, **kwarg):
+    def add_joint_solutions(self, robot, N, N_red, *arg, **kwarg):
         # get joint solutions for task space points
         tp = self.tp_current.get_samples(N)
         
         # sample redundant joints if needed
         if self.is_redundant:
-            self.add_redundant_joint_samples(robot, n=10)
+            self.add_redundant_joint_samples(robot, n=N_red)
         
         js = self.calc_joint_solutions(robot, tp, *arg, **kwarg)
         
@@ -240,7 +240,8 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     return joint_traj
 
 def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=None,
-                          parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10}):
+                          parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
+                                        'red_js_inc': 10}):
     """ Convert a path to joint space by descretising and ik.
     
     Try to find a minimum number of joint solutions for every trajectory point
@@ -263,6 +264,7 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
         while (sp.num_js < parameters['min_js'] and max_iters > 0):
             sp.add_joint_solutions(robot,
                                    parameters['js_inc'],
+                                   parameters['red_js_inc'],
                                    check_collision=check_collision,
                                    scene=scene)
             max_iters -= 1

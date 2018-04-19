@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
 
+from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R, RobotManyDofs
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pytest
@@ -186,7 +188,6 @@ class TestRobot_2P3R():
         pose = np.array([3, 3, 3.0])
         actual = robot2p3r.ik(pose)
         actual_q = actual['q']
-        # there are 5 joint solutions expected
         assert len(actual_q) == 6
     
     def test_fixed_link_shape(self):
@@ -201,3 +202,27 @@ class TestRobot_2P3R():
             for rectj in sc1:
                 results.append(recti.is_in_collision(rectj))
         assert np.any(results) == True
+
+class TestRobotManyDofs():
+    def test_init_function(self):
+        r1 = RobotManyDofs(4)
+        r2 = RobotManyDofs(10)
+    
+    def test_fk(self):
+        r1 = RobotManyDofs(4, link_length=1.5)
+        actual = r1.fk([0, 0, 0, 0])
+        desired = np.array([4*1.5, 0, 0])
+        assert_almost_equal(actual, desired)
+        
+        r2 = RobotManyDofs(10, link_length=1.5)
+        actual = r2.fk([0]*10)
+        desired = np.array([10*1.5, 0, 0])
+        assert_almost_equal(actual, desired)
+    
+    def test_ik(self):
+        r1 = RobotManyDofs(4)
+        pose1 = np.array([0, 2, np.pi / 2])
+        sol = r1.ik_fixed_joints(pose1, [np.pi/2])
+        print(sol)
+        desired = np.array([np.pi/2, 0, 0, 0])
+        assert_almost_equal(sol['q'][0], desired)
