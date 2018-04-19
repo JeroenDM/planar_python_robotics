@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
 
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.testing import assert_almost_equal, assert_
 import pytest
-from ppr.robot import Robot, Robot_3R, Robot_2P, Robot_2P3R
+from numpy.testing import assert_almost_equal, assert_
+
+from ppr.geometry import Rectangle
 
 class TestRobot():
     def test_get_shapes(self):
@@ -160,7 +162,7 @@ class TestRobot_2P3R():
         desired = {'success': False, 'info': "unreachable"}
         p_unreachable = np.array([99.0, 5.0, 3.0])
         actual = robot2p3r.ik(p_unreachable)
-        assert_(actual == desired)
+        assert actual == desired
     
     def test_random_inverse_kinematics(self):
         np.random.seed(42)
@@ -174,9 +176,10 @@ class TestRobot_2P3R():
             q_sol = ik_sol['q']
             actual = [np.allclose(qj, qi) for qj in q_sol]
             #assert_almost_equal(actual, [True, True])
-            assert np.any(actual)
+            assert np.any(actual) == True
     
     def test_set_joint_limits(self):
+        # joint limits only work for redundant joints at this moment
         robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])
         robot2p3r.set_joint_limits([(0, 5), (0, 5), (), (), ()])
         desired = {'success': False, 'info': "unreachable"}
@@ -184,4 +187,17 @@ class TestRobot_2P3R():
         actual = robot2p3r.ik(pose)
         actual_q = actual['q']
         # there are 5 joint solutions expected
-        assert_(len(actual_q), 5)
+        assert len(actual_q) == 6
+    
+    def test_fixed_link_shape(self):
+        robot1 = Robot_2P3R([1, 1, 0.5, 0.5, 0.3])
+        sc1 = [Rectangle(0.0, 0.4, 0.1, 0.2, -0.3),
+               Rectangle(0.2, 0.8, 0.1, 0.5, 0.2)]
+        q_collision = [ 0.17, 0.375, -2.02, 1.98, -1.03]
+        robot1.set_shapes_pose(q_collision)
+        shapes = robot1.collision_shapes
+        results = []
+        for recti in shapes:
+            for rectj in sc1:
+                results.append(recti.is_in_collision(rectj))
+        assert np.any(results) == True
