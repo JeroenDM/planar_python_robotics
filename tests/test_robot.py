@@ -202,7 +202,6 @@ class TestRobot_2P3R():
             for rectj in sc1:
                 results.append(recti.is_in_collision(rectj))
         assert np.any(results) == True
-        assert_(len(actual_q), 5)
 
 class TestRobotManyDofs():
     def test_init_function(self):
