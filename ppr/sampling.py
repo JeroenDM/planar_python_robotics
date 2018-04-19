@@ -21,6 +21,7 @@ class SolutionPoint:
         self.joint_solutions = np.array([])
         self.num_js = 0
         self.q_fixed_samples = None
+        self.is_redundant = False
     
     def add_redundant_joint_samples(self, robot, n=10, method='random'):
         if method == 'random':
@@ -41,7 +42,7 @@ class SolutionPoint:
                 raise ValueError("scene is needed for collision checking")
         
         # use different joint limits for redundant joints
-        if robot.ndof > 3:
+        if self.is_redundant:
             # save origanal joint limits
             orig_jl = robot.jl
             robot.jl = self.jl
@@ -49,7 +50,10 @@ class SolutionPoint:
         #tp_discrete = self.tp_current.discretise()
         joint_solutions = []
         for cart_pt in tp_discrete:
-            sol = robot.ik(cart_pt, q_fixed_samples=self.q_fixed_samples)
+            if self.is_redundant:
+                sol = robot.ik(cart_pt, q_fixed_samples=self.q_fixed_samples)
+            else:
+                sol = robot.ik(cart_pt)
             if sol['success']:
                 for qsol in sol['q']:
                     if check_collision:
@@ -67,7 +71,11 @@ class SolutionPoint:
     def add_joint_solutions(self, robot, N, *arg, **kwarg):
         # get joint solutions for task space points
         tp = self.tp_current.get_samples(N)
-        self.add_redundant_joint_samples(robot, n=10)
+        
+        # sample redundant joints if needed
+        if self.is_redundant:
+            self.add_redundant_joint_samples(robot, n=10)
+        
         js = self.calc_joint_solutions(robot, tp, *arg, **kwarg)
         
         # cache al calculated information so far
@@ -237,10 +245,18 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
     
     Try to find a minimum number of joint solutions for every trajectory point
     """
+    if robot.ndof > 3:
+        is_redundant = True
+    else:
+        is_redundant = False
+    
     sol_pts = [SolutionPoint(tp) for tp in traj_points]
-    # inital joint limits
-    for sp in sol_pts:
-        sp.jl = robot.jl
+    
+    # inital joint limits for redundant robots
+    if is_redundant:
+        for sp in sol_pts:
+            sp.jl = robot.jl
+            sp.is_redundant = True
     
     for sp  in sol_pts:
         max_iters = parameters['max_iters']

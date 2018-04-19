@@ -134,8 +134,7 @@ class TolerancedNumber:
         self.u = upper_bound
         self.l = lower_bound
         self.s = samples
-        self.sample_generator = vdc_generator(self.l, self.u)
-        self.range = self.get_initial_sampled_range(self.s)
+        self.range = np.linspace(self.l, self.u, self.s)
 
     def get_initial_sampled_range(self, n):
         r = [self.sample_generator.__next__() for i in range(n)]
