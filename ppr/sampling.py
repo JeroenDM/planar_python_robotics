@@ -91,6 +91,39 @@ class SolutionPoint:
             if len(js) > 0:
                 self.joint_solutions = np.vstack((self.joint_solutions, js))
     
+    def add_joint_solutions_grid_sampling(self, robot, check_collision = False, scene=None):
+        """ Convert a cartesian trajectory point to joint space """
+
+        # input validation
+        if check_collision:
+            if scene == None:
+                raise ValueError("scene is needed for collision checking")
+
+        # use different joint limits for redundant joints
+        if self.is_redundant:
+            # save origanal joint limits
+            orig_jl = robot.jl
+            robot.jl = self.jl
+
+        tp_discrete = self.tp_current.discretise()
+        joint_solutions = []
+        for cart_pt in tp_discrete:
+            sol = robot.ik(cart_pt)
+            if sol['success']:
+                for qsol in sol['q']:
+                    if check_collision:
+                        if not robot.check_collision(qsol, scene):
+                            joint_solutions.append(qsol)
+                    else:
+                        joint_solutions.append(qsol)
+
+        if self.is_redundant:
+            # reset original joint_limits
+            robot.jl = orig_jl 
+        
+        # overwrite existing joint solutions
+        self.joint_solutions = np.array(joint_solutions)
+    
     def get_joint_solutions(self):
         return self.joint_solutions
         
@@ -138,12 +171,17 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
     sol_pts = [SolutionPoint(tp) for tp in path]
     if robot.ndof > 3:
         for i in range(len(sol_pts)):
+            sol_pts[i].is_redundant = True
             sol_pts[i].jl = robot.jl
     costs = []
     prev_cost = np.inf
     success = False
     for i in range(max_iter):
-        path_js = [sp.get_joint_solutions(robot, check_collision=True, scene=scene) for sp in sol_pts]
+        # calculate joint solutions
+        for sp in sol_pts:
+            sp.add_joint_solutions_grid_sampling(robot, check_collision=True, scene=scene)
+        # save the calculated joint solutions in a list
+        path_js = [sp.get_joint_solutions() for sp in sol_pts]
         sol = get_shortest_path(path_js)
         if sol['success']:
             costs.append(sol['length'])
