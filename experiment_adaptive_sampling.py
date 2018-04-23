@@ -6,57 +6,57 @@ Created on Tue Apr 17 09:22:55 2018
 @author: jeroen
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from ppr.robot import Robot_3R
-from ppr.path import TrajectoryPt, TolerancedNumber
-from ppr.geometry import Rectangle
-from ppr.sampling import SolutionPoint, get_shortest_path, cart_to_joint_dynamic
-
-# ROBOT
-robot1 = Robot_3R([2, 2, 2])
-
-# PATH
-dx    = np.linspace(3, 4, 10)
-dy    = TolerancedNumber(1.0, 1.0, 1.1, samples=3)
-angle = TolerancedNumber(0.0, -np.pi/2, np.pi/2, samples=3)
-path1 = [TrajectoryPt([xi, dy, angle]) for xi in dx]
-
-# COLLISION SCENE
-sc1 = [Rectangle(3, 1.3, 2, 1, -0.1),
-       Rectangle(3, 0.5, 2, 0.3, 0)]
-
-
-# GRAPH CREATION
-#sol_pts = [SolutionPoint(tp) for tp in path1]
+#import numpy as np
+#import matplotlib.pyplot as plt
+#from ppr.robot import Robot_3R
+#from ppr.path import TrajectoryPt, TolerancedNumber
+#from ppr.geometry import Rectangle
+#from ppr.sampling import SolutionPoint, get_shortest_path, cart_to_joint_dynamic
 #
-#for sp  in sol_pts:
-#    max_iters = 10
-#    while (sp.num_js < 10 and max_iters > 0):
-#        sp.add_joint_solutions(robot1, 10, check_collision=True, scene=sc1)
-#        max_iters -= 1
-#    print(max_iters)
+## ROBOT
+#robot1 = Robot_3R([2, 2, 2])
 #
-#path_js = [sp.get_joint_solutions() for sp in sol_pts]
-
-path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1)
-print([len(qp) for qp in path_js])
-
-min_num_sol = 20
-incr_num_sol = 5        
-
-print([len(qp)for qp in path_js])
-
-# FIND SOLUTION
-sol = get_shortest_path(path_js)
-print(sol['success'])
-
-fig2, ax2 = plt.subplots()
-ax2.axis('equal')
-robot1.plot_path(ax2, sol['path'])
-for r in sc1: r.plot(ax2, 'g')
-for tp in path1: tp.plot(ax2)
-plt.show()
+## PATH
+#dx    = np.linspace(3, 4, 10)
+#dy    = TolerancedNumber(1.0, 1.0, 1.1, samples=3)
+#angle = TolerancedNumber(0.0, -np.pi/2, np.pi/2, samples=3)
+#path1 = [TrajectoryPt([xi, dy, angle]) for xi in dx]
+#
+## COLLISION SCENE
+#sc1 = [Rectangle(3, 1.3, 2, 1, -0.1),
+#       Rectangle(3, 0.5, 2, 0.3, 0)]
+#
+#
+## GRAPH CREATION
+##sol_pts = [SolutionPoint(tp) for tp in path1]
+##
+##for sp  in sol_pts:
+##    max_iters = 10
+##    while (sp.num_js < 10 and max_iters > 0):
+##        sp.add_joint_solutions(robot1, 10, check_collision=True, scene=sc1)
+##        max_iters -= 1
+##    print(max_iters)
+##
+##path_js = [sp.get_joint_solutions() for sp in sol_pts]
+#
+#path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1)
+#print([len(qp) for qp in path_js])
+#
+#min_num_sol = 20
+#incr_num_sol = 5        
+#
+#print([len(qp)for qp in path_js])
+#
+## FIND SOLUTION
+#sol = get_shortest_path(path_js)
+#print(sol['success'])
+#
+#fig2, ax2 = plt.subplots()
+#ax2.axis('equal')
+#robot1.plot_path(ax2, sol['path'])
+#for r in sc1: r.plot(ax2, 'g')
+#for tp in path1: tp.plot(ax2)
+#plt.show()
 
 #%%
 import numpy as np
