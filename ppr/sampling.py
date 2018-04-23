@@ -8,6 +8,7 @@ import numpy as np
 from .cpp.graph import Graph
 from .path import TolerancedNumber, TrajectoryPt
 from .halton import HaltonSampler
+from .util import print_debug
 
 #=============================================================================
 # Sampling stuff
@@ -34,12 +35,14 @@ class SolutionPoint:
         if method == 'random':
             new_samples = robot.sample_redundant_joints_random(n=n)
             if self.q_fixed_samples is None:
+                print_debug("Using 'random' sampling for redundant kinematics")
                 self.q_fixed_samples = new_samples
             else:
                 self.q_fixed_samples = np.vstack((self.q_fixed_samples,
                                                   new_samples))
         elif method == 'halton':
             if self.q_fixed_samples is None:
+                print_debug("Using 'halton' sampling for redundant kinematics")
                 self.setup_halton_sampler(2)
                 qsn = self.hs.get_samples(n)
                 new_samples = robot.sample_redundant_joints_input(qsn)
@@ -316,7 +319,8 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
             sp.is_redundant = True
     
     for sp  in sol_pts:
-        max_iters = parameters['max_iters']
+        max_iters = 0 + parameters['max_iters'] # +0 to get copy not reference
+        print_debug("Processing trajectory point" + str(sp.tp_init))
         while (sp.num_js < parameters['min_js'] and max_iters > 0):
             sp.add_joint_solutions(robot,
                                    parameters['js_inc'],
@@ -324,7 +328,9 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
                                    check_collision=check_collision,
                                    scene=scene)
             max_iters -= 1
-        print(max_iters)
+        print_debug("Found " + str(len(sp.joint_solutions)) + " joint solutions")
+        used_iters = parameters['max_iters'] = max_iters + 1
+        print_debug("After " + str(used_iters) + " iterations")
     
     return [sp.get_joint_solutions() for sp in sol_pts]
 

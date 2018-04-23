@@ -9,6 +9,12 @@ Applied to path to joint transformation for 2P 3R robot
 import numpy as np
 from ppr.path import TolerancedNumber
 
+DEBUG_LEVEL = 1
+
+def print_debug(msg, level=1):
+    if level >= DEBUG_LEVEL:
+        print(msg)
+
 def cp(array):
   """ Cumulative product
   """

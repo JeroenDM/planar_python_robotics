@@ -199,10 +199,13 @@ class TrajectoryPt:
         grid = create_grid(r)
         return grid
     
-    def get_samples(self, n):
+    def get_samples(self, n, method='halton'):
         sample_dim = sum(self.hasTolerance) # count the number of toleranced numbers
         #r = np.random.rand(n, sample_dim)
-        r = self.hs.get_samples(n)
+        if method == 'halton':
+            if self.hs.cnt < n:
+                print("Using 'halton' sampling for cartesian tolerance")
+            r = self.hs.get_samples(n)
         
         # arrange in array and rescale the samples
         samples = []
