@@ -812,6 +812,23 @@ class Robot_2P3R(Robot):
         qs[:, 1] = qs[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
         
         return qs
+    
+    def sample_redundant_joints_input(self, qsn):
+        """ Input are samples between zero and one
+        output rescaled for joint limits
+        """
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
+        else:
+            # default joint limits
+            print("Using default joint limits: (0, 1.5), (0, 1.5)")
+            jl1, jl2 = (0, 1.5), (0, 1.5)
+        
+        qs = np.zeros(qsn.shape)
+        qs[:, 0] = qsn[:, 0] * (jl1[1] - jl1[0]) + jl1[0]
+        qs[:, 1] = qsn[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
+        
+        return qs
 
 class RobotManyDofs(Robot):
     """ Create a kinematic chain of revolution joints with more than 3 dofs
