@@ -45,7 +45,7 @@ class SolutionPoint:
                 new_samples = robot.sample_redundant_joints_input(qsn)
                 self.q_fixed_samples = new_samples
             else:
-                qsn = np.random.rand(n, 2)
+                qsn = self.hs.get_samples(n)
                 new_samples = robot.sample_redundant_joints_input(qsn)
                 self.q_fixed_samples = np.vstack((self.q_fixed_samples,
                                                   new_samples))
@@ -60,7 +60,7 @@ class SolutionPoint:
                 raise ValueError("scene is needed for collision checking")
         
         # use different joint limits for redundant joints
-        if self.is_redundant:
+        if robot.ndof > 3:
             # save origanal joint limits
             orig_jl = robot.jl
             robot.jl = self.jl

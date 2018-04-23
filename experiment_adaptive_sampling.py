@@ -67,6 +67,8 @@ from ppr.geometry import Rectangle
 from ppr.sampling import cart_to_joint, SolutionPoint
 from ppr.sampling import get_shortest_path, cart_to_joint_dynamic
 
+np.random.seed(41)
+
 # ROBOT
 robot1 = Robot_2P3R([4, 0.9, 2, 1.2, 1])
 robot1.set_joint_limits([(2.0, 3.0), (0.2, 0.9)])
@@ -115,6 +117,25 @@ robot1.plot_path(ax2, sol['path'])
 for r in sc1: r.plot(ax2, 'g')
 for tp in path1: tp.plot(ax2)
 plt.show()
+
+#%%
+
+#robot1 = Robot_2P3R([4, 0.9, 2, 1.2, 1])
+#robot1.set_joint_limits([(2.0, 3.0), (0.2, 0.9)])
+#robot1.ik_samples = [3, 5]
+#
+#tp1 = TrajectoryPt([TolerancedNumber(0.5, 0.3, 0.8, samples=5),
+#                    2,
+#                    TolerancedNumber(0.0, -np.pi, np.pi, samples=10)])
+#
+#sp1 = SolutionPoint(tp1)
+#sp1.jl = robot1.jl
+#sp1.is_redundant = True
+#
+#sp1.add_joint_solutions(robot1, 4, 1)
+#res = sp1.get_joint_solutions()
+#print(res)
+#print(res.shape)
 
 
 
