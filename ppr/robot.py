@@ -901,6 +901,25 @@ class RobotManyDofs(Robot):
         
         return qs
     
+    def sample_redundant_joints_input(self, qsn):
+        """ Input are samples between zero and one
+        output rescaled for joint limits
+        """
+        if hasattr(self, 'jl'):
+            jl1, jl2 = self.jl[0], self.jl[1]
+        else:
+            # default joint limits
+            print("Using default joint limits: (0, 1.5), (0, 1.5)")
+            jl1, jl2 = (0, 1.5), (0, 1.5)
+        
+        qs = np.zeros(qsn.shape)
+        # rescale random joint values to joint limits
+        jl = self.jl
+        for i in range(self.num_dof - 3):
+            qs[:, i] = qsn[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
+        
+        return qs
+    
     def ik(self, pose, n=1000, q_fixed_samples=None):
         if q_fixed_samples is None:
             q_fixed_samples = self.sample_redundant_joints(n)

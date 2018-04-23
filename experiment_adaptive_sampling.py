@@ -67,7 +67,6 @@ from ppr.geometry import Rectangle
 from ppr.sampling import cart_to_joint, SolutionPoint
 from ppr.sampling import get_shortest_path, cart_to_joint_dynamic
 
-np.random.seed(41)
 
 # ROBOT
 robot1 = Robot_2P3R([4, 0.9, 2, 1.2, 1])
@@ -104,7 +103,11 @@ sc1 = [Rectangle(1, 1, 1, 1.5, 0),
 #
 #path_js = [sp.get_joint_solutions() for sp in sol_pts]
 
-path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1)
+opts = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
+                                        'red_js_inc': 10,
+                                        'ik_sampling_method': 'normal'}
+path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1,
+                                parameters=opts)
 print([len(qp) for qp in path_js])
 
 sol = get_shortest_path(path_js)

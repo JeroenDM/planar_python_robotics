@@ -43,12 +43,24 @@ class SolutionPoint:
         elif method == 'halton':
             if self.q_fixed_samples is None:
                 print_debug("Using 'halton' sampling for redundant kinematics")
-                self.setup_halton_sampler(2)
+                self.setup_halton_sampler(robot.ndof-3)
                 qsn = self.hs.get_samples(n)
                 new_samples = robot.sample_redundant_joints_input(qsn)
                 self.q_fixed_samples = new_samples
             else:
                 qsn = self.hs.get_samples(n)
+                new_samples = robot.sample_redundant_joints_input(qsn)
+                self.q_fixed_samples = np.vstack((self.q_fixed_samples,
+                                                  new_samples))
+        elif method == 'normal':
+            qsn = np.random.randn(n, robot.ndof-3) / 3 + 0.5
+            qsn[qsn < 0] = 0
+            qsn[qsn > 1] = 1
+            if self.q_fixed_samples is None:
+                print_debug("Using 'normal' sampling for redundant kinematics")
+                new_samples = robot.sample_redundant_joints_input(qsn)
+                self.q_fixed_samples = new_samples
+            else:
                 new_samples = robot.sample_redundant_joints_input(qsn)
                 self.q_fixed_samples = np.vstack((self.q_fixed_samples,
                                                   new_samples))
@@ -89,13 +101,13 @@ class SolutionPoint:
         
         return np.array(joint_solutions)
     
-    def add_joint_solutions(self, robot, N, N_red, *arg, **kwarg):
+    def add_joint_solutions(self, robot, N, N_red, method, *arg, **kwarg):
         # get joint solutions for task space points
         tp = self.tp_current.get_samples(N)
         
         # sample redundant joints if needed
         if self.is_redundant:
-            self.add_redundant_joint_samples(robot, n=N_red, method='halton')
+            self.add_redundant_joint_samples(robot, n=N_red, method=method)
         
         js = self.calc_joint_solutions(robot, tp, *arg, **kwarg)
         
@@ -300,7 +312,8 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
 
 def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=None,
                           parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
-                                        'red_js_inc': 10}):
+                                        'red_js_inc': 10,
+                                        'ik_sampling_method': 'random'}):
     """ Convert a path to joint space by descretising and ik.
     
     Try to find a minimum number of joint solutions for every trajectory point
@@ -325,11 +338,13 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
             sp.add_joint_solutions(robot,
                                    parameters['js_inc'],
                                    parameters['red_js_inc'],
+                                   parameters['ik_sampling_method'],
                                    check_collision=check_collision,
                                    scene=scene)
             max_iters -= 1
+        
         print_debug("Found " + str(len(sp.joint_solutions)) + " joint solutions")
-        used_iters = parameters['max_iters'] = max_iters + 1
+        used_iters = parameters['max_iters'] - (max_iters + 1)
         print_debug("After " + str(used_iters) + " iterations")
     
     return [sp.get_joint_solutions() for sp in sol_pts]
