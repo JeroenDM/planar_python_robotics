@@ -122,6 +122,16 @@ class TestRobot_3R():
             q_sol = ik_sol['q']
             actual = [np.allclose(qj, qi) for qj in q_sol]
             assert_(np.any(actual))
+    
+    def test_self_collision(self):
+        robot3r = Robot_3R([1, 1, 1])
+        q1 = [0, 3, 3]
+        robot3r.set_shapes_pose(q1)
+        assert robot3r.check_self_collision() == True
+        
+        sc1 = []
+        robot3r.do_check_self_collision = True
+        assert robot3r.check_collision(q1, sc1) == True
 
 class TestRobotDynamics():
     def test_fw_prop(self):
