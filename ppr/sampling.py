@@ -33,7 +33,8 @@ class SolutionPoint:
     
     def add_redundant_joint_samples(self, robot, n=10, method='random'):
         if method == 'random':
-            new_samples = robot.sample_redundant_joints_random(n=n)
+            qsn = np.random.rand(n, robot.ndof-3)
+            new_samples = robot.scale_input(qsn)
             if self.q_fixed_samples is None:
                 print_debug("Using 'random' sampling for redundant kinematics")
                 self.q_fixed_samples = new_samples
@@ -45,11 +46,11 @@ class SolutionPoint:
                 print_debug("Using 'halton' sampling for redundant kinematics")
                 self.setup_halton_sampler(robot.ndof-3)
                 qsn = self.hs.get_samples(n)
-                new_samples = robot.sample_redundant_joints_input(qsn)
+                new_samples = robot.scale_input(qsn)
                 self.q_fixed_samples = new_samples
             else:
                 qsn = self.hs.get_samples(n)
-                new_samples = robot.sample_redundant_joints_input(qsn)
+                new_samples = robot.scale_input(qsn)
                 self.q_fixed_samples = np.vstack((self.q_fixed_samples,
                                                   new_samples))
         elif method == 'normal':
@@ -58,10 +59,10 @@ class SolutionPoint:
             qsn[qsn > 1] = 1
             if self.q_fixed_samples is None:
                 print_debug("Using 'normal' sampling for redundant kinematics")
-                new_samples = robot.sample_redundant_joints_input(qsn)
+                new_samples = robot.scale_input(qsn)
                 self.q_fixed_samples = new_samples
             else:
-                new_samples = robot.sample_redundant_joints_input(qsn)
+                new_samples = robot.scale_input(qsn)
                 self.q_fixed_samples = np.vstack((self.q_fixed_samples,
                                                   new_samples))
         else:
@@ -103,7 +104,10 @@ class SolutionPoint:
     
     def add_joint_solutions(self, robot, N, N_red, method, *arg, **kwarg):
         # get joint solutions for task space points
-        tp = self.tp_current.get_samples(N)
+        if method == 'grid':
+            tp = self.tp_current.discretise()
+        else:
+            tp = self.tp_current.get_samples(N, method=method)
         
         # sample redundant joints if needed
         if self.is_redundant:
@@ -261,7 +265,8 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
 def cart_to_joint(robot, traj_points, method='grid',
                   check_collision = False,
                   scene=None,
-                  N=None,
+                  N_cart=None,
+                  N_red_joints=None,
                   return_cc_counter=False):
     """ Convert a path to joint space by descretising and ik.
     
@@ -293,10 +298,10 @@ def cart_to_joint(robot, traj_points, method='grid',
     if method == 'grid':
         pass
     elif method == 'random':
-        q_fixed_samples = np.random.rand(N, robot.ndof-3)
+        q_fixed_samples = np.random.rand(N_red_joints, robot.ndof-3)
     elif method == 'halton':
         hs = HaltonSampler(robot.ndof-3)
-        q_fixed_samples = hs.get_samples(N)
+        q_fixed_samples = hs.get_samples(N_red_joints)
     else:
         raise ValueError("Method not implemented.")
     
@@ -306,9 +311,14 @@ def cart_to_joint(robot, traj_points, method='grid',
             raise ValueError("scene is needed for collision checking")
     
     # get discrete version of trajectory points
-    cart_traj = []
-    for pt in traj_points:
-        cart_traj.append(pt.discretise())
+    if method == 'grid':
+        cart_traj = []
+        for pt in traj_points:
+            cart_traj.append(pt.discretise())
+    else:
+        cart_traj = []
+        for pt in traj_points:
+            cart_traj.append(pt.get_samples(N_cart, method=method))
 
     # solve inverse kinematics for every samples traj point
     # I could add some print statements to have info on unreachable points
