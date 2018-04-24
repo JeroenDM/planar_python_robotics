@@ -64,6 +64,8 @@ class Robot:
         # save collision shapes, only change their pose
         # initial pose is for all joints = 0
         self.collision_shapes = self.get_shapes([0]*self.ndof)
+        self.do_check_self_collision = False
+        self.collision_matrix = np.logical_not(np.eye(self.ndof, dtype='bool'))
     
     def set_joint_limits(self, joint_limits):
       """ Set joint limits for inverse kinematics
@@ -291,6 +293,19 @@ class Robot:
                     self.collision_priority.insert(0, i)
                      # return, no need to look for more collisions
                     return True
+        if self.do_check_self_collision:
+            if self.check_self_collision():
+                return True
+        return False
+    
+    def check_self_collision(self):
+        # assume shapes are up to date with the required q
+        s = self.collision_shapes
+        for i in range(self.ndof):
+            for j in range(self.ndof):
+                if self.collision_matrix[i, j]:
+                    if s[i].is_in_collision(s[j]):
+                        return True
         return False
     
     def plot_kinematics(self, axes_handle, q, *arg, **karg):
