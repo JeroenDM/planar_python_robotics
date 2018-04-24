@@ -258,7 +258,11 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
                 'length_all_iterations': costs,
                 'info': 'max_iterations_reached'}
 
-def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
+def cart_to_joint(robot, traj_points, method='grid',
+                  check_collision = False,
+                  scene=None,
+                  N=None,
+                  return_cc_counter=False):
     """ Convert a path to joint space by descretising and ik.
     
     Every trajectory point in the path is descretised, then for all these
@@ -283,6 +287,19 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
         positions for every trajectory point.
         The arrays in this list could be very big!
     """
+    # counters to log performance
+    cc_counter = 0 # check collision counter
+    
+    if method == 'grid':
+        pass
+    elif method == 'random':
+        q_fixed_samples = np.random.rand(N, robot.ndof-3)
+    elif method == 'halton':
+        hs = HaltonSampler(robot.ndof-3)
+        q_fixed_samples = hs.get_samples(N)
+    else:
+        raise ValueError("Method not implemented.")
+    
     # input validation
     if check_collision:
         if scene == None:
@@ -299,16 +316,27 @@ def cart_to_joint(robot, traj_points, check_collision = False, scene=None):
     for cart_vec in cart_traj:
         qi = []
         for cart_pt in cart_vec:
-            sol = robot.ik(cart_pt)
+            if method == 'grid':
+                sol = robot.ik(cart_pt)
+            else:
+                sol = robot.ik(cart_pt,
+                               q_fixed_samples=q_fixed_samples,
+                               scale_samples=True)
             if sol['success']:
                 for qsol in sol['q']:
                     if check_collision:
+                        cc_counter += 1
                         if not robot.check_collision(qsol, scene):
                             qi.append(qsol)
                     else:
                         qi.append(qsol)
         joint_traj.append(np.array(qi))
-    return joint_traj
+    
+    if return_cc_counter:
+        return joint_traj, cc_counter
+    else:
+        print("Collision checks: " + str(cc_counter))
+        return joint_traj
 
 def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=None,
                           parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
