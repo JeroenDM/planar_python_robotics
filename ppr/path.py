@@ -75,6 +75,10 @@ class TolerancedNumber:
         self.l = lower_bound
         self.s = samples
         self.range = np.linspace(self.l, self.u, self.s)
+    
+    def set_samples(self, samples):
+        self.s = samples
+        self.range = np.linspace(self.l, self.u, self.s)
 
 class TrajectoryPt:
     """ Trajectory point for a desired end-effector pose in cartesian space
@@ -199,14 +203,19 @@ class TrajectoryPt:
         grid = create_grid(r)
         return grid
     
-    def get_samples(self, n, method='halton'):
+    def get_samples(self, n, method='random'):
+        """ Return sampled trajectory point based on values between 0 and 1
+        """
+        # check input
         sample_dim = sum(self.hasTolerance) # count the number of toleranced numbers
-        #r = np.random.rand(n, sample_dim)
-        if method == 'halton':
-            if self.hs.cnt < n:
-                print("Using 'halton' sampling for cartesian tolerance")
-            r = self.hs.get_samples(n)
         
+        if method == 'random':
+            r = np.random.rand(n, sample_dim)
+        elif method == 'halton':
+            r = self.hs.get_samples(n)
+        else:
+            raise ValueError("Method not implemented.")
+            
         # arrange in array and rescale the samples
         samples = []
         cnt = 0

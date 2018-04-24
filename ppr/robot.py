@@ -695,47 +695,11 @@ class Robot_2P3R(Robot):
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
         self.ik_samples = ik_samples
-
-    def ik(self, p, q_fixed_samples = None):
-        """ Discretised / sampled inverse kinematics
-        
-        This robots has redundance (ndof = 5) compared to the task (3) and
-        therefore two joints are sampled in a range to return a sampled
-        subset of the infinite solutions that exists for the given pose.
-        
-        Parameters
-        ----------
-        p : list or np.ndarray of floats
-            End-effector pose (x, y, angle)
-        
-        Returns
-        -------
-        dict
-            A dictionary with a key 'success' reporting True if the pose is
-            reachable and a key 'q' reporting the different joint solutions
-            as a list of numpy arrays.
-            If 'success' is False, a key 'info' containts extra info.
-        """
-        
-        # sample self motion space based on given method
-        if q_fixed_samples is None:
-            q_fixed_samples = self.sample_redundant_joints()
-            
-        # find ik solution for sub_robot for all sampled points in 
-        # self motion space
-        q_sol = []
-        for qf in q_fixed_samples:
-            s = self.ik_fixed_joints(p, q_fixed=qf)
-            if s['success']:
-                for qi in s['q']:
-                    q_sol.append(qi)
-        if len(q_sol) > 0:
-            return {'success': True, 'q': q_sol}
-        else:
-            return {'success' : False, 'info': "unreachable"}
-        
+    
     def ik_fixed_joints(self, p, q_fixed = [0, 0]):
-        """ wrapper function to solve the ik for the last three joints.
+        """ Base ik solver for specified redundant joints
+        
+        Wrapper function to solve the ik for the last three joints.
         
         The joint solution of the 3R robot is extended with the joint values
         for the fixed joints.
@@ -760,8 +724,8 @@ class Robot_2P3R(Robot):
                 q_sol.append([*q_fixed, *qi])
             sub_sol['q'] = q_sol
         return sub_sol
-    
-    def ik_redundant(self, p, q_red):
+
+    def ik(self, p, q_fixed_samples = None, scale_samples=False):
         """ Discretised / sampled inverse kinematics
         
         This robots has redundance (ndof = 5) compared to the task (3) and
@@ -781,12 +745,16 @@ class Robot_2P3R(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
-        grid = np.meshgrid(q_red[0].range, q_red[1].range)
-        grid = [ grid[i].flatten() for i in range(2) ]
-        grid = np.array(grid).T
-        
+        if q_fixed_samples is None:
+            # use default sampling grid, if no samples given
+            q_fixed_samples = self.get_redundant_joints_sample_grid()
+        elif scale_samples:
+            # scale samples to joint limits if needed
+            q_fixed_samples = self.scale_input(q_fixed_samples)
+            
+        # find ik solution for sub_robot for all sampled points in 
         q_sol = []
-        for qf in grid:
+        for qf in q_fixed_samples:
             s = self.ik_fixed_joints(p, q_fixed=qf)
             if s['success']:
                 for qi in s['q']:
@@ -796,7 +764,7 @@ class Robot_2P3R(Robot):
         else:
             return {'success' : False, 'info': "unreachable"}
     
-    def sample_redundant_joints(self):
+    def get_redundant_joints_sample_grid(self):
         if hasattr(self, 'jl'):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
@@ -814,23 +782,7 @@ class Robot_2P3R(Robot):
         grid = np.array(grid).T
         return grid
     
-    def sample_redundant_joints_random(self, n=10):
-        if hasattr(self, 'jl'):
-            jl1, jl2 = self.jl[0], self.jl[1]
-        else:
-            # default joint limits
-            print("Using default joint limits: (0, 1.5), (0, 1.5)")
-            jl1, jl2 = (0, 1.5), (0, 1.5)
-        
-        qs = np.random.rand(n, 2)
-        
-        #rescale
-        qs[:, 0] = qs[:, 0] * (jl1[1] - jl1[0]) + jl1[0]
-        qs[:, 1] = qs[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
-        
-        return qs
-    
-    def sample_redundant_joints_input(self, qsn):
+    def scale_input(self, qsn):
         """ Input are samples between zero and one
         output rescaled for joint limits
         """
@@ -890,7 +842,47 @@ class RobotManyDofs(Robot):
             sub_sol['q'] = q_sol
         return sub_sol
     
-    def sample_redundant_joints(self, n):
+    def ik(self, pose, q_fixed_samples = None, scale_samples=False):
+        
+        if q_fixed_samples is None:
+            # use default grid sampling, if no samples given
+            q_fixed_samples = self.get_redundant_joints_sample_grid()
+        elif scale_samples:
+            # scale samples to joint limits if needed
+            q_fixed_samples = self.scale_input(q_fixed_samples)
+        
+        q_sol = []
+        for qf in q_fixed_samples:
+            s = self.ik_fixed_joints(pose, q_fixed=qf)
+            if s['success']:
+                for qi in s['q']:
+                    q_sol.append(qi)
+        if len(q_sol) > 0:
+            return {'success': True, 'q': q_sol}
+        else:
+            return {'success' : False, 'info': "unreachable"}
+    
+    def get_redundant_joints_sample_grid(self):
+        
+        if not hasattr(self, 'jl'):
+            self.jl = [(-np.pi, np.pi)] * self.num_dof
+        
+        jl = self.jl        
+        q_red = []
+        for i in range(self.ndof - 3):
+            middle = (jl[i][0] + jl[i][1]) / 2
+            q_red.append(
+                    TolerancedNumber(middle, jl[i][0], jl[i][1], samples=self.ik_samples[i])
+                    )
+        
+        # create sampled values for fixed joints and put them in a grid
+        ranges = [qi.range for qi in q_red]
+        grid = np.meshgrid(*ranges)
+        grid = [ grid[i].flatten() for i in range(len(ranges)) ]
+        grid = np.array(grid).T
+        return grid
+    
+    def get_redundant_joints_sample_random(self, n=100):
         # set default joint limits if not available
         if not hasattr(self, 'jl'):
             self.jl = [(-np.pi, np.pi)] * self.num_dof
@@ -904,21 +896,7 @@ class RobotManyDofs(Robot):
         
         return qs
     
-    def sample_redundant_joints_random(self, n):
-        # set default joint limits if not available
-        if not hasattr(self, 'jl'):
-            self.jl = [(-np.pi, np.pi)] * self.num_dof
-        
-        qs = np.random.rand(n, self.num_dof - 3)
-        
-        # rescale random joint values to joint limits
-        jl = self.jl
-        for i in range(self.num_dof - 3):
-            qs[:, i] = qs[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
-        
-        return qs
-    
-    def sample_redundant_joints_input(self, qsn):
+    def scale_input(self, qsn):
         """ Input are samples between zero and one
         output rescaled for joint limits
         """
@@ -936,20 +914,6 @@ class RobotManyDofs(Robot):
             qs[:, i] = qsn[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
         
         return qs
-    
-    def ik(self, pose, n=1000, q_fixed_samples=None):
-        if q_fixed_samples is None:
-            q_fixed_samples = self.sample_redundant_joints(n)
-        q_sol = []
-        for qf in q_fixed_samples:
-            s = self.ik_fixed_joints(pose, q_fixed=qf)
-            if s['success']:
-                for qi in s['q']:
-                    q_sol.append(qi)
-        if len(q_sol) > 0:
-            return {'success': True, 'q': q_sol}
-        else:
-            return {'success' : False, 'info': "unreachable"}
 
         
         
