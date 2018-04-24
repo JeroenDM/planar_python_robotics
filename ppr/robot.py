@@ -65,7 +65,9 @@ class Robot:
         # initial pose is for all joints = 0
         self.collision_shapes = self.get_shapes([0]*self.ndof)
         self.do_check_self_collision = False
-        self.collision_matrix = np.logical_not(np.eye(self.ndof, dtype='bool'))
+        # default: do not check neighbours
+        temp = np.ones((self.ndof, self.ndof), dtype='bool')
+        self.collision_matrix = np.tril(temp, k=-2) + np.triu(temp, k=2)
     
     def set_joint_limits(self, joint_limits):
       """ Set joint limits for inverse kinematics
