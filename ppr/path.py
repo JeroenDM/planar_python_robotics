@@ -75,6 +75,10 @@ class TolerancedNumber:
         self.l = lower_bound
         self.s = samples
         self.range = np.linspace(self.l, self.u, self.s)
+    
+    def set_samples(self, samples):
+        self.s = samples
+        self.range = np.linspace(self.l, self.u, self.s)
 
 class TrajectoryPt:
     """ Trajectory point for a desired end-effector pose in cartesian space
