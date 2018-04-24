@@ -105,13 +105,14 @@ sc1 = [Rectangle(1, 1, 1, 1.5, 0),
 
 opts = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
                                         'red_js_inc': 10,
-                                        'ik_sampling_method': 'normal'}
+                                        'ik_sampling_method': 'halton'}
 path_js = cart_to_joint_dynamic(robot1, path1, check_collision = True, scene=sc1,
                                 parameters=opts)
 print([len(qp) for qp in path_js])
 
 sol = get_shortest_path(path_js)
 print(sol['success'])
+print(sol['length'])
 
 fig2, ax2 = plt.subplots()
 ax2.axis('equal')
