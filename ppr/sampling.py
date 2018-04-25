@@ -3,7 +3,7 @@
 """
 Module for sampling based motion planning for path following.
 """
-
+import time
 import numpy as np
 from .cpp.graph import Graph
 from .path import TolerancedNumber, TrajectoryPt
@@ -211,6 +211,8 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
             sol_pts[i].is_redundant = True
             sol_pts[i].jl = robot.jl
     costs = []
+    times = []
+    start_time = time.time()
     prev_cost = np.inf
     success = False
     for i in range(max_iter):
@@ -222,6 +224,7 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
         sol = get_shortest_path(path_js)
         if sol['success']:
             costs.append(sol['length'])
+            times.append(time.time() - start_time)
             if abs(prev_cost - sol['length']) < tol:
                 success = True
                 break
@@ -254,13 +257,15 @@ def iterative_bfs(robot, path, scene, tol=0.001, red=10, max_iter=10):
         return {'success': True,
                 'path': sol['path'],
                 'length': sol['length'],
-                'length_all_iterations': costs}
+                'length_all_iterations': costs,
+                'time': times}
     else:
         return {'success': False,
                 'path': sol['path'],
                 'length': sol['length'],
                 'length_all_iterations': costs,
-                'info': 'max_iterations_reached'}
+                'info': 'max_iterations_reached',
+                'time': times}
 
 def cart_to_joint(robot, traj_points, method='grid',
                   check_collision = False,
