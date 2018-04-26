@@ -553,19 +553,24 @@ class Robot_3R(Robot):
         Joint limits have to be added.
         """
         # transform pose p to local base frame of this robot
-        p = np.array(p)
-        R = rotation(self.base[2])
+        # explicilty write calculations for speed
+        #R = rotation(self.base[2])
         
-        p[:2] = np.dot(R.T, p[:2] - self.base[:2])
-        p[2] = p[2] - self.base[2]
+        cos = np.cos(self.base[2])
+        sin = np.sin(self.base[2])
+        
+        x =    (p[0] - self.base[0]) * cos + (p[1] - self.base[1]) * sin
+        y =   -(p[0] - self.base[0]) * sin + (p[1] - self.base[1]) * cos
+        phi = p[2] - self.base[2]
         
         # define variables for readability
         l1, l2, l3 = (self.d[0], self.d[1], self.d[2])
-        x, y, phi = (p[0], p[1], p[2])
         
         # initialize output
-        q_up = np.zeros(3)
-        q_do = np.zeros(3)
+        #q_up = np.zeros(3)
+        #q_do = np.zeros(3)
+        q_up = [0, 0, 0]
+        q_do = [0, 0, 0]
         reachable = False
         
         # start calculations
@@ -584,14 +589,23 @@ class Robot_3R(Robot):
                 if c2 > -1:
                     reachable = True
                     # if c2 exactly 1, it can be a little bit bigger at this point
-                    # because of numerical error, then rescale
-                    # TODO far from all edge cases are catched
                     if abs(c2 - 1) < tol:
-                        c2 = np.sign(c2) * 1.0
-                        s2 = 0.0
-                        q_up[1] = np.arctan2(0, c2) # elbow up
-                        q_do[1] = -np.arctan2(0, c2) # elbow down
+                        # first two links aligned and streched out
+                        q_up[0] = np.arctan2(pwy, pwx)
+                        q_up[1] = 0.0
+                        q_up[2] = phi - q_up[0] - q_up[1]
+                        return {'success': True, 'q': [q_up]}
+                    elif abs(-c2 - 1) < tol:
+                        # first two links aligned and folded
+                        q_up[0] = np.arctan2(pwy, pwx)
+                        q_do[0] = np.arctan2(pwy, pwx)
+                        q_up[1] = np.pi
+                        q_do[1] = -np.pi
+                        q_up[2] = phi - q_up[0] - q_up[1]
+                        q_do[2] = phi - q_do[0] - q_do[1]
+                        return {'success': True, 'q': [q_up, q_do]}
                     else:
+                        # general reachable case
                         s2 = np.sqrt(1 - c2**2)
                         q_up[1] = np.arctan2(s2, c2) # elbow up
                         q_do[1] = np.arctan2(-s2, c2) # elbow down
@@ -608,11 +622,7 @@ class Robot_3R(Robot):
                     q_do[2] = phi - q_do[0] - q_do[1]
 
         if reachable:
-            # check if we have to identical solutions
-            if np.allclose(q_up, q_do):
-                return {'success': True, 'q': [q_up]}
-            else:
-                return {'success': True, 'q': [q_up, q_do]}
+            return {'success': True, 'q': [q_up, q_do]}
         else:
             return {'success': False, 'info': "unreachable"}
 

@@ -26,8 +26,10 @@ def rotation(angle):
     array([[  6.12323400e-17,  -1.00000000e+00],
            [  1.00000000e+00,   6.12323400e-17]])
     """
-    return np.array([[np.cos(angle),  -np.sin(angle)],
-                      [np.sin(angle),  np.cos(angle)]])
+    cos = np.cos(angle)
+    sin = np.sin(angle)
+    return np.array([[cos,  -sin],
+                      [sin,  cos]])
 
 class Rectangle(BaseRec):
     """ Rectangle plotting, handling and collision detection
