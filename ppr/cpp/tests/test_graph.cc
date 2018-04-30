@@ -7,8 +7,10 @@ using namespace std;
 void test_graph_creation();
 void test_sort_function();
 void test_bfs();
+void test_dijkstra();
 
-int main() {
+int main()
+{
     cout << "============================\n";
     cout << "Running tests for graph.cxx\n";
     cout << "============================\n";
@@ -27,37 +29,60 @@ int main() {
     test_bfs();
     cout << endl;
 
+    cout << "------------------------------\n";
+    cout << " test dijkstra\n";
+    test_dijkstra();
+    cout << endl;
+
     return 0;
 }
 
-void test_graph_creation() {
+void test_graph_creation()
+{
     graph_data data = {{{0, 0}, {0, 1}},
-                        {{1, -1}, {1, 0}, {1, 1}},
-                        {{0, 2}, {2, 2}} };
+                       {{1, -1}, {1, 0}, {1, 1}},
+                       {{0, 2}, {2, 2}}};
 
     Graph g;
     g.set_graph_data(data);
     //g.print_graph_data();
-    g.init_dijkstra();
-    g.run_dijkstra();
+    g.init();
+    //g.run_dijkstra();
     g.print_path();
 }
 
-void test_bfs() {
+void test_bfs()
+{
     graph_data data = {{{0, 0}, {0, 1}},
-                        {{1, -1}, {1, 0}, {1, 1}},
-                        {{0, 2}, {2, 2}} };
+                       {{1, -1}, {1, 0}, {1, 1}},
+                       {{0, 2}, {2, 2}}};
 
     Graph g;
     g.set_graph_data(data);
     //g.print_graph_data();
-    g.init_dijkstra();
+    g.init();
     g.run_bfs();
     g.print_path();
     cout << "Path cost: " << g.get_path_cost() << endl;
 }
 
-void test_sort_function() {
+void test_dijkstra()
+{
+    graph_data data = {{{0, 0}, {0, 1}},
+                       {{1, -1}, {1, 0}, {1, 1}},
+                       {{0, 2}, {2, 2}}};
+
+    Graph g;
+    g.set_graph_data(data);
+    //g.print_graph_data();
+    g.init();
+    g.run_dijkstra();
+    g.print_path();
+    cout << "Path cost: " << g.get_path_cost() << endl;
+}
+
+void test_sort_function()
+{
     Node n1, n2;
     n1.dist = 3.0;
     n2.dist = 2.0;

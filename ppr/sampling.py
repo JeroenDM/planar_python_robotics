@@ -392,15 +392,15 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
     
     return [sp.get_joint_solutions() for sp in sol_pts]
 
-def get_shortest_path(Q, method='bfs', path = None, scene = None):
-    """ Wrapper function to select the shortest path method
-    """
-    if method == 'bfs':
-        return _get_shortest_path_bfs(Q)
-    else:
-        raise NotImplementedError("The method " + method + " is not implented yet.")
+#def get_shortest_path(Q, method='bfs', path = None, scene = None):
+#    """ Wrapper function to select the shortest path method
+#    """
+#    if method == 'bfs':
+#        return _get_shortest_path_bfs(Q)
+#    else:
+#        raise NotImplementedError("The method " + method + " is not implented yet.")
     
-def _get_shortest_path_bfs(Q):
+def get_shortest_path(Q, method='bfs'):
     """ Calculate the shortest path from joint space data
     
     When the path with trajectory points is converted to joint space,
@@ -439,11 +439,15 @@ def _get_shortest_path_bfs(Q):
             # one of the trajectory points is not reachable
             return {'success': False}
         g.add_data_column(c)
-    g.init_dijkstra()
+    g.init()
 
     # run shortest path algorithm
-    #g.run_dijkstra()
-    g.run_bfs()
+    if method == 'bfs':
+        g.run_bfs()
+    elif method == 'dijkstra':
+        g.run_dijkstra()
+    else:
+        raise NotImplementedError("The method " + method + " is not implented yet.")
 
     # print result
     # g.print_graph()
