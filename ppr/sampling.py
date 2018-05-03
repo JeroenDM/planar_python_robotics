@@ -356,7 +356,8 @@ def cart_to_joint(robot, traj_points, method='grid',
 def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=None,
                           parameters = {'max_iters': 50, 'min_js': 100, 'js_inc': 10,
                                         'red_js_inc': 10,
-                                        'ik_sampling_method': 'random'}):
+                                        'ik_sampling_method': 'random'},
+                          return_sample_info=False):
     """ Convert a path to joint space by descretising and ik.
     
     Try to find a minimum number of joint solutions for every trajectory point
@@ -390,7 +391,19 @@ def cart_to_joint_dynamic(robot, traj_points, check_collision = False, scene=Non
         used_iters = parameters['max_iters'] - (max_iters + 1)
         print_debug("After " + str(used_iters) + " iterations")
     
-    return [sp.get_joint_solutions() for sp in sol_pts]
+    if return_sample_info:
+        # Debug info
+        print_debug("=== Total number of samples ===")
+        t_samples = np.array([len(sp.samples) for sp in sol_pts])
+        c_samples = np.array([len(sp.q_fixed_samples) for sp in sol_pts])
+        print_debug("T-space: " + str(t_samples))
+        print_debug("C-space: " + str(c_samples))
+        n_total = np.sum(t_samples * c_samples)
+        print_debug("TOTAL: " + str(n_total))
+
+        return [sp.get_joint_solutions() for sp in sol_pts], [t_samples, c_samples, n_total]
+    else:
+        return [sp.get_joint_solutions() for sp in sol_pts]
 
 #def get_shortest_path(Q, method='bfs', path = None, scene = None):
 #    """ Wrapper function to select the shortest path method
