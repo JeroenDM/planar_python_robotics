@@ -18,7 +18,7 @@ geometry_module = Extension('_geometry',
 
 setup(
     name = 'ppr',
-    version = '0.1.2',
+    version = '0.2.0',
     packages=find_packages('src'),
     package_dir={'':'src'},
     description = 'Planar Python Robotics',
@@ -27,7 +27,7 @@ setup(
     author = 'Jeroen De Maeyer',
     author_email = 'jeroen.demaeyer@kuleuven.be',
     url = 'https://u0100037.pages.mech.kuleuven.be/planar_python_robotics/',
-    download_url = 'https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/dist/ppr-0.1.1.tar.gz',
+    download_url = 'https://gitlab.mech.kuleuven.be/u0100037/planar_python_robotics/raw/master/dist/ppr-0.2.0.tar.gz',
     keywords = ['robotics', 'motion planning'],
     classifiers = [],
     install_requires=['scipy', 'matplotlib'],
