@@ -2,6 +2,7 @@
 .cache/
 .ipynb_checkpoints
 .coverage
+.pytest_cache
 
 # Build directory
 build
