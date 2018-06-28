@@ -1,9 +1,26 @@
 from setuptools import setup, find_packages, Extension
 
+graph_module = Extension('_graph',
+    language="c++",
+    extra_compile_args=['-std=c++11'],
+    sources=['src/ppr/cpp/graph.i', 'src/ppr/cpp/src/graph.cpp'],
+    include_dirs=['src/ppr/cpp/include'],
+    swig_opts=['-c++', '-I ppr/cpp']
+    )
+
+geometry_module = Extension('_geometry',
+    language="c++",
+    extra_compile_args=['-std=c++11'],
+    sources=['src/ppr/cpp/geometry.i', 'src/ppr/cpp/src/geometry.cpp'],
+    include_dirs=['src/ppr/cpp/include', '/usr/include/eigen3'],
+    swig_opts=['-c++', '-I ppr/cpp']
+    )
+
 setup(
     name = 'ppr',
     version = '0.1.2',
-    packages = find_packages(),
+    packages=find_packages('src'),
+    package_dir={'':'src'},
     description = 'Planar Python Robotics',
     long_description=('Software tool to experiment with 2D motion planning problems' +
     'for robot manipulators.'),
@@ -16,8 +33,5 @@ setup(
     install_requires=['scipy', 'matplotlib'],
     python_requires='>=3',
     ext_package='ppr.cpp',
-    ext_modules=[Extension('ppr.cpp', ['ppr/cpp/graph.i',
-                                       'ppr/cpp/include/graph.h',
-                                       'ppr/cpp/src/graph.cxx'],
-                            swig_opts=['-c++', 'python', '-Ippr/cpp/include'])],
+    ext_modules=[graph_module, geometry_module],
 )
