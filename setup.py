@@ -18,8 +18,9 @@ geometry_module = Extension('_geometry',
 
 setup(
     name = 'ppr',
-    version = '0.2.0',
+    version = '0.2.1',
     packages=find_packages('src'),
+    include_package_data=True,
     package_dir={'':'src'},
     description = 'Planar Python Robotics',
     long_description=('Software tool to experiment with 2D motion planning problems' +
