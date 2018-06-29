@@ -2,7 +2,7 @@
 .cache/
 .ipynb_checkpoints
 .coverage
-.pytest_cache
+.pytest_cache/
 
 # Build directory
 build
@@ -10,7 +10,7 @@ docs/build
 tests/bin
 
 # Python
-*.egg-info
+ppr.egg-info/
 __pycache__
 .eggs
 
