@@ -16,14 +16,21 @@ pages:
   only:
   - master
 
-test:
+build:
   script:
   - apt-get install swig
   - pip install -r requirements.txt
   - python setup.py build
-  - python setup.py develop
+  tags:
+  - docker
+  only:
+  - master
+
+test:
+  script:
+  - pip install -r requirements.txt
+  - python setup.py install
   - python -m pytest --cov
-##  - python -m pytest --doctest-modules --cov
   tags:
   - docker
   only:
