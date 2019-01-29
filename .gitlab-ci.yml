@@ -18,7 +18,10 @@ pages:
 
 build:
   script:
-  - apt-get install swig
+  - git clone https://github.com/swig/swig.git
+  - cd swig
+  - ./autogen.sh && ./configure && make
+  - cd ..
   - pip install -r requirements.txt
   - python setup.py build
   tags:
