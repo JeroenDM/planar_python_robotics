@@ -18,10 +18,11 @@ pages:
 
 build:
   script:
+  - cd ..
   - git clone https://github.com/swig/swig.git
   - cd swig
   - ./autogen.sh && ./configure && make
-  - cd ..
+  - cd ../planar_python_robotics
   - pip install -r requirements.txt
   - python setup.py build
   tags:
