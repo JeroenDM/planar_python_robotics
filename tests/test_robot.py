@@ -46,7 +46,7 @@ class TestRobot:
             robot1.fk_all_links([0, 0])
         # check if the message was present
         msg = "wrong joint type. Must be 'r' or 'p', not: a"
-        assert msg in str(info)
+        assert msg == str(info.value)
 
     def test_nonzero_base(self):
         robot1 = Robot(["r", "r"], [2, 1], [0, 0])
@@ -105,7 +105,7 @@ class TestRobot_3R:
         with pytest.raises(ValueError) as info:
             robot3r = Robot_3R([1.5, 1.0])
         msg = "This robot has 3 links, not: 2"
-        assert msg in str(info)
+        assert msg == str(info.value)
 
     def test_unreachable_inverse_kinematics(self):
         robot3r = Robot_3R([1.5, 1.0, 1.0])
@@ -157,7 +157,7 @@ class TestRobot_2P:
         with pytest.raises(ValueError) as info:
             robot3r = Robot_2P([1.5, 1.0, 1.0])
         msg = "This robot has 2 links, not: 3"
-        assert msg in str(info)
+        assert msg == str(info.value)
 
     def test_random_inverse_kinematics(self):
         np.random.seed(42)
@@ -180,7 +180,7 @@ class TestRobot_2P3R:
         with pytest.raises(ValueError) as info:
             robot2p3r = Robot_2P3R([1.5, 1.0])
         msg = "This robot has 5 links, not: 2"
-        assert msg in str(info)
+        assert msg == str(info.value)
 
     def test_unreachable_inverse_kinematics(self):
         robot2p3r = Robot_2P3R([1.5, 1.0, 1.0, 0.5, 0.5])

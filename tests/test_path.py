@@ -14,7 +14,7 @@ class TestTolerancedNumber:
             a = TolerancedNumber(1.5, 0, 1)
         # check whether the error message is present
         msg = "nominal value must respect the bounds"
-        assert msg in str(info)
+        assert msg == str(info.value)
 
     def test_get_initial_sampled_range(self):
         a = TolerancedNumber(2, 0, 4, samples=5)
