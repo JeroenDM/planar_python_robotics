@@ -170,7 +170,7 @@ float Graph::cost_function(Node n1, Node n2)
     int s = (*n1.jv).size();
     for (int i = 0; i < (*n1.jv).size(); ++i)
     {
-        cost += fabs((*n1.jv)[i] - (*n2.jv)[i]);
+    cost += std::abs((*n1.jv)[i] - (*n2.jv)[i]);
     }
     return cost;
 }
