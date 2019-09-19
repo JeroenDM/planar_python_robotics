@@ -2,13 +2,13 @@
 #define _GRAPH_H_
 
 #include <vector>
-#include <limits> // infinity()
+#include <limits>  // infinity()
 
 // to initialize distances for dijkstra
 const float INF = std::numeric_limits<float>::infinity();
 
 /**
- *  Container for a joint position. 
+ *  Container for a joint position.
  * Fixed length container more efficient but less flexible,
  * the length is the number of dofs of the robot, which can vary.
  */
@@ -22,26 +22,26 @@ typedef std::vector<float> joint_value;
 typedef std::vector<std::vector<joint_value>> graph_data;
 
 /**
- *  A graph Node structure. 
+ *  A graph Node structure.
  * Holds a reference to the parant node, a reference to the associated data
  * and other info variables.
  */
 struct Node
 {
-    int path_index;
-    int sample_index;
-    joint_value *jv;
-    float dist;
-    Node *parent;
-    bool visited;
+  int path_index;
+  int sample_index;
+  joint_value* jv;
+  float dist;
+  Node* parent;
+  bool visited;
 };
 
 struct dijkstraSortFunction
 {
-    bool operator()(Node *n1, Node *n2) const
-    {
-        return (*n2).dist < (*n1).dist;
-    }
+  bool operator()(Node* n1, Node* n2) const
+  {
+    return (*n2).dist < (*n1).dist;
+  }
 };
 
 /**
@@ -53,46 +53,46 @@ typedef std::vector<std::vector<Node>> node_array;
 
 /** Sort function for shortest path algorithms.
  */
-bool sort_function(Node *n1, Node *n2);
+bool sort_function(Node* n1, Node* n2);
 
 class Graph
 {
-    graph_data gd;
-    node_array na;
-    int MAX_ITER = 10000;
-    bool path_found = false;
-    std::vector<Node *> shortest_path;
-    float shortest_path_cost = INF;
-    int num_goals_to_visit = 0;
-    int max_path_index = 0;
+  graph_data gd;
+  node_array na;
+  int MAX_ITER = 10000;
+  bool path_found = false;
+  std::vector<Node*> shortest_path;
+  float shortest_path_cost = INF;
+  int num_goals_to_visit = 0;
+  int max_path_index = 0;
 
-    void graph_data_to_node_array();
-    void reset_node_array();
-    void init_unvisited(std::vector<Node *> &uv);
-    float cost_function(Node n1, Node n2);
-    void visit(Node *node);
-    std::vector<Node *> get_neighbors(Node *node);
-    std::vector<Node *> get_path_nodes();
-    float get_path_cost(std::vector<Node *> &path);
-    void multi_source_bfs();
-    void multi_source_dijkstra();
+  void graph_data_to_node_array();
+  void reset_node_array();
+  void init_unvisited(std::vector<Node*>& uv);
+  float cost_function(Node n1, Node n2);
+  void visit(Node* node);
+  std::vector<Node*> get_neighbors(Node* node);
+  std::vector<Node*> get_path_nodes();
+  float get_path_cost(std::vector<Node*>& path);
+  void multi_source_bfs();
+  void multi_source_dijkstra();
 
-    void print_node(Node n);
-    void print_nodes(std::vector<Node *> nodes);
-    void print_nodes(std::vector<Node> nodes);
+  void print_node(Node n);
+  void print_nodes(std::vector<Node*> nodes);
+  void print_nodes(std::vector<Node> nodes);
 
-  public:
-    void add_data_column(float *mat, int nrows, int ncols);
-    void print_graph_data();
-    void init();
-    void reset();
-    void run_dijkstra();
-    void run_bfs();
-    void get_path(int *vec, int n);
-    float get_path_cost();
-    void print_path();
-    void print_graph();
-    void set_graph_data(graph_data data);
+public:
+  void add_data_column(float* mat, int nrows, int ncols);
+  void print_graph_data();
+  void init();
+  void reset();
+  void run_dijkstra();
+  void run_bfs();
+  void get_path(int* vec, int n);
+  float get_path_cost();
+  void print_path();
+  void print_graph();
+  void set_graph_data(graph_data data);
 };
 
 #endif
