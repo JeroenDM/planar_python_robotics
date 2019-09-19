@@ -4,6 +4,7 @@
 import numpy as np
 from scipy.linalg import norm
 
+
 def rotation(angle):
     """ Create 2x2 rotation matrix from angle
     
@@ -25,8 +26,8 @@ def rotation(angle):
     array([[  6.12323400e-17,  -1.00000000e+00],
            [  1.00000000e+00,   6.12323400e-17]])
     """
-    return np.array([[np.cos(angle),  -np.sin(angle)],
-                      [np.sin(angle),  np.cos(angle)]])
+    return np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+
 
 class Rectangle:
     """ Rectangle plotting, handling and collision detection
@@ -44,6 +45,7 @@ class Rectangle:
     >>> fig, ax = plt.subplots()
     >>> rect.plot(ax)
     """
+
     def __init__(self, x, y, dx, dy, angle):
         """ Create a rectangle object
         
@@ -89,9 +91,9 @@ class Rectangle:
         p = np.zeros((4, 2))
         p[0, 0] = self.x
         p[0, 1] = self.y
-        p[1, :] = np.dot(self.R, [self.dx, 0 ]) + p[0, :]
+        p[1, :] = np.dot(self.R, [self.dx, 0]) + p[0, :]
         p[2, :] = np.dot(self.R, [self.dx, self.dy]) + p[0, :]
-        p[3, :] = np.dot(self.R, [0 ,      self.dy]) + p[0, :]
+        p[3, :] = np.dot(self.R, [0, self.dy]) + p[0, :]
         return p
 
     def get_normals(self):
@@ -119,12 +121,12 @@ class Rectangle:
         p = self.p
         n = np.zeros((4, 2))
         n[0, :] = np.dot(self.R, np.array([0.0, -1.0]))
-        Rtemp = rotation(np.pi/2)
+        Rtemp = rotation(np.pi / 2)
         n[1, :] = np.dot(Rtemp, n[0, :])
         n[2, :] = np.dot(Rtemp, n[1, :])
         n[3, :] = np.dot(Rtemp, n[2, :])
         return n
-    
+
     def project(self, axis):
         """ Project all points of rectangle on an axis given as unit vector
         
@@ -157,7 +159,7 @@ class Rectangle:
         array([ 0.        ,  0.70710678,  1.41421356,  0.70710678])
         """
         return np.dot(self.p, axis)
-    
+
     def is_in_collision(self, rect2, tol=1e-9):
         """ Check if it collides with another rectangle.
         
@@ -194,12 +196,12 @@ class Rectangle:
         while col and i < 8:
             pr1 = self.project(n_all[i])
             pr2 = rect2.project(n_all[i])
-            if (( max(pr1) + tol < min(pr2) ) or ( min(pr1) > max(pr2) + tol )):
+            if (max(pr1) + tol < min(pr2)) or (min(pr1) > max(pr2) + tol):
                 col = False
             i += 1
 
         return col
-    
+
     def distance(self, rect2, tol=1e-9):
         """ Check if it collides with another rectangle.
         
@@ -239,13 +241,13 @@ class Rectangle:
             pr2 = rect2.project(n_all[i])
             d1 = min(pr2) - max(pr1)
             d2 = min(pr1) - max(pr2)
-            if (d1 > tol or d2 > tol):
+            if d1 > tol or d2 > tol:
                 col = False
             dist = max(d1, d2)
             i += 1
-            
+
         return dist
-    
+
     def get_matrix_form(self):
         """ Get the matrix representation of the rectanlge
         

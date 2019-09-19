@@ -18,12 +18,13 @@ def create_random_scene(n, xlim=[-10, 10], ylim=[-10, 10]):
     y_pos = rand(n) * (ylim[1] - ylim[0]) + ylim[0]
     dx = rand(n) * 6 - 3
     dy = rand(n) * 6 - 3
-    a = rand(n) * np.pi - np.pi/2
+    a = rand(n) * np.pi - np.pi / 2
     return [Rectangle(x_pos[i], y_pos[i], dx[i], dy[i], a[i]) for i in range(n)]
 
 
 s = create_random_scene(10)
 
 fig, ax = plt.subplots()
-for r in s: r.plot(ax, 'g')
+for r in s:
+    r.plot(ax, "g")
 plt.show()

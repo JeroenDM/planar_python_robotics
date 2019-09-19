@@ -5,6 +5,7 @@ import numpy as np
 from scipy.linalg import norm
 from .cpp.geometry import Rectangle as BaseRec
 
+
 def rotation(angle):
     """ Create 2x2 rotation matrix from angle
     
@@ -28,8 +29,8 @@ def rotation(angle):
     """
     cos = np.cos(angle)
     sin = np.sin(angle)
-    return np.array([[cos,  -sin],
-                      [sin,  cos]])
+    return np.array([[cos, -sin], [sin, cos]])
+
 
 class Rectangle(BaseRec):
     """ Rectangle plotting, handling and collision detection
@@ -47,6 +48,7 @@ class Rectangle(BaseRec):
     >>> fig, ax = plt.subplots()
     >>> rect.plot(ax)
     """
+
     def __init__(self, x, y, dx, dy, angle):
         """ Create a rectangle object
         
@@ -67,7 +69,7 @@ class Rectangle(BaseRec):
         self.R = rotation(angle)
         self.p = self.get_vertices()
         self.n = self.get_normals()
-    
+
     def update_pose(self, x, y, angle):
         """ ugly duplicate of c++ set_pose function
         
@@ -90,8 +92,6 @@ class Rectangle(BaseRec):
         self.n = self.get_normals()
         self.R = rotation(angle)
 
-
-    
     def project(self, axis):
         """ Project all points of rectangle on an axis given as unit vector
         
@@ -124,7 +124,7 @@ class Rectangle(BaseRec):
         array([ 0.        ,  0.70710678,  1.41421356,  0.70710678])
         """
         return np.dot(self.p, axis)
-    
+
     def distance(self, rect2, tol=1e-9):
         """ Check if it collides with another rectangle.
         
@@ -164,13 +164,13 @@ class Rectangle(BaseRec):
             pr2 = rect2.project(n_all[i])
             d1 = min(pr2) - max(pr1)
             d2 = min(pr1) - max(pr2)
-            if (d1 > tol or d2 > tol):
+            if d1 > tol or d2 > tol:
                 col = False
             dist = max(d1, d2)
             i += 1
-            
+
         return dist
-    
+
     def get_matrix_form(self):
         """ Get the matrix representation of the rectanlge
         

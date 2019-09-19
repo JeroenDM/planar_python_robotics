@@ -11,7 +11,7 @@ from ppr.path import TolerancedNumber, TrajectoryPt
 from ppr.geometry import Rectangle
 
 
-#def test_cart_to_joint():
+# def test_cart_to_joint():
 #    robot2p = Robot_2P([1, 1])
 #    x = TolerancedNumber(2, 1, 3, samples=3)
 #    path = [TrajectoryPt([x, 1.0, 0]),
@@ -31,7 +31,7 @@ from ppr.geometry import Rectangle
 #    for i in range(3):
 #        assert_almost_equal(actual[i], desired[i])
 
-#def test_cart_to_joint_no_scene():
+# def test_cart_to_joint_no_scene():
 #    robot2p = Robot_2P([1, 1])
 #    path = []
 #    with pytest.raises(ValueError) as info:
@@ -40,7 +40,7 @@ from ppr.geometry import Rectangle
 #    msg = "scene is needed for collision checking"
 #    assert(msg in str(info))
 
-#def test_cart_to_joint_with_check_collision():
+# def test_cart_to_joint_with_check_collision():
 #    robot2p = Robot_2P([1, 1])
 #    x = TolerancedNumber(2, 1, 3, samples=3)
 #    path = [TrajectoryPt([x, 1.0, 0]),
@@ -59,25 +59,30 @@ from ppr.geometry import Rectangle
 #    for i in range(3):
 #        assert_almost_equal(actual[i], desired[i])
 
+
 def test_get_shortest_path():
-    Q = [np.array([[0, 0]]),
-         np.array([[1, -1], [1, 0], [1, 1]]),
-         np.array([[0, 2], [2, 2]])]
+    Q = [
+        np.array([[0, 0]]),
+        np.array([[1, -1], [1, 0], [1, 1]]),
+        np.array([[0, 2], [2, 2]]),
+    ]
     res = get_shortest_path(Q)
-    actual1 = res['success']
-    actual2 = res['path']
+    actual1 = res["success"]
+    actual2 = res["path"]
     desired1 = True
     desired2 = [Q[0][0], Q[1][1], Q[2][0]]
     assert actual1 == desired1
     assert_almost_equal(actual2, desired2)
 
+
 def test_get_shortest_path_failed():
-    Q = [np.array([[0, 0]]),
-         np.array([[1, -1], [1, 0], [1, 1]]),
-         np.array([]),
-         np.array([[0, 2], [2, 2]])]
+    Q = [
+        np.array([[0, 0]]),
+        np.array([[1, -1], [1, 0], [1, 1]]),
+        np.array([]),
+        np.array([[0, 2], [2, 2]]),
+    ]
     res = get_shortest_path(Q)
-    assert res['success'] == False
+    assert res["success"] == False
     with pytest.raises(KeyError):
-         res['path']
-    
+        res["path"]

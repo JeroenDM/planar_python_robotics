@@ -5,6 +5,7 @@ import numpy as np
 from .geometry import Rectangle, rotation
 from .path import TolerancedNumber
 
+
 class Robot:
     """ Base class for a serial manipulator
     
@@ -30,7 +31,7 @@ class Robot:
         Pose of the robot base (x, y, angle), where the first joint is
         located.
     """
-    
+
     def __init__(self, joint_type, j_offset, j_angle):
         """ Create general robot object
         
@@ -43,34 +44,34 @@ class Robot:
         j_angle : list of float
             Link angle. Initial angle for revolute joint.
         """
-        
+
         # all input lists must have the same length
         self.ndof = len(joint_type)
         self.jt = joint_type
         self.d = j_offset
         self.a = j_angle
-        
+
         # default collision shapes
         self.lw = [0.05] * self.ndof
         self.ll = j_offset
         self.adapt_ll = True
-        
+
         # default base pose
         self.base = np.array([0, 0, 0])
-        
+
         # keep track of most likly links to be in collision
         self.collision_priority = list(range(self.ndof))
-        
+
         # save collision shapes, only change their pose
         # initial pose is for all joints = 0
-        self.collision_shapes = self.get_shapes([0]*self.ndof)
+        self.collision_shapes = self.get_shapes([0] * self.ndof)
         self.do_check_self_collision = False
         # default: do not check neighbours
-        temp = np.ones((self.ndof, self.ndof), dtype='bool')
+        temp = np.ones((self.ndof, self.ndof), dtype="bool")
         self.collision_matrix = np.tril(temp, k=-2) + np.triu(temp, k=2)
-    
+
     def set_joint_limits(self, joint_limits):
-      """ Set joint limits for inverse kinematics
+        """ Set joint limits for inverse kinematics
       
       Joint limits are not in the default init function because it would
       become to clumsy and a lot can be done without them.
@@ -79,8 +80,8 @@ class Robot:
         A list with for every link the lower and upper joint limit, given as
         a tuple of length 2. For example [(-1, 1), (0, 2)]
       """
-      self.jl = joint_limits
-    
+        self.jl = joint_limits
+
     def set_link_inertia(self, mass, cg_position, Icg):
         """ Set mass, position of center of gravity and Inertia for links.
         
@@ -96,14 +97,14 @@ class Robot:
         self.m = mass
         self.c = cg_position
         self.I = Icg
-    
+
     def set_adapt_ll(self, new_value):
         """ quick fix method because I need to figure out how to overwrite
         variables in parent class
         """
         self.adapt_ll = new_value
-        self.collision_shapes = self.get_shapes([0]*self.ndof)
-    
+        self.collision_shapes = self.get_shapes([0] * self.ndof)
+
     def fk(self, q):
         """ Calculate forward kinematics
         
@@ -125,7 +126,7 @@ class Robot:
         
         """
         return self.fk_all_links(q)[-1]
-    
+
     def fk_all_links(self, q):
         """ Calculate position of all links, and the end effector
         
@@ -162,25 +163,25 @@ class Robot:
                [ 0.3       ,  0.        ,  0.        ],
                [ 0.3       ,  0.6       ,  1.57079633]])
         """
-        pos = np.zeros((self.ndof+1, 3))
+        pos = np.zeros((self.ndof + 1, 3))
         for i in range(self.ndof):
-            if self.jt[i] == 'r':
+            if self.jt[i] == "r":
                 # absolute orientation link i
-                pos[i+1, 2] = pos[i, 2] + q[i]
+                pos[i + 1, 2] = pos[i, 2] + q[i]
                 # position
-                pos[i+1, 0] = pos[i, 0] + self.d[i] * np.cos(pos[i+1, 2])
-                pos[i+1, 1] = pos[i, 1] + self.d[i] * np.sin(pos[i+1, 2])
-            elif self.jt[i] == 'p':
+                pos[i + 1, 0] = pos[i, 0] + self.d[i] * np.cos(pos[i + 1, 2])
+                pos[i + 1, 1] = pos[i, 1] + self.d[i] * np.sin(pos[i + 1, 2])
+            elif self.jt[i] == "p":
                 # absolute orientation link i
-                pos[i+1, 2] = pos[i, 2] + self.a[i]
+                pos[i + 1, 2] = pos[i, 2] + self.a[i]
                 # position
-                pos[i+1, 0] = pos[i, 0] + q[i] * np.cos(pos[i+1, 2])
-                pos[i+1, 1] = pos[i, 1] + q[i] * np.sin(pos[i+1, 2])
+                pos[i + 1, 0] = pos[i, 0] + q[i] * np.cos(pos[i + 1, 2])
+                pos[i + 1, 1] = pos[i, 1] + q[i] * np.sin(pos[i + 1, 2])
             else:
                 msg = "wrong joint type. Must be 'r' or 'p', not: "
                 msg += self.jt[i]
                 raise ValueError(msg)
-        
+
         # transform from base to world
         if self.base[2] == 0:
             # only translation
@@ -190,7 +191,7 @@ class Robot:
             R = rotation(self.base[2])
             pos[:, :2] = np.dot(R, pos[:, :2].T).T + self.base[:2]
         return pos
-    
+
     def get_shapes(self, q):
         """ Get a list with rectangles (shapes in the future?) for all
         robot links in position q
@@ -208,15 +209,15 @@ class Robot:
         p = self.fk_all_links(q)
         shapes = []
         for i in range(self.ndof):
-            shapes.append(self.get_link_shape(i, p[i, 0], p[i, 1], p[i+1, 2], q[i]))
+            shapes.append(self.get_link_shape(i, p[i, 0], p[i, 1], p[i + 1, 2], q[i]))
         return shapes
-    
+
     def set_shapes_pose(self, q):
         p = self.fk_all_links(q)
         for i in range(self.ndof):
-            self.collision_shapes[i].set_pose(p[i, 0], p[i, 1], p[i+1, 2])
+            self.collision_shapes[i].set_pose(p[i, 0], p[i, 1], p[i + 1, 2])
             # also change size for prismatic joints
-            if self.adapt_ll and (self.jt[i] == 'p'):
+            if self.adapt_ll and (self.jt[i] == "p"):
                 self.collision_shapes[i].set_size(q[i], self.lw[i])
 
     def get_link_shape(self, i, xi, yi, phii, qi):
@@ -262,13 +263,13 @@ class Robot:
                [ 2.  ,  0.05],
                [ 0.  ,  0.05]])
         """
-        if self.adapt_ll and (self.jt[i] == 'p'):
+        if self.adapt_ll and (self.jt[i] == "p"):
             # link length = joint length for prismatic case
             return Rectangle(xi, yi, qi, self.lw[i], phii)
         else:
             # fixed link length
             return Rectangle(xi, yi, self.ll[i], self.lw[i], phii)
-    
+
     def check_collision(self, q, scene):
         """ Check for collision between the robot other_rectangles
         
@@ -293,13 +294,13 @@ class Robot:
                     # move current index to front of priority list
                     self.collision_priority.remove(i)
                     self.collision_priority.insert(0, i)
-                     # return, no need to look for more collisions
+                    # return, no need to look for more collisions
                     return True
         if self.do_check_self_collision:
             if self.check_self_collision():
                 return True
         return False
-    
+
     def check_self_collision(self):
         # assume shapes are up to date with the required q
         s = self.collision_shapes
@@ -309,7 +310,7 @@ class Robot:
                     if s[i].is_in_collision(s[j]):
                         return True
         return False
-    
+
     def plot_kinematics(self, axes_handle, q, *arg, **karg):
         """ Plot robot using lines and dots
         
@@ -324,7 +325,7 @@ class Robot:
         """
         p = self.fk_all_links(q)
         axes_handle.plot(p[:, 0], p[:, 1], *arg, **karg)
-    
+
     def plot_path_kinematics(self, axes_handle, qp):
         """ Plot robot for more than one joint position using lines and dots
         
@@ -372,107 +373,108 @@ class Robot:
         """
         # draw robot more transparant to the end of the path
         alpha = np.linspace(1, 0.2, len(qp))
-        
+
         for i, qi in enumerate(qp):
             for rect in self.get_shapes(qi):
                 rect.plot(axes_handle, color=(0.1, 0.2, 0.5, alpha[i]))
-    
-    #=============================================================================
+
+    # =============================================================================
     # THE FOLLOWING METHODS ARE NOT TESTED YET AND ALMOST NO DOCUMENTATION
-    #=============================================================================    
+    # =============================================================================
     def euler_newton(self, q, dq, ddq):
         """ Euler-Netwon recursive algorithm from book Sicilliano """
         ndof = self.ndof
         lq = [len(vec) for vec in [q, dq, ddq]]
         if not np.all(np.array(lq) == ndof):
             raise ValueError("Input vectors must have same length, not: " + str(lq))
-        
+
         # initialize vectors for solution (base at index 0)
         # i = 0 -> base
         # i = ndof+1 - > last link
         # assume base is not moving TODO
-        W  = np.zeros(ndof + 1) # link angular velocity
-        dW = np.zeros(ndof + 1) # link angular acceleration
-        A  = np.zeros((ndof + 1, 2)) # frame acceleration
-        Ac = np.zeros((ndof + 1, 2)) # link cg acceleration
-        
+        W = np.zeros(ndof + 1)  # link angular velocity
+        dW = np.zeros(ndof + 1)  # link angular acceleration
+        A = np.zeros((ndof + 1, 2))  # frame acceleration
+        Ac = np.zeros((ndof + 1, 2))  # link cg acceleration
+
         # forward recursion for speed and acceleration
-        for k in range(1, ndof+1):
-            i = k-1 # link index in robot parameters
-            W[k], dW[k], A[k], Ac[k] = self._fw_prop(i, q[i], dq[i], ddq[i],
-                                                     W[k-1], dW[k-1], A[k-1])
-        
+        for k in range(1, ndof + 1):
+            i = k - 1  # link index in robot parameters
+            W[k], dW[k], A[k], Ac[k] = self._fw_prop(
+                i, q[i], dq[i], ddq[i], W[k - 1], dW[k - 1], A[k - 1]
+            )
+
         # initialize some more vectors (OTHER INDEX DEFINITION than W, dW, ...)
         # i = ndof+1 -> end effector
         # i = 0 - > first link
         # assume no end effector force or torque
-        F   = np.zeros((ndof + 1, 2))
-        M   = np.zeros(ndof + 1)
-        tau = np.zeros(ndof) # joint force or torque
-        
+        F = np.zeros((ndof + 1, 2))
+        M = np.zeros(ndof + 1)
+        tau = np.zeros(ndof)  # joint force or torque
+
         # backward recursion for forces and torques
         for k in np.flip(np.arange(ndof), 0):
-            i = k # link index in robot parameters
-            F[k], M[k], tau[k] = self._bw_prop(i, q[i],
-                                             F[k+1], M[k+1],
-                                             dW[k+1], Ac[k+1])
+            i = k  # link index in robot parameters
+            F[k], M[k], tau[k] = self._bw_prop(
+                i, q[i], F[k + 1], M[k + 1], dW[k + 1], Ac[k + 1]
+            )
         return tau
-    
+
     def _fw_prop(self, ib, qb, dqb, ddqb, wa, dwa, aa):
         """ Forward propagation of speed and velocity from link i to i+1 """
-        
+
         cb = self.c[ib]
-        if self.jt[ib] == 'r':
-            db    = self.d[ib]
-            arel  = [-(wa + dqb)**2 * db, (dwa + ddqb)*db]
-            acrel = [-(wa + dqb)**2 * cb, (dwa + ddqb)*cb]
-            wb    = wa  + dqb
-            dwb   = dwa + ddqb
+        if self.jt[ib] == "r":
+            db = self.d[ib]
+            arel = [-(wa + dqb) ** 2 * db, (dwa + ddqb) * db]
+            acrel = [-(wa + dqb) ** 2 * cb, (dwa + ddqb) * cb]
+            wb = wa + dqb
+            dwb = dwa + ddqb
             R = self._R_link(ib, qb).T
-        elif self.jt[ib] == 'p':
-            db    = qb
-            arel  = [-wa**2 * db + ddqb, dwa*db + 2*wa*dqb]
-            acrel = [-wa**2 * cb + ddqb, dwa*cb + 2*wa*dqb]
-            wb    = wa
-            dwb   = dwa
+        elif self.jt[ib] == "p":
+            db = qb
+            arel = [-wa ** 2 * db + ddqb, dwa * db + 2 * wa * dqb]
+            acrel = [-wa ** 2 * cb + ddqb, dwa * cb + 2 * wa * dqb]
+            wb = wa
+            dwb = dwa
             R = self._R_link(ib, self.a[ib]).T
         else:
             raise ValueError("wrong joint type: " + self.jt[ib])
-        
+
         ab = np.dot(R, aa) + np.array(arel)
         ac = np.dot(R, aa) + np.array(acrel)
         return wb, dwb, ab, ac
-    
+
     def _bw_prop(self, ia, qb, Fb, Mb, dwa, aca):
         """ Backward force and torque propagation from i+1 to i """
-        
-        if self.jt[ia] == 'r':
+
+        if self.jt[ia] == "r":
             # transforme Fb to frame of link a (given in frame b)
-            R = self._R_link(ia+1, qb)
+            R = self._R_link(ia + 1, qb)
             Fbt = np.dot(R, Fb)
             # calculate Fa and Ma
             Fa = Fbt + self.m[ia] * aca
-            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma = Mb + self.c[ia] * Fa[1]
             Ma += (self.d[ia] - self.c[ia]) * Fb[1]
             Ma += self.I[ia] * dwa
             # joint torque
             taua = Ma
-        elif self.jt[ia] == 'p':
+        elif self.jt[ia] == "p":
             # transforme Fb to frame of link a (given in frame b)
-            R = self._R_link(ia+1, self.a[ia+1])
+            R = self._R_link(ia + 1, self.a[ia + 1])
             Fbt = np.dot(R, Fb)
             # calculate Fa and Ma
             Fa = Fbt + self.m[ia] * aca
-            Ma = Mb  + self.c[ia] * Fa[1]
+            Ma = Mb + self.c[ia] * Fa[1]
             Ma += (qb - self.c[ia]) * Fb[1]
             Ma += self.I[ia] * dwa
             # joint force
             taua = Fa[0]
         else:
             raise ValueError("wrong joint type: " + self.jt[ia])
-        
+
         return Fa, Ma, taua
-    
+
     def _R_link(self, i, qi):
         """ rotation matrix of link i relative to link i-1
         
@@ -492,28 +494,30 @@ class Robot:
             Array with shape (2, 2), a 2D rotation matrix representing link i
             relative to link i-1
         """
-        if (i+1) >= self.ndof:
+        if (i + 1) >= self.ndof:
             # frame i is the end effector frame
             # end effector pose not implemented
             return np.eye(2)
         else:
-            if self.jt[i] == 'r':
+            if self.jt[i] == "r":
                 a = qi
-            elif self.jt[i] == 'p':
+            elif self.jt[i] == "p":
                 a = self.a[i]
             else:
                 raise ValueError("wrong joint type: " + self.jt[i])
-            
+
             ca = np.cos(a)
             sa = np.sin(a)
             R = np.array([[ca, -sa], [sa, ca]])
             return R
+
 
 class Robot_3R(Robot):
     """ Wrapper class for base robot class for 3R robot.
     
     This class adds analytical inverse kinematics for this specific robot.
     """
+
     def __init__(self, link_length):
         """ Simplified constructor for this 3R robot
         
@@ -524,8 +528,8 @@ class Robot_3R(Robot):
         """
         if not (len(link_length) == 3):
             raise ValueError("This robot has 3 links, not: " + str(len(link_length)))
-        super().__init__(['r', 'r', 'r'], link_length, [0, 0, 0])
-    
+        super().__init__(["r", "r", "r"], link_length, [0, 0, 0])
+
     def ik(self, p, tol=1e-12):
         """ Analytic inverse kinematics for 3 link robot
         
@@ -554,34 +558,34 @@ class Robot_3R(Robot):
         """
         # transform pose p to local base frame of this robot
         # explicilty write calculations for speed
-        #R = rotation(self.base[2])
-        
+        # R = rotation(self.base[2])
+
         cos = np.cos(self.base[2])
         sin = np.sin(self.base[2])
-        
-        x =    (p[0] - self.base[0]) * cos + (p[1] - self.base[1]) * sin
-        y =   -(p[0] - self.base[0]) * sin + (p[1] - self.base[1]) * cos
+
+        x = (p[0] - self.base[0]) * cos + (p[1] - self.base[1]) * sin
+        y = -(p[0] - self.base[0]) * sin + (p[1] - self.base[1]) * cos
         phi = p[2] - self.base[2]
-        
+
         # define variables for readability
         l1, l2, l3 = (self.d[0], self.d[1], self.d[2])
-        
+
         # initialize output
-        #q_up = np.zeros(3)
-        #q_do = np.zeros(3)
+        # q_up = np.zeros(3)
+        # q_do = np.zeros(3)
         q_up = [0, 0, 0]
         q_do = [0, 0, 0]
         reachable = False
-        
+
         # start calculations
-        if (l1 + l2 + l3) >= np.sqrt(x**2 + y**2):
+        if (l1 + l2 + l3) >= np.sqrt(x ** 2 + y ** 2):
             # coordinates of end point second link (w)
             pwx = x - l3 * np.cos(phi)
             pwy = y - l3 * np.sin(phi)
-            rws = pwx**2 + pwy**2 # squared distance to second joint
+            rws = pwx ** 2 + pwy ** 2  # squared distance to second joint
             if (l1 + l2) >= np.sqrt(rws):
                 # calculate cosine q2
-                c2 = (rws - l1**2 - l2**2) / (2*l1*l2)
+                c2 = (rws - l1 ** 2 - l2 ** 2) / (2 * l1 * l2)
                 # c2 is already guaranteed to be < 1
                 # but it can still be smaller than -1
                 # for example points close the the robot base that are
@@ -594,7 +598,7 @@ class Robot_3R(Robot):
                         q_up[0] = np.arctan2(pwy, pwx)
                         q_up[1] = 0.0
                         q_up[2] = phi - q_up[0] - q_up[1]
-                        return {'success': True, 'q': [q_up]}
+                        return {"success": True, "q": [q_up]}
                     elif abs(-c2 - 1) < tol:
                         # first two links aligned and folded
                         q_up[0] = np.arctan2(pwy, pwx)
@@ -603,14 +607,14 @@ class Robot_3R(Robot):
                         q_do[1] = -np.pi
                         q_up[2] = phi - q_up[0] - q_up[1]
                         q_do[2] = phi - q_do[0] - q_do[1]
-                        return {'success': True, 'q': [q_up, q_do]}
+                        return {"success": True, "q": [q_up, q_do]}
                     else:
                         # general reachable case
-                        s2 = np.sqrt(1 - c2**2)
-                        q_up[1] = np.arctan2(s2, c2) # elbow up
-                        q_do[1] = np.arctan2(-s2, c2) # elbow down
+                        s2 = np.sqrt(1 - c2 ** 2)
+                        q_up[1] = np.arctan2(s2, c2)  # elbow up
+                        q_do[1] = np.arctan2(-s2, c2)  # elbow down
                     # calculate q1
-                    temp = (l1 + l2 * c2)
+                    temp = l1 + l2 * c2
                     s1_up = (temp * pwy - l2 * s2 * pwx) / rws
                     c1_up = (temp * pwx + l2 * s2 * pwy) / rws
                     s1_do = (temp * pwy + l2 * s2 * pwx) / rws
@@ -622,9 +626,10 @@ class Robot_3R(Robot):
                     q_do[2] = phi - q_do[0] - q_do[1]
 
         if reachable:
-            return {'success': True, 'q': [q_up, q_do]}
+            return {"success": True, "q": [q_up, q_do]}
         else:
-            return {'success': False, 'info': "unreachable"}
+            return {"success": False, "info": "unreachable"}
+
 
 class Robot_2P(Robot):
     """ Wrapper class for base robot class for 2P robot.
@@ -632,6 +637,7 @@ class Robot_2P(Robot):
     A simple cartesian robot with inverse kinematics.
     First joint along x-axis, second joint along y-axis.
     """
+
     def __init__(self, link_length):
         """ Simplified constructor for this 2P robot
         
@@ -642,8 +648,8 @@ class Robot_2P(Robot):
         """
         if not (len(link_length) == 2):
             raise ValueError("This robot has 2 links, not: " + str(len(link_length)))
-        super().__init__(['p', 'p'], link_length, [0, np.pi / 2])
-    
+        super().__init__(["p", "p"], link_length, [0, np.pi / 2])
+
     def ik(self, p, tol=1e-12):
         """ Inverse kinematics for 2R robot, ignoring orientation.
         
@@ -666,7 +672,8 @@ class Robot_2P(Robot):
             as a list of numpy arrays.
             If 'success' is False, a key 'info' containts extra info.
         """
-        return {'success': True, 'q': [np.array([p[0], p[1]])]}
+        return {"success": True, "q": [np.array([p[0], p[1]])]}
+
 
 class Robot_2P3R(Robot):
     """ A 3R robot mounted on a 2P cartesian robot
@@ -680,6 +687,7 @@ class Robot_2P3R(Robot):
             joints. Resulting in n_sample * n_sample times the normal number
             of solutions for a 3R robot.
     """
+
     def __init__(self, link_length, ik_samples=[5, 5]):
         """ Simplified constructor for this 2P3R robot
         
@@ -695,18 +703,18 @@ class Robot_2P3R(Robot):
         """
         if not (len(link_length) == 5):
             raise ValueError("This robot has 5 links, not: " + str(len(link_length)))
-        super().__init__(['p', 'p', 'r', 'r', 'r'],
-                         link_length,
-                         [0, np.pi / 2, 0, 0, 0])
-        
+        super().__init__(
+            ["p", "p", "r", "r", "r"], link_length, [0, np.pi / 2, 0, 0, 0]
+        )
+
         # prismatic joint represent fixed objects that do not change in size
         # use setter function because collision shapes are also changed
         self.set_adapt_ll(False)
         # create 3R robot for inverse kinematics
         self.sub_robot = Robot_3R(link_length[2:])
         self.ik_samples = ik_samples
-    
-    def ik_fixed_joints(self, p, q_fixed = [0, 0]):
+
+    def ik_fixed_joints(self, p, q_fixed=[0, 0]):
         """ Base ik solver for specified redundant joints
         
         Wrapper function to solve the ik for the last three joints.
@@ -727,15 +735,15 @@ class Robot_2P3R(Robot):
         q_base = [q_fixed[0], q_fixed[1], np.pi / 2]
         self.sub_robot.base = q_base
         sub_sol = self.sub_robot.ik(p)
-        if sub_sol['success']:
+        if sub_sol["success"]:
             # add fixed joints to solution
             q_sol = []
-            for qi in sub_sol['q']:
+            for qi in sub_sol["q"]:
                 q_sol.append([*q_fixed, *qi])
-            sub_sol['q'] = q_sol
+            sub_sol["q"] = q_sol
         return sub_sol
 
-    def ik(self, p, q_fixed_samples = None, scale_samples=False):
+    def ik(self, p, q_fixed_samples=None, scale_samples=False):
         """ Discretised / sampled inverse kinematics
         
         This robots has redundance (ndof = 5) compared to the task (3) and
@@ -761,21 +769,21 @@ class Robot_2P3R(Robot):
         elif scale_samples:
             # scale samples to joint limits if needed
             q_fixed_samples = self.scale_input(q_fixed_samples)
-            
-        # find ik solution for sub_robot for all sampled points in 
+
+        # find ik solution for sub_robot for all sampled points in
         q_sol = []
         for qf in q_fixed_samples:
             s = self.ik_fixed_joints(p, q_fixed=qf)
-            if s['success']:
-                for qi in s['q']:
+            if s["success"]:
+                for qi in s["q"]:
                     q_sol.append(qi)
         if len(q_sol) > 0:
-            return {'success': True, 'q': q_sol}
+            return {"success": True, "q": q_sol}
         else:
-            return {'success' : False, 'info': "unreachable"}
-    
+            return {"success": False, "info": "unreachable"}
+
     def get_redundant_joints_sample_grid(self):
-        if hasattr(self, 'jl'):
+        if hasattr(self, "jl"):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
             # default joint limits
@@ -783,147 +791,146 @@ class Robot_2P3R(Robot):
         # nominal value in the middle of the limits
         n1 = (jl1[0] + jl1[1]) / 2
         n2 = (jl2[0] + jl2[1]) / 2
-        
+
         # create sampled values for fixed joints and put them in a grid
         q1 = TolerancedNumber(n1, jl1[0], jl1[1], samples=self.ik_samples[0])
         q2 = TolerancedNumber(n2, jl2[0], jl2[1], samples=self.ik_samples[1])
         grid = np.meshgrid(q1.range, q2.range)
-        grid = [ grid[i].flatten() for i in range(2) ]
+        grid = [grid[i].flatten() for i in range(2)]
         grid = np.array(grid).T
         return grid
-    
+
     def scale_input(self, qsn):
         """ Input are samples between zero and one
         output rescaled for joint limits
         """
-        if hasattr(self, 'jl'):
+        if hasattr(self, "jl"):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
             # default joint limits
             print("Using default joint limits: (0, 1.5), (0, 1.5)")
             jl1, jl2 = (0, 1.5), (0, 1.5)
-        
+
         qs = np.zeros(qsn.shape)
         qs[:, 0] = qsn[:, 0] * (jl1[1] - jl1[0]) + jl1[0]
         qs[:, 1] = qsn[:, 1] * (jl2[1] - jl2[0]) + jl2[0]
-        
+
         return qs
+
 
 class RobotManyDofs(Robot):
     """ Create a kinematic chain of revolution joints with more than 3 dofs
     """
+
     def __init__(self, num_dof, link_length=0.5, ik_samples=5):
         if num_dof < 4:
-            raise ValueError("This robot should have more than 3 dofs, not: " + str(num_dof))
+            raise ValueError(
+                "This robot should have more than 3 dofs, not: " + str(num_dof)
+            )
         self.num_dof = num_dof
-        
+
         # create input vars for robot
-        joint_types = ['r'] * num_dof
+        joint_types = ["r"] * num_dof
         link_lenghts = [link_length] * num_dof
         joint_values_dummy = [0] * num_dof
-        super().__init__(joint_types,
-                         link_lenghts,
-                         joint_values_dummy)
-        
+        super().__init__(joint_types, link_lenghts, joint_values_dummy)
+
         # set same default ik_samples for every redundant dof
         self.ik_samples = [ik_samples] * num_dof
-        
+
         # create 3R robot for inverse kinematics
-        self.ik_robot = Robot_3R([link_length]*3)
-        
+        self.ik_robot = Robot_3R([link_length] * 3)
+
         # create robot with the redundant dof for forward kinematics
-        self.redundant_robot = Robot(['r'] * (num_dof - 3),
-                                     [link_length] * (num_dof - 3),
-                                     [0] * (num_dof - 3))
-    
+        self.redundant_robot = Robot(
+            ["r"] * (num_dof - 3), [link_length] * (num_dof - 3), [0] * (num_dof - 3)
+        )
+
     def ik_fixed_joints(self, pose, q_fixed):
         # "move" ik_robot to the end of the redundant robot
         self.ik_robot.base = self.redundant_robot.fk(q_fixed)
-        
+
         # solve ik for ik robot
         sub_sol = self.ik_robot.ik(pose)
-        
+
         # add fixed joints to solution
         # if sub_sol in not successfull, just return this info
-        if sub_sol['success']:
+        if sub_sol["success"]:
             q_sol = []
-            for qi in sub_sol['q']:
+            for qi in sub_sol["q"]:
                 q_sol.append([*q_fixed, *qi])
-            sub_sol['q'] = q_sol
+            sub_sol["q"] = q_sol
         return sub_sol
-    
-    def ik(self, pose, q_fixed_samples = None, scale_samples=False):
-        
+
+    def ik(self, pose, q_fixed_samples=None, scale_samples=False):
+
         if q_fixed_samples is None:
             # use default grid sampling, if no samples given
             q_fixed_samples = self.get_redundant_joints_sample_grid()
         elif scale_samples:
             # scale samples to joint limits if needed
             q_fixed_samples = self.scale_input(q_fixed_samples)
-        
+
         q_sol = []
         for qf in q_fixed_samples:
             s = self.ik_fixed_joints(pose, q_fixed=qf)
-            if s['success']:
-                for qi in s['q']:
+            if s["success"]:
+                for qi in s["q"]:
                     q_sol.append(qi)
         if len(q_sol) > 0:
-            return {'success': True, 'q': q_sol}
+            return {"success": True, "q": q_sol}
         else:
-            return {'success' : False, 'info': "unreachable"}
-    
+            return {"success": False, "info": "unreachable"}
+
     def get_redundant_joints_sample_grid(self):
-        
-        if not hasattr(self, 'jl'):
+
+        if not hasattr(self, "jl"):
             self.jl = [(-np.pi, np.pi)] * self.num_dof
-        
-        jl = self.jl        
+
+        jl = self.jl
         q_red = []
         for i in range(self.ndof - 3):
             middle = (jl[i][0] + jl[i][1]) / 2
             q_red.append(
-                    TolerancedNumber(middle, jl[i][0], jl[i][1], samples=self.ik_samples[i])
-                    )
-        
+                TolerancedNumber(middle, jl[i][0], jl[i][1], samples=self.ik_samples[i])
+            )
+
         # create sampled values for fixed joints and put them in a grid
         ranges = [qi.range for qi in q_red]
         grid = np.meshgrid(*ranges)
-        grid = [ grid[i].flatten() for i in range(len(ranges)) ]
+        grid = [grid[i].flatten() for i in range(len(ranges))]
         grid = np.array(grid).T
         return grid
-    
+
     def get_redundant_joints_sample_random(self, n=100):
         # set default joint limits if not available
-        if not hasattr(self, 'jl'):
+        if not hasattr(self, "jl"):
             self.jl = [(-np.pi, np.pi)] * self.num_dof
-        
+
         qs = np.random.rand(n, self.num_dof - 3)
-        
+
         # rescale random joint values to joint limits
         jl = self.jl
         for i in range(self.num_dof - 3):
             qs[:, i] = qs[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
-        
+
         return qs
-    
+
     def scale_input(self, qsn):
         """ Input are samples between zero and one
         output rescaled for joint limits
         """
-        if hasattr(self, 'jl'):
+        if hasattr(self, "jl"):
             jl1, jl2 = self.jl[0], self.jl[1]
         else:
             # default joint limits
             print("Using default joint limits: (0, 1.5), (0, 1.5)")
             jl1, jl2 = (0, 1.5), (0, 1.5)
-        
+
         qs = np.zeros(qsn.shape)
         # rescale random joint values to joint limits
         jl = self.jl
         for i in range(self.num_dof - 3):
             qs[:, i] = qsn[:, i] * (jl[i][1] - jl[i][0]) + jl[i][0]
-        
-        return qs
 
-        
-        
+        return qs

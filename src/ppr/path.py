@@ -10,9 +10,10 @@ from matplotlib.patches import Wedge
 from .cpp.graph import Graph
 from .halton import HaltonSampler
 
-#=============================================================================
+# =============================================================================
 # Classes
-#=============================================================================
+# =============================================================================
+
 
 class TolerancedNumber:
     """ A range on the numner line used to define path constraints
@@ -46,6 +47,7 @@ class TolerancedNumber:
     But it the number of path points will probably be limited so I preffer this
     simpler implementation for now.
     """
+
     def __init__(self, nominal, lower_bound, upper_bound, samples=10):
         """ Create a toleranced number
         
@@ -75,10 +77,11 @@ class TolerancedNumber:
         self.l = lower_bound
         self.s = samples
         self.range = np.linspace(self.l, self.u, self.s)
-    
+
     def set_samples(self, samples):
         self.s = samples
         self.range = np.linspace(self.l, self.u, self.s)
+
 
 class TrajectoryPt:
     """ Trajectory point for a desired end-effector pose in cartesian space
@@ -128,6 +131,7 @@ class TrajectoryPt:
     [ 1.5  0.5  0. ]
     [ 1.5  1.   0. ]
     """
+
     def __init__(self, pee):
         """ Create a trajectory point from a given pose
         
@@ -141,7 +145,9 @@ class TrajectoryPt:
         """
         self.dim = len(pee)
         self.p = pee
-        self.hasTolerance = [isinstance(pee[i], TolerancedNumber) for i in range(self.dim)]
+        self.hasTolerance = [
+            isinstance(pee[i], TolerancedNumber) for i in range(self.dim)
+        ]
         p_nominal = []
         for i in range(self.dim):
             if self.hasTolerance[i]:
@@ -149,12 +155,12 @@ class TrajectoryPt:
             else:
                 p_nominal.append(self.p[i])
         self.p_nominal = np.array(p_nominal)
-        self.timing = 0.1 # with respect to previous point
-        
+        self.timing = 0.1  # with respect to previous point
+
         # for use of halton sampling
         # dimension is the number of toleranced numbers
         self.hs = HaltonSampler(sum(self.hasTolerance))
-    
+
     def __str__(self):
         """ Returns string representation for printing
         
@@ -164,7 +170,7 @@ class TrajectoryPt:
             List with nominal values for x, y and orientation.
         """
         return str(self.p_nominal)
-    
+
     def discretise(self):
         """ Returns a discrete version of the range of a trajectory point
         
@@ -202,20 +208,20 @@ class TrajectoryPt:
                 r.append(self.p[i])
         grid = create_grid(r)
         return grid
-    
-    def get_samples(self, n, method='random'):
+
+    def get_samples(self, n, method="random"):
         """ Return sampled trajectory point based on values between 0 and 1
         """
         # check input
-        sample_dim = sum(self.hasTolerance) # count the number of toleranced numbers
-        
-        if method == 'random':
+        sample_dim = sum(self.hasTolerance)  # count the number of toleranced numbers
+
+        if method == "random":
             r = np.random.rand(n, sample_dim)
-        elif method == 'halton':
+        elif method == "halton":
             r = self.hs.get_samples(n)
         else:
             raise ValueError("Method not implemented.")
-            
+
         # arrange in array and rescale the samples
         samples = []
         cnt = 0
@@ -225,7 +231,7 @@ class TrajectoryPt:
                 cnt += 1
             else:
                 samples.append(np.ones(n) * val)
-        
+
         return np.vstack(samples).T
 
     def plot(self, axes_handle, show_tolerance=True):
@@ -240,25 +246,32 @@ class TrajectoryPt:
             (default True)
         """
         pn = self.p_nominal
-        axes_handle.plot(pn[0], pn[1], 'k*')
+        axes_handle.plot(pn[0], pn[1], "k*")
         if show_tolerance:
             if self.hasTolerance[0]:
                 do = -self.p[0].l + pn[0]
-                du =  self.p[0].u - pn[0]
-                axes_handle.errorbar(pn[0], pn[1], xerr=[[do], [du]], color=(0.5, 0.5, 0.5))
+                du = self.p[0].u - pn[0]
+                axes_handle.errorbar(
+                    pn[0], pn[1], xerr=[[do], [du]], color=(0.5, 0.5, 0.5)
+                )
             if self.hasTolerance[1]:
                 do = -self.p[1].l + pn[1]
-                du =  self.p[1].u - pn[1]
-                axes_handle.errorbar(pn[0], pn[1], yerr=[[do], [du]], color=(0.5, 0.5, 0.5))
+                du = self.p[1].u - pn[1]
+                axes_handle.errorbar(
+                    pn[0], pn[1], yerr=[[do], [du]], color=(0.5, 0.5, 0.5)
+                )
             if self.hasTolerance[2]:
                 # scale radius relative to trajectory point position
                 radius = (pn[0] + pn[1]) / 20
                 do = self.p[2].l * 180 / np.pi
                 du = self.p[2].u * 180 / np.pi
-                arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
+                arc = Wedge(
+                    (pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5)
+                )
                 axes_handle.add_patch(arc)
 
-class TrajectoryPtLineTol():
+
+class TrajectoryPtLineTol:
     """ Modified TrajectoryPt, where the tolerance is given
     along a line with a specific angle with the x-asis.
     This way, instead of specifying the x and y tolerance, the discrete points
@@ -278,6 +291,7 @@ class TrajectoryPtLineTol():
         Angle of the line along which the tolerance is applied, given
         relative to x-axis, in radians.
     """
+
     def __init__(self, pee, tolerance, angle):
         """ Create a trajectory point from a given pose
         
@@ -305,8 +319,8 @@ class TrajectoryPtLineTol():
         self.p_nominal = np.array(p_nominal)
         self.tn = tolerance
         self.a = angle
-        self.timing = 0.1 # with respect to previous point
-    
+        self.timing = 0.1  # with respect to previous point
+
     def __str__(self):
         """ Returns string representation for printing
         
@@ -316,7 +330,7 @@ class TrajectoryPtLineTol():
             List with nominal values for x, y and orientation.
         """
         return str(self.p)
-    
+
     def discretise(self):
         """ Returns a discrete version of the range of a trajectory point
         
@@ -364,14 +378,18 @@ class TrajectoryPtLineTol():
         if self.hasTolerance[2]:
             p_final = []
             for rel_o_i in self.p[2].range:
-                pi = get_points_on_line(self.p[0], self.p[1], rel_o_i, self.a, self.tn.range)
+                pi = get_points_on_line(
+                    self.p[0], self.p[1], rel_o_i, self.a, self.tn.range
+                )
                 p_final.append(pi)
             p_final = np.vstack(p_final)
 
             return p_final
         else:
-            return get_points_on_line(self.p[0], self.p[1], self.p[2], self.a, self.tn.range)
-    
+            return get_points_on_line(
+                self.p[0], self.p[1], self.p[2], self.a, self.tn.range
+            )
+
     def plot(self, axes_handle, show_tolerance=True, wedge_radius=None):
         """ Visualize the path on given axes
         
@@ -384,15 +402,18 @@ class TrajectoryPtLineTol():
             (default True)
         """
         pn = self.p_nominal
-        axes_handle.plot(pn[0], pn[1], 'k*')
+        axes_handle.plot(pn[0], pn[1], "k*")
         if show_tolerance:
-            R =np.array([[np.cos(self.a),  -np.sin(self.a)],
-                         [np.sin(self.a),   np.cos(self.a)]])
-            p1 = np.dot( R, np.array([self.tn.l, 0])[:, None] )
-            p2 = np.dot( R, np.array([self.tn.u, 0])[:, None] )
+            R = np.array(
+                [[np.cos(self.a), -np.sin(self.a)], [np.sin(self.a), np.cos(self.a)]]
+            )
+            p1 = np.dot(R, np.array([self.tn.l, 0])[:, None])
+            p2 = np.dot(R, np.array([self.tn.u, 0])[:, None])
             p1 = p1 + pn[:2][:, None]
             p2 = p2 + pn[:2][:, None]
-            axes_handle.plot([p1[0], p2[0]], [p1[1], p2[1]], '*-', color=(0.5, 0.5, 0.5))
+            axes_handle.plot(
+                [p1[0], p2[0]], [p1[1], p2[1]], "*-", color=(0.5, 0.5, 0.5)
+            )
             if self.hasTolerance[2]:
                 # scale radius relative to trajectory point position
                 if wedge_radius == None:
@@ -401,12 +422,16 @@ class TrajectoryPtLineTol():
                     radius = wedge_radius
                 do = (self.p[2].l + self.a) * 180 / np.pi
                 du = (self.p[2].u + self.a) * 180 / np.pi
-                arc = Wedge((pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5))
+                arc = Wedge(
+                    (pn[0], pn[1]), radius, do, du, facecolor=(0.5, 0.5, 0.5, 0.5)
+                )
                 axes_handle.add_patch(arc)
 
-#=============================================================================
+
+# =============================================================================
 # Utile functions
-#=============================================================================
+# =============================================================================
+
 
 def get_points_on_line(x, y, rel_o, a, r):
     """ Get points on line segment
@@ -435,16 +460,16 @@ def get_points_on_line(x, y, rel_o, a, r):
         Array with shape (Np, dim), every row represents a pose
         of the robot end-effector.
     """
-    R =np.array([[np.cos(a),  -np.sin(a)],
-                 [np.sin(a),   np.cos(a)]])
+    R = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
     Np = len(r)
-    r = np.vstack(( r, np.zeros(Np) )) # project range along x-axis
-    r = np.dot(R, r)                   # rotate range with angle a
-    p_xy = np.array([[x], [y]])        # shape (2, 1)
-    p_xy = p_xy + r                    # use broadcasting to add range, get shape (2, Np)
+    r = np.vstack((r, np.zeros(Np)))  # project range along x-axis
+    r = np.dot(R, r)  # rotate range with angle a
+    p_xy = np.array([[x], [y]])  # shape (2, 1)
+    p_xy = p_xy + r  # use broadcasting to add range, get shape (2, Np)
     abs_o = rel_o + a
-    p_angle = abs_o * np.ones(Np)          # constant angle a for all poses
-    return np.vstack((p_xy, p_angle)).T # add angle and transpose to get shape (Np, 3)
+    p_angle = abs_o * np.ones(Np)  # constant angle a for all poses
+    return np.vstack((p_xy, p_angle)).T  # add angle and transpose to get shape (Np, 3)
+
 
 def create_grid(r):
     """ Create an N dimensional grid from N arrays
@@ -477,6 +502,6 @@ def create_grid(r):
            [ 1,  3, 99]])
     """
     grid = np.meshgrid(*r)
-    grid = [ grid[i].flatten() for i in range(len(r)) ]
+    grid = [grid[i].flatten() for i in range(len(r))]
     grid = np.array(grid).T
     return grid
